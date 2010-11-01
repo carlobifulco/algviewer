@@ -15,7 +15,7 @@ $Redis4=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379,:
 TextDb=4
 $Redis4.select TextDb
 
-$HOME="http://0.0.0.0:4567"
+$HOME="http://algviewer.heroku.com" #$HOME="http://0.0.0.0:4567"
 IMAGE_CONTAINER="./image_container"
 SVG_URL="http://#{$HOST}:8080"
 
