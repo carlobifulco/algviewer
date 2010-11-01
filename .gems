@@ -1,7 +1,7 @@
 json
 ruby-graphviz
 hpricot
-haml
 redis
 nestful
 i18n
+sinatra
