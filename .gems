@@ -4,10 +4,6 @@ ruby-graphviz
 hpricot
 haml
 redis
-digest/md5
 sass
-rinruby
-tempfile
-pathname
 nestful
 yaml
