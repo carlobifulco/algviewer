@@ -1,6 +1,6 @@
 sinatra
 json
-graphviz
+ruby-graphviz
 hpricot
 haml
 redis
