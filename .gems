@@ -1,5 +1,5 @@
 sinatra
-json/pure
+json
 graphviz
 hpricot
 haml
