@@ -1,9 +1,10 @@
-
+require "nestful"
 require "sinatra"
 require "tempfile"
 require "pathname"
 require "redis"
 require 'json/pure'
+require_relative "./tree_struct"
 
 
 
@@ -11,8 +12,14 @@ $redis3=Redis.new
 UseDb=3
 $redis3.select UseDb
 
-$HOME="http://184.73.233.199:8080"
+#needs to be changed in deployment
+$HOME="http://0.0.0.0:4567"
 IMAGE_CONTAINER="./image_container"
+
+def image_url file_name
+  "#{$HOME}/image/#{file_name}"
+end
+
 
 set :haml, {:format => :html5 }
 enable :sessions
@@ -145,13 +152,14 @@ __END__
 \<!DOCTYPE html>
 %html{:lang=>"en"}
   %head
-    %script{:type=>"application/x-javascript",:src=>"http://ajax.googleapis.com/ajax/libs/jquery/1.4.0/jquery.min.js"}
+    %script{:type=>"application/x-javascript",:src=>"http://ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"}
     %script{:src=>"jquery.json-2.2.js",:type=>"application/x-javascript" }
     %script{:src=>"galleria.js",:type=>"application/x-javascript" }
     -# %link{:rel=>"stylesheet", :type=>"text/css", :href=> $HOME}
+
     %title 
   %body
-    = yield
+    =yield
 
 @@ main
 %a{:href=>"/upload_form"}
@@ -191,20 +199,35 @@ __END__
 %h1 Show Images
 %ul
 - @images_names.each do |i|
-  - href="/image/#{i}"
+  - href=image_url i
   %a{:href=>href}
     %li=i
     
 @@ galleria
-%script
-	Galleria.loadTheme('themes/classic/galleria.classic.js');
+
 %h1 Galleria    
-%div#images
-	-@images_names.each do |i|
-		-href="/image/#{i}"
-		%img{:src=>href, :alt=>"test", :title=>"mytitle"}
-%script
-	$('#images').galleria(options={"debug":true});
+%div#galleria
+  -@images_names.each do |i|
+    - href=image_url i
+    %img{:src=>href, :alt=>"test", :title=>"mytitle"}
+  %img{:src=>"http://upload.wikimedia.org/wikipedia/commons/thumb/6/67/Laser_effects.jpg/500px-Laser_effects.jpg"}
+  %img{:src=>"http://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/PizBernina3.jpg/500px-PizBernina3.jpg"}
+  
+:css
+  html,body{background:#333}
+  .content{color:#eee;font:14px/1.4 "helvetica neue", arial,sans-serif;width:620px;margin:20px auto}
+  h1{line-height:1.1;letter-spacing:-1px;}
+  a {color:#fff;}
+  #galleria{height:400px;}
+  
+
+
+:javascript
+  Galleria.loadTheme('themes/classic/galleria.classic.js');
+  $('#galleria').galleria();
+
+
+  
  
  
  
