@@ -1,4 +1,3 @@
-
 json
 ruby-graphviz
 hpricot
@@ -7,3 +6,6 @@ nestful
 i18n
 sinatra
 haml
+tempfile
+pathname
+yaml
