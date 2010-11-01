@@ -1,8 +1,6 @@
-sinatra
 json
 ruby-graphviz
 hpricot
 haml
 redis
 nestful
-yaml
