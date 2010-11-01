@@ -5,3 +5,5 @@ redis
 nestful
 i18n
 sinatra
+SystemTimer
+haml
