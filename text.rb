@@ -5,7 +5,7 @@ require "pathname"
 require "redis"
 require 'json/pure'
 require "yaml"
-require_relative "./tree_struct"
+#require_relative "./tree_struct"
 
 $HOST="184.73.233.199" 
 $Redis4=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379,:host=>$HOST)
