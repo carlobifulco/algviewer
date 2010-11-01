@@ -4,6 +4,5 @@ ruby-graphviz
 hpricot
 haml
 redis
-sass
 nestful
 yaml
