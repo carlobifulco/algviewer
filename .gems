@@ -4,3 +4,4 @@ hpricot
 haml
 redis
 nestful
+i18n
