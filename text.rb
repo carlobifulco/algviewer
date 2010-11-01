@@ -5,6 +5,7 @@ require "pathname"
 require "redis"
 require 'json/pure'
 require "yaml"
+require "rack"
 
 $LOAD_PATH << './lib'
 require "tree_struct"

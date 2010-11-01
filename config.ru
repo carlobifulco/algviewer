@@ -1,2 +1,2 @@
-require 'text'
+require './text'
 run Sinatra::Application
