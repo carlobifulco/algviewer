@@ -355,6 +355,7 @@ __END__
   GRAPH RESULT
 %div
   %object{:type=>"image/svg+xml", :id=>"svg", :data=>@result,:width=>"2000", :height=>"2000"}
+  %img{:href=>@result_png}
 
 @@ plot
 %header

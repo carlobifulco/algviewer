@@ -107,7 +107,7 @@ __END__
  %ul#hide_delete
   -@all_forms.each  do |x|
    %li
-    %a{:href=>"#{$HOME}/delete/#{x}"}=x
+    %a#delete{:href=>"#{$HOME}/delete/#{x}"}=x
 
 %h6
  %form{:action=>"/edit_text",:method=>"get"}
@@ -132,6 +132,11 @@ __END__
     $("#hide_delete").toggle();
   });
   
+  $('#delete').bind('click', function() {
+    alert('Sure you want to delete this');
+  });
+  
+  
   
   }); 
 
@@ -146,6 +151,9 @@ __END__
 
 
 @@ text_form
+%script{:type=>"text/javascript",:src=>"jquery-fieldselection.js"}
+%script{:type=>"text/javascript",:src=>"code-edit.js"}
+
 %h1 
   %p=@form_name
 %div#links
@@ -161,7 +169,7 @@ __END__
   %p
     Specimen
 %form{:action=>"/upload_text",:method=>"post"}
-  %textarea{:id=>"edit",:name=>"form_content",:rows=>"40",:cols=>"30",:lang=>"en", :style=>"direction: ltr;",:wrap=>"SOFT"}=@text
+  %textarea{:class=>"autoindent",:id=>"edit",:name=>"form_content",:rows=>"40",:cols=>"80",:lang=>"en", :style=>"direction: ltr;",:wrap=>"SOFT"}=@text
   %input{:type=>"hidden",:name=>"form_name",:value=>@form_name}
   %input{:type=>"submit",:value=>"Send"}
     
