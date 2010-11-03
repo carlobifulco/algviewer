@@ -151,8 +151,8 @@ __END__
 
 
 @@ text_form
-%script{:type=>"text/javascript",:src=>"jquery-fieldselection.js"}
-%script{:type=>"text/javascript",:src=>"code-edit.js"}
+%script{:type=>"application/x-javascript",:src=>"/jquery-fieldselection.js"}
+%script{:type=>"application/x-javascript",:src=>"/code-edit.js"}
 
 %h1 
   %p=@form_name
