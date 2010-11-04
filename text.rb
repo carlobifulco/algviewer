@@ -18,6 +18,7 @@ $Redis4.select TextDb
 $HOME="http://algviewer.heroku.com" #$HOME="http://0.0.0.0:4567"
 IMAGE_CONTAINER="./image_container"
 SVG_URL="http://#{$HOST}:8080"
+puts ENV["URL"]
 
 get "/edit_text/:form_name" do
   @form_name=params[:form_name]
@@ -27,7 +28,7 @@ end
 
 get "/edit_text" do
   x=params[:form_name]
-  redirect "#{$HOME}/edit_text/#{x}"
+  redirect "/edit_text/#{x}"
 end
 
 get "/delete/:form_name" do
@@ -48,6 +49,7 @@ post '/upload_text' do
 end
 
 get "/" do
+  puts env["HTTP_HOST"]
   @all_forms=$Redis4.keys.sort!
   haml :main
 end
@@ -87,36 +89,48 @@ __END__
 
 @@ main
 
+%script{:type=>"application/x-javascript",:src=>"/jquery-ui-1.8.6.custom.min.js"}
+%link{:rel=>"stylesheet", :type=>"text/css", :href=>"jquery-ui-1.8.6.custom.css"}
+
+%div{:id=>"dialog", :title=>"Confirmation Required"}
+ Are you sure you want to delete this graph?
+
 %h6#view_view
  VIEW
 %h6
  %ul#hide_view
   -@all_forms.each  do |x|
    %li
-    %a{:href=>"#{$HOME}/view/#{x}"}=x 
+    %a{:href=>"/view/#{x}"}=x 
 
 %h6#view_edit 
  EDIT
  %ul#hide_edit
   -@all_forms.each  do |x|
    %li
-    %a{:href=>"#{$HOME}/edit_text/#{x}"}=x
+    %a{:href=>"/edit_text/#{x}"}=x
 
 %h6#view_delete 
  DELETE
  %ul#hide_delete
   -@all_forms.each  do |x|
    %li
-    %a#delete{:href=>"#{$HOME}/delete/#{x}"}=x
+    %a.confirmLink{:href=>"/delete/#{x}"}=x
 
 %h6
  %form{:action=>"/edit_text",:method=>"get"}
-  NEW NAME HERE: 
+  NEW ALG: 
   %input{:type=>"text",:id=>"edit",:name=>"form_name",:cols=>"30"} 
   %input{:type=>"submit",:value=>"Send"}
 
 :javascript 
+
   $(document).ready(function(){
+    
+    $("#dialog").dialog({
+         autoOpen: false,
+         modal: true
+       });
   
   $("#view_view").click(function(){
     $("#hide_view").toggle();
@@ -132,12 +146,24 @@ __END__
     $("#hide_delete").toggle();
   });
   
-  $('#delete').bind('click', function() {
-    alert('Sure you want to delete this');
-  });
   
-  
-  
+  $(".confirmLink").click(function(e) {
+     e.preventDefault();
+     var targetUrl = $(this).attr("href");
+
+     $("#dialog").dialog({
+       buttons : {
+         "Confirm" : function() {
+           window.location.href = targetUrl;
+         },
+         "Cancel" : function() {
+           $(this).dialog("close");
+         }
+       }
+     });
+
+     $("#dialog").dialog("open");
+   });
   }); 
 
   
