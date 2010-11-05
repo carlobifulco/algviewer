@@ -80,8 +80,6 @@ __END__
 %html{:lang=>"en"}
   %head
     %script{:type=>"application/x-javascript",:src=>"http://ajax.googleapis.com/ajax/libs/jquery/1.4.0/jquery.min.js"}
-    / %script{:type=>"application/x-javascript",:src=>"css/jquery.svg.js"}
-    /    %script{:type=>"application/x-javascript",:src=>"css/jquery.svgdom.js"}
     -# %link{:rel=>"stylesheet", :type=>"text/css", :href=> $HOME}
     %title 
   %body
