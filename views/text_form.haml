@@ -1,0 +1,31 @@
+%script{:type=>"application/x-javascript",:src=>"/jquery-fieldselection.js"}
+%script{:type=>"application/x-javascript",:src=>"/code-edit.js"}
+
+%h1 
+  %p=@form_name
+%div#links.info
+  %p 
+    Show example
+%div#hide.notice
+  %p 
+    Always leave a space after the Yaml's "-" and the ":".
+  %p
+    Wrap/escape : in  ":" or in ':'.
+  %p
+    Respect the "-" followed by " - pattern, e.g.:
+  %p
+    Specimen
+
+%form{:action=>"/upload_text",:method=>"post"}
+  %textarea{:class=>"autoindent",:id=>"edit",:name=>"form_content",:rows=>"40",:cols=>"80",:lang=>"en", :style=>"direction: ltr;",:wrap=>"SOFT"}=@text
+  %input{:type=>"hidden",:name=>"form_name",:value=>@form_name}
+  %input{:type=>"submit",:value=>"Send"}
+    
+:javascript 
+  $(document).ready(function(){
+  $("#hide").hide();
+  $("#links").click(function(){
+    $("#hide").toggle();
+    $("#links").html("Close example");
+  });
+  });
