@@ -8,4 +8,4 @@ sinatra
 haml
 rack
 coffee-script
-haml-more --pre
+haml-more
