@@ -56,7 +56,7 @@
       return alert([1, 2, 3, 4, 3]);
     };
     $("button").button();
-    $("button").bind('click', function(event) {
+    $("button").bind('click', function() {
       return sort_rect();
     });
     $(".selectable").selectable({

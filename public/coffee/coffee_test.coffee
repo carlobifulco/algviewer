@@ -41,7 +41,7 @@ $(document).ready =>
 		alert([1,2,3,4,3])
 
 	$("button").button()
-	$("button").bind 'click',(event)->sort_rect()
+	$("button").bind 'click',()->sort_rect()
 	$(".selectable").selectable({"selected":chosen})
 	$(".draggable").draggable()
 	a=$('.alert').css("color","yellow")
