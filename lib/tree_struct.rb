@@ -37,7 +37,12 @@ module Mani
 
 end
 
-
+#doctest: testing NodesEdges
+#>> n=NodesEdges.new
+#>> n.get_edges
+#=> [[["CANE", "Gatto"], ["CANE", "ELEFANTE"], ["CANE", "ippo"]], [["ippo", "SENSA"], ["ippo", "Capelli"]], [["Capelli", "CORIANDOLI"], ["Capelli", "MAAZ"]], [["MAAZ", "GATII"]], [["GATII", "PELOSI"], ["GATII", "MERDOS"], ["GATII", "PUZZONI"]], [["PUZZONI", "SUPER"], ["PUZZONI", "PUZZONISSIMI"]]]
+#>> n.get_nodes
+#=> ["CANE", "Gatto", "ELEFANTE", "ippo", "SENSA", "Capelli", "CORIANDOLI", "MAAZ", "GATII", "PELOSI", "MERDOS", "PUZZONI", "SUPER", "PUZZONISSIMI"]
 class NodesEdges
   
   attr_accessor :list,:a

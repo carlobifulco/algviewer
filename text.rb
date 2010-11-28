@@ -3,10 +3,11 @@ require "sinatra"
 require "tempfile"
 require "pathname"
 require "redis"
-require 'json/pure'
+require 'json'
 require "yaml"
 require "rack"
-
+require 'coffee-script'
+require "haml"
 
 
 
@@ -66,6 +67,7 @@ post '/upload_text' do
   #params.to_s 
   
 end
+
 
 get '/coffee_test' do
   haml :coffee_test

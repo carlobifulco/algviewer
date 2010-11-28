@@ -1,4 +1,44 @@
--#%script{:type=>"application/x-javascript",:src=>"/application"}
 
-:coffee_script
-  alert("CIIII")
+%script{:type=>"application/x-javascript",:src=>"/jquery.hotkeys-0.7.9.min.js"}
+%script{:type=>"application/x-javascript",:src=>"/jquery-ui-1.8.6.custom.min.js"}
+%script{:type=>"application/x-javascript",:src=>"http://jqueryui.com/ui/jquery.ui.draggable.js"}
+%link{:rel=>"stylesheet", :type=>"text/css", :href=>"jquery-ui-1.8.6.custom.css"}
+%script{:type=>"application/x-javascript",:src=>"/coffee/coffee_test.js"}
+
+
+
+%h6
+  %p.alert
+    THIS TRIGGERS ALERTS
+%form{:name=>"text_form"}
+  %input{:type=>"text",:name=>"text_content",:size=>'50', :rows=>"5",:cols=>"40",:id=>"text_entry"}     
+    
+%p#view_view
+  THIS SHOULD TURN ON STUF
+
+
+  
+%p#raphael
+
+%div.selectable.hide_edit#containment-wrapper
+
+-# {:id=>"containment-wrapper", :class=>["hide_edit","selectable"]}
+
+
+
+%div#here
+  %ol.draggable
+    %li.ui-widget-content 
+      Drag me around
+    %li.ui-widget-content
+      Drag me too
+    %li.ui-widget-content
+      AND Drag me too
+
+
+
+
+%h6.draggable
+  CIAO
+
+
