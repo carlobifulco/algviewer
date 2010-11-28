@@ -11,7 +11,9 @@
   %p.alert
     THIS TRIGGERS ALERTS
 %form{:name=>"text_form"}
-  %input{:type=>"text",:name=>"text_content",:size=>'50', :rows=>"5",:cols=>"40",:id=>"text_entry"}     
+  %input{:type=>"text",:name=>"text_content",:size=>'50', :rows=>"5",:cols=>"40",:id=>"text_entry"}   
+  %button
+    Calculate positions
     
 %p#view_view
   THIS SHOULD TURN ON STUF
@@ -20,7 +22,10 @@
   
 %p#raphael
 
-%div.selectable.hide_edit#containment-wrapper
+%div.selectable.hide_edit#containment-wrapper.new_box
+  %div.ancor
+    New entries:
+
 
 -# {:id=>"containment-wrapper", :class=>["hide_edit","selectable"]}
 
