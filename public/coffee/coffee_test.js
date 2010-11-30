@@ -3,18 +3,24 @@
     return function(){ return func.apply(context, arguments); };
   };
   $(document).ready(__bind(function() {
-    var a, chosen, enter_text, get_pos, make_rect, sort_rect, sort_rectb, z;
+    var a, alg_text, chosen, del_entry, enter_text, get_pos, grid, make_rect, make_text_position, render_alg, sort_rect, sort_rectb, text_multiply, unselected, z;
     window.rectangles = [];
+    grid = 20;
     make_rect = function() {
-      var a, b, text_box;
+      var b, new_text, text_box;
       b = $("#containment-wrapper");
       text_box = $("<div class='ui-widget-content selectable text_box' style='position: absolute'> TEST</div>");
-      a = text_box.draggable({
+      text_box.draggable({
         "grid": [20, 20],
         "opacity": 0.35,
         "refreshPositions": "true",
         "containment": "parent"
       }).appendTo(".new_box");
+      new_text = document.text_form.text_content.value;
+      if (new_text) {
+        text_box.html(document.text_form.text_content.value);
+      }
+      document.text_form.text_content.value = "";
       window.rectangles.push(a);
       return (window.last = a);
     };
@@ -31,52 +37,94 @@
       $(".ui-selected").css("color", "red");
       return $(".ancor").css("color", "black");
     };
+    del_entry = function() {
+      return $(".ui-selected").remove();
+    };
+    unselected = function() {
+      return chosen();
+    };
     get_pos = function(text_box) {
       return $(text_box).position().top;
     };
     window.get_pos = get_pos;
     sort_rect = function() {
-      var _i, _len, _ref, _result, a, text_box;
-      a = (function() {
-        _result = []; _ref = $(".text_box");
+      var _i, _len, _ref, _result, sorted_box, sorted_boxes, text_boxes, text_positions;
+      text_boxes = $(".text_box");
+      sorted_boxes = _.sortBy(text_boxes, get_pos);
+      window.sorted_boxes = sorted_boxes;
+      text_positions = (function() {
+        _result = []; _ref = sorted_boxes;
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          text_box = _ref[_i];
-          _result.push(get_pos(text_box));
+          sorted_box = _ref[_i];
+          _result.push(make_text_position(sorted_box));
         }
         return _result;
       })();
-      alert(a);
-      return a;
+      window.text_positions = text_positions;
+      return text_positions;
     };
-    window.sort_rect = sort_rect;
+    make_text_position = function(text_box) {
+      var pos_left, text;
+      text = $(text_box).text();
+      pos_left = $(text_box).position().left;
+      return [text, pos_left];
+    };
+    alg_text = function(text_positions) {
+      var _i, _len, _ref, baseline, offset, old_offset, text, text_position;
+      text = "\n";
+      baseline = text_positions[0][1];
+      _ref = text_positions;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        text_position = _ref[_i];
+        offset = text_multiply("  ", (text_position[1] - baseline) / grid);
+        if (offset > old_offset) {
+          text += old_offset + "-" + "\n";
+        }
+        if (text_position[1] === baseline) {
+          text += "\n";
+        }
+        text += (offset + "- " + text_position[0] + "\n");
+        old_offset = offset;
+      }
+      return text;
+    };
+    window.alg_text = alg_text;
+    text_multiply = function(text, n) {
+      var a, i;
+      a = [];
+      for (i = 0; (0 <= n ? i < n : i > n); (0 <= n ? i += 1 : i -= 1)) {
+        a.push(text);
+      }
+      return a.join("");
+    };
+    window.text_multiply = text_multiply;
+    render_alg = function() {
+      return alert(alg_text(sort_rect()));
+    };
     $(document).bind('keydown', 'Ctrl+n', make_rect);
     $(document).bind('keydown', 'Ctrl+e', enter_text);
     z = 0;
     sort_rectb = function() {
       return alert([1, 2, 3, 4, 3]);
     };
+    $("#new_entry").bind('click', function() {
+      return make_rect();
+    });
+    $("#del_entry").bind('click', function() {
+      return del_entry();
+    });
     $("button").button();
-    $("button").bind('click', function() {
-      return sort_rect();
+    $("#pos_calc").bind('click', function() {
+      return render_alg();
     });
     $(".selectable").selectable({
-      "selected": chosen
+      "selected": chosen,
+      "unselected": unselected
     });
     $(".draggable").draggable();
     a = $('.alert').css("color", "yellow");
-    $('.alert').bind('click', function(event) {
+    return $('.alert').bind('click', function(event) {
       return alert("ORCA");
     });
-    $(".hide_edit").hide();
-    return $("#view_view").click(__bind(function() {
-      $(".hide_edit").toggle();
-      z = !z;
-      if (z) {
-        $("#view_view").html("HIDE HERE");
-      }
-      if (!z) {
-        return $("#view_view").html("SHOW HERE");
-      }
-    }, this));
   }, this));
 }).call(this);
