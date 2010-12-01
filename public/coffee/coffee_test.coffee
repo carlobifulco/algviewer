@@ -5,7 +5,9 @@ $(document).ready =>
 	window.rectangles=[]
 	grid=20
 	
-	make_rect=()->
+	make_rect=(evt)->
+		evt.stopPropagation()
+		evt.preventDefault() 
 		b=$("#containment-wrapper")
 		
 		text_box=$("<div class='ui-widget-content selectable text_box' style='position: absolute'> TEST</div>")
@@ -75,17 +77,21 @@ $(document).ready =>
 	window.text_multiply=text_multiply
 	
 	render_alg=()->
-		alert(alg_text(sort_rect()))
+		result=alg_text(sort_rect())
+		alert(result)
+		z=$.post("/view_text",{"text":result},(data)->$("#results").html(data))
+	
 		
-	$(document).bind('keydown', 'Ctrl+n', make_rect)
+	$(document).bind('keydown', 'Return', (evt)->make_rect(evt))
 	$(document).bind('keydown', 'Ctrl+e', enter_text)
 	z=0
 
 	sort_rectb=()->
 		alert([1,2,3,4,3])
 	
-	$("#new_entry").bind 'click', ()-> make_rect()
-	$("#del_entry").bind 'click', ()-> del_entry()
+	$("#tabs").tabs()
+	$("#new_entry").bind 'click', make_rect
+	$("#del_entry").bind 'click', del_entry
 	$("button").button()
 	$("#pos_calc").bind 'click',()->render_alg()
 	$(".selectable").selectable({"selected":chosen, "unselected":unselected})

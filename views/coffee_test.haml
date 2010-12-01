@@ -6,20 +6,37 @@
 %script{:type=>"application/x-javascript",:src=>"/coffee/coffee_test.js"}
 
 
-%button#new_entry
-  New entry
-%button#pos_calc
-  Calculate positions
-%button#del_entry
-  Delete Textbox
-%form{:name=>"text_form"}
-  %input{:type=>"text",:name=>"text_content",:size=>'50', :rows=>"5",:cols=>"40",:id=>"text_entry"} 
-    Enter the textbox content here
+%div#tabs
+  %ul
+    %li
+      %a{:href=>"#tabs-1"}
+        Entry
+    %li
+      %a{:href=>"#tabs-2"}
+        Results
+
+  %div#tabs-1
+    %button#new_entry
+      New entry
+    %button#pos_calc
+      Calculate positions
+    %button#del_entry
+      Delete Textbox
+  
+  
+    %form{:name=>"text_form"}
+      %input{:type=>"text",:name=>"text_content",:size=>'50', :rows=>"5",:cols=>"40",:id=>"text_entry"} 
+        Enter the textbox content here
 
   
 
-%div.selectable.hide_edit#containment-wrapper.new_box
+    %div.selectable.hide_edit#containment-wrapper.new_box
 
+  %div#tabs-2 
+    %p 
+      Results will be here, hopefully...
+    %div#results{:type=>"hidden"}
+  
 
 
 -# {:id=>"containment-wrapper", :class=>["hide_edit","selectable"]}

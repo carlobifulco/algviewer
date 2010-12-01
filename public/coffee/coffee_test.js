@@ -6,8 +6,10 @@
     var a, alg_text, chosen, del_entry, enter_text, get_pos, grid, make_rect, make_text_position, render_alg, sort_rect, sort_rectb, text_multiply, unselected, z;
     window.rectangles = [];
     grid = 20;
-    make_rect = function() {
+    make_rect = function(evt) {
       var b, new_text, text_box;
+      evt.stopPropagation();
+      evt.preventDefault();
       b = $("#containment-wrapper");
       text_box = $("<div class='ui-widget-content selectable text_box' style='position: absolute'> TEST</div>");
       text_box.draggable({
@@ -99,20 +101,26 @@
     };
     window.text_multiply = text_multiply;
     render_alg = function() {
-      return alert(alg_text(sort_rect()));
+      var result, z;
+      result = alg_text(sort_rect());
+      alert(result);
+      return (z = $.post("/view_text", {
+        "text": result
+      }, function(data) {
+        return $("#results").html(data);
+      }));
     };
-    $(document).bind('keydown', 'Ctrl+n', make_rect);
+    $(document).bind('keydown', 'Return', function(evt) {
+      return make_rect(evt);
+    });
     $(document).bind('keydown', 'Ctrl+e', enter_text);
     z = 0;
     sort_rectb = function() {
       return alert([1, 2, 3, 4, 3]);
     };
-    $("#new_entry").bind('click', function() {
-      return make_rect();
-    });
-    $("#del_entry").bind('click', function() {
-      return del_entry();
-    });
+    $("#tabs").tabs();
+    $("#new_entry").bind('click', make_rect);
+    $("#del_entry").bind('click', del_entry);
     $("button").button();
     $("#pos_calc").bind('click', function() {
       return render_alg();

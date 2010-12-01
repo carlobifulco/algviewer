@@ -8,11 +8,6 @@ require "yaml"
 require "rack"
 require 'coffee-script'
 require "haml"
-
-
-
-
-
 $LOAD_PATH << './lib'
 require "tree_struct"
 
@@ -100,6 +95,23 @@ get '/view/:form_name' do
   puts url 
   Nestful.post url, :params=>{:edges=>edges,:nodes=>nodes}
   #{}"nodes are #{n.get_nodes}, <br> <br> <br> edges are#{n.get_edges}"
+end
+
+post '/view_text' do
+  text=params[:text]
+  begin
+    y=YAML.load text if text
+  rescue
+    puts "EEEEERRRRRROOOOORRRRR"
+    return $stderr.puts $!.inspect
+  end
+  puts text
+  n=NodesEdges.new y
+  nodes=n.get_nodes.to_json
+  edges=n.get_edges.to_json
+  url="#{SVG_URL}/nodes_edges/"
+  puts url 
+  Nestful.post url, :params=>{:edges=>edges,:nodes=>nodes}
 end
 
 
