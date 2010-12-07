@@ -7,9 +7,8 @@ require 'json/pure'
 require_relative "./tree_struct"
 
 
-
-$redis3=Redis.new
 UseDb=3
+$redis3=Redis.new
 $redis3.select UseDb
 
 #needs to be changed in deployment

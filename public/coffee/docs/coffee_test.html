@@ -3,7 +3,9 @@
 	<span class="nb">window</span><span class="p">.</span><span class="nx">rectangles</span><span class="o">=</span><span class="p">[]</span>
 	<span class="nx">grid</span><span class="o">=</span><span class="mi">20</span>
 	
-	<span class="nx">make_rect</span><span class="o">=</span><span class="p">()</span><span class="o">-&gt;</span>
+	<span class="nx">make_rect</span><span class="o">=</span><span class="p">(</span><span class="nx">evt</span><span class="p">)</span><span class="o">-&gt;</span>
+		<span class="nx">evt</span><span class="p">.</span><span class="nx">stopPropagation</span><span class="p">()</span>
+		<span class="nx">evt</span><span class="p">.</span><span class="nx">preventDefault</span><span class="p">()</span> 
 		<span class="nx">b</span><span class="o">=</span><span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#containment-wrapper&quot;</span><span class="p">)</span>
 		
 		<span class="nx">text_box</span><span class="o">=</span><span class="nx">$</span><span class="p">(</span><span class="s2">&quot;&lt;div class=&#39;ui-widget-content selectable text_box&#39; style=&#39;position: absolute&#39;&gt; TEST&lt;/div&gt;&quot;</span><span class="p">)</span>
@@ -65,18 +67,30 @@
 		<span class="nx">a</span><span class="p">.</span><span class="nx">join</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 	<span class="nb">window</span><span class="p">.</span><span class="nx">text_multiply</span><span class="o">=</span><span class="nx">text_multiply</span>
 	
+	<span class="nx">rendering_ok</span><span class="o">=</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span><span class="o">-&gt;</span>
+		<span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#results&quot;</span><span class="p">).</span><span class="nx">html</span><span class="p">(</span><span class="nx">data</span><span class="p">)</span>
+		<span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#progressbar&quot;</span> <span class="p">).</span><span class="nx">progressbar</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="o">:</span> <span class="mi">100</span><span class="p">)</span>
+	
 	<span class="nx">render_alg</span><span class="o">=</span><span class="p">()</span><span class="o">-&gt;</span>
-		<span class="nx">alert</span><span class="p">(</span><span class="nx">alg_text</span><span class="p">(</span><span class="nx">sort_rect</span><span class="p">()))</span>
+		<span class="nx">result</span><span class="o">=</span><span class="nx">alg_text</span><span class="p">(</span><span class="nx">sort_rect</span><span class="p">())</span>
+		<span class="nx">alert</span><span class="p">(</span><span class="nx">result</span><span class="p">)</span>
+		<span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#progressbar&quot;</span> <span class="p">).</span><span class="nx">progressbar</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="o">:</span><span class="mi">25</span><span class="p">)</span>
+		<span class="nx">z</span><span class="o">=</span><span class="nx">$</span><span class="p">.</span><span class="nx">post</span><span class="p">(</span><span class="s2">&quot;/view_text&quot;</span><span class="p">,{</span><span class="s2">&quot;text&quot;</span><span class="o">:</span><span class="nx">result</span><span class="p">},(</span><span class="nx">data</span><span class="p">)</span><span class="o">-&gt;</span><span class="nx">rendering_ok</span><span class="p">(</span><span class="nx">data</span><span class="p">))</span>
+	
+
+
+	
 		
-	<span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">bind</span><span class="p">(</span><span class="s1">&#39;keydown&#39;</span><span class="p">,</span> <span class="s1">&#39;Ctrl+n&#39;</span><span class="p">,</span> <span class="nx">make_rect</span><span class="p">)</span>
+	<span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">bind</span><span class="p">(</span><span class="s1">&#39;keydown&#39;</span><span class="p">,</span> <span class="s1">&#39;Return&#39;</span><span class="p">,</span> <span class="p">(</span><span class="nx">evt</span><span class="p">)</span><span class="o">-&gt;</span><span class="nx">make_rect</span><span class="p">(</span><span class="nx">evt</span><span class="p">))</span>
 	<span class="nx">$</span><span class="p">(</span><span class="nb">document</span><span class="p">).</span><span class="nx">bind</span><span class="p">(</span><span class="s1">&#39;keydown&#39;</span><span class="p">,</span> <span class="s1">&#39;Ctrl+e&#39;</span><span class="p">,</span> <span class="nx">enter_text</span><span class="p">)</span>
 	<span class="nx">z</span><span class="o">=</span><span class="mi">0</span>
 
 	<span class="nx">sort_rectb</span><span class="o">=</span><span class="p">()</span><span class="o">-&gt;</span>
 		<span class="nx">alert</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">,</span><span class="mi">3</span><span class="p">])</span>
-	
-	<span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#new_entry&quot;</span><span class="p">).</span><span class="nx">bind</span> <span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="p">()</span><span class="o">-&gt;</span> <span class="nx">make_rect</span><span class="p">()</span>
-	<span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#del_entry&quot;</span><span class="p">).</span><span class="nx">bind</span> <span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="p">()</span><span class="o">-&gt;</span> <span class="nx">del_entry</span><span class="p">()</span>
+	<span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#progressbar&quot;</span><span class="p">).</span><span class="nx">progressbar</span><span class="p">(</span><span class="s2">&quot;value&quot;</span><span class="o">:</span><span class="mi">0</span><span class="p">)</span>
+	<span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#tabs&quot;</span><span class="p">).</span><span class="nx">tabs</span><span class="p">()</span>
+	<span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#new_entry&quot;</span><span class="p">).</span><span class="nx">bind</span> <span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="nx">make_rect</span>
+	<span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#del_entry&quot;</span><span class="p">).</span><span class="nx">bind</span> <span class="s1">&#39;click&#39;</span><span class="p">,</span> <span class="nx">del_entry</span>
 	<span class="nx">$</span><span class="p">(</span><span class="s2">&quot;button&quot;</span><span class="p">).</span><span class="nx">button</span><span class="p">()</span>
 	<span class="nx">$</span><span class="p">(</span><span class="s2">&quot;#pos_calc&quot;</span><span class="p">).</span><span class="nx">bind</span> <span class="s1">&#39;click&#39;</span><span class="p">,()</span><span class="o">-&gt;</span><span class="nx">render_alg</span><span class="p">()</span>
 	<span class="nx">$</span><span class="p">(</span><span class="s2">&quot;.selectable&quot;</span><span class="p">).</span><span class="nx">selectable</span><span class="p">({</span><span class="s2">&quot;selected&quot;</span><span class="o">:</span><span class="nx">chosen</span><span class="p">,</span> <span class="s2">&quot;unselected&quot;</span><span class="o">:</span><span class="nx">unselected</span><span class="p">})</span>

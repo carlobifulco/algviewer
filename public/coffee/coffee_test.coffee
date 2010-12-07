@@ -1,16 +1,29 @@
-# this does a lot of stuff
+##
 
 $(document).ready =>
 
 	window.rectangles=[]
 	grid=20
+	x_start=40
+	y_start=60+$(".new_box").position().top
+	window.counter=0
 	
+	# i=[[" Urine Cytology",0],[" Positive",1]...
+	make_layout=(i)->
+		text=i[0]
+		x=x_start+(i[1]*grid)
+		y=y_start+(window.counter*grid)
+		text_box=$("<div class='ui-widget-content selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
+		text_box.draggable({"grid":[20,20],"opacity":0.35,"refreshPositions":"true","containment":"parent"}).appendTo(".new_box")
+		window.counter+=1
+		
+	window.make_layout=make_layout
 	make_rect=(evt)->
 		evt.stopPropagation()
 		evt.preventDefault() 
 		b=$("#containment-wrapper")
 		
-		text_box=$("<div class='ui-widget-content selectable text_box' style='position: absolute'> TEST</div>")
+		text_box=$("<div class='ui-widget-content selectable text_box' style='position: absolute; left: 40px'> TEST</div>")
 		text_box.draggable({"grid":[20,20],"opacity":0.35,"refreshPositions":"true","containment":"parent"}).appendTo(".new_box")
 		new_text=document.text_form.text_content.value 
 		#alert(new_text)
@@ -76,10 +89,32 @@ $(document).ready =>
 		a.join("")
 	window.text_multiply=text_multiply
 	
+	rendering_ok=(data)->
+		$("#results").append(data)
+		$("#progressbar" ).progressbar("value": 100)
+
+		$("#progressbar" ).progressbar("value": 0)
+		#$("img")[0].height=300
+		#$("img")[0].width=$("img")[0].height*ratio
+		$("#hide_me").hide()
+		$($("img")[0]).hide()
+		$("#tabs").tabs("destroy")
+		$("#tabs").tabs()
+		$("#tabs").tabs("select","tabs-2")
+		$($("img")[0]).load(()-> 
+			r=$("img")[0].width/$("img")[0].height
+			$("img")[0].height=400
+			$("img")[0].width=400*r
+			$($("img")[0]).show()
+			)
 	render_alg=()->
 		result=alg_text(sort_rect())
-		alert(result)
-		z=$.post("/view_text",{"text":result},(data)->$("#results").html(data))
+		#alert(result)
+		$("#progressbar" ).progressbar("value":25)
+		z=$.post("/view_text",{"text":result},(data)->rendering_ok(data))
+	
+
+
 	
 		
 	$(document).bind('keydown', 'Return', (evt)->make_rect(evt))
@@ -88,7 +123,7 @@ $(document).ready =>
 
 	sort_rectb=()->
 		alert([1,2,3,4,3])
-	
+	$("#progressbar").progressbar("value":0)
 	$("#tabs").tabs()
 	$("#new_entry").bind 'click', make_rect
 	$("#del_entry").bind 'click', del_entry
@@ -96,9 +131,16 @@ $(document).ready =>
 	$("#pos_calc").bind 'click',()->render_alg()
 	$(".selectable").selectable({"selected":chosen, "unselected":unselected})
 	$(".draggable").draggable()
+	$("#hide_graphic_edit").hide()
 	a=$('.alert').css("color","yellow")
 	$('.alert').bind 'click',(event)->alert "ORCA"
-
+	window.a=eval($("#hide_graphic_edit").text())
+	if window.a
+		_.each(window.a, (i)->make_layout(i))
+		window.counter=0
+		
+	
+		
 
 
 # toogling
