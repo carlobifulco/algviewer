@@ -65,15 +65,14 @@ get '/export_all' do
 end
 
 
-# uploading a textform; back to main page
+# uploading a textform; back to main page unless request via ajax in which case it will return true
+ #{}"content=#{params["form_content"]} and form name=#{params["form_name"]}"
 post '/upload_text' do
  form_text=params["form_content"]
  form_name=params["form_name"]
  $Redis4.set form_name,form_text
- redirect "/"
-  #{}"content=#{params["form_content"]} and form name=#{params["form_name"]}"
-  #params.to_s 
-  
+ return true if params.has_key? "type"
+ redirect "/" 
 end
 
 # the playground
@@ -103,8 +102,7 @@ end
 # split newline --inline newlines in need of fix
 # remove empty lines starting with -, empty lines
 # get offset by indentation of first line 
-# then craate array of tuples with e.g. [[" Colon Ca", 0], [" Kras Codons 12 and 13 exon 2 (40% of cases)", 1], ...
-
+# then create array of tuples with e.g. [[" Colon Ca", 0], [" Kras Codons 12 and 13 exon 2 (40% of cases)", 1], ...
 get "/graphic_edit/:form_name" do
   @form_name=params[:form_name]
   text=($Redis4.get @form_name).to_s
