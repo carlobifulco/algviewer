@@ -1,0 +1,23 @@
+
+%h1
+  %p#title
+  
+.span-24
+%div#left.span-6.small
+  %h12
+    %p
+      %a{:href=>@result}
+        %p
+          LINK TO GRAPH_SVG
+    %p
+      %a{:href=>@result_pdf}
+        %p
+          LINK TO GRAPH PDF	
+    %p
+      %a{:href=>@result_png}
+        %p
+          LINK TO GRAPH PNG	
+
+%div#right.span-14
+  %a{:href=>@result_pdf}
+    %img#img{:src=>@result_png}
