@@ -240,7 +240,8 @@
     };
     window.get_pos = get_pos;
     rendering_ok = function(data) {
-      $("#results").append(data);
+      var alg_name;
+      $("#results").html(data);
       $("#progressbar").progressbar({
         "value": 100
       });
@@ -252,13 +253,24 @@
       $("#tabs").tabs("destroy");
       $("#tabs").tabs();
       $("#tabs").tabs("select", "tabs-2");
-      return $($("img")[0]).load(function() {
-        var r;
-        r = $("img")[0].width / $("img")[0].height;
-        $("img")[0].height = 400;
-        $("img")[0].width = 400 * r;
+      $($("img")[0]).load(function() {
+        var h, r, size, w;
+        w = $("img")[0].width;
+        h = $("img")[0].height;
+        r = w / h;
+        size = 500;
+        if (r > 1) {
+          $("img")[0].height = size / r;
+          $("img")[0].width = size;
+        }
+        if (r <= 1) {
+          $("img")[0].width = size * r;
+          $("img")[0].height = size;
+        }
         return $($("img")[0]).show();
       });
+      alg_name = _.last(window.location.pathname.split("/"));
+      return $("#title").html(alg_name);
     };
     boxes_to_yaml = function() {
       var result;

@@ -51,11 +51,17 @@ $(document).ready =>
 		text="\n"
 		baseline=text_positions[0][1]
 		for text_position in text_positions
+			#[0] contains the actual text 
+			# screening for possible complications
+
+				
 			offset=text_multiply("  ",(text_position[1]-baseline)/grid)
 			if offset>old_offset
 				text+=old_offset+"-"+"\n"
 			if text_position[1]==baseline
 				text+="\n"
+			#if (text_position[0].search(":")!=-1)
+			#	alert("Error, please do not use : or ' or \"; they all need to be escaped (i.e. preceeded by \\)")
 			text+=(offset+"- "+ text_position[0].trim() +"\n")
 			old_offset=offset
 		text
@@ -203,23 +209,32 @@ $(document).ready =>
 	
 	#updates progressbar, switches to the result tab and resizes image
 	rendering_ok=(data)->
-		$("#results").append(data)
+		$("#results").html(data)
 		$("#progressbar" ).progressbar("value": 100)
 
 		$("#progressbar" ).progressbar("value": 0)
 		#$("img")[0].height=300
-		#$("img")[0].width=$("img")[0].height*ratio
+		#$("img")[0].width=$("#img").height*ratio
 		$("#hide_me").hide()
 		$($("img")[0]).hide()
 		$("#tabs").tabs("destroy")
 		$("#tabs").tabs()
 		$("#tabs").tabs("select","tabs-2")
 		$($("img")[0]).load(()-> 
-			r=$("img")[0].width/$("img")[0].height
-			$("img")[0].height=400
-			$("img")[0].width=400*r
+			w=$("img")[0].width
+			h=$("img")[0].height
+			r=w/h
+			size=500
+			if r>1
+				$("img")[0].height=size/r
+				$("img")[0].width=size
+			if r<=1
+					$("img")[0].width=size*r
+					$("img")[0].height=size
 			$($("img")[0]).show()
 			)
+		alg_name=_.last(window.location.pathname.split("/"))
+		$("#title").html(alg_name)
 	
 	# transform the boxes in a yaml alg
 	boxes_to_yaml=()->

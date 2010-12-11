@@ -8,7 +8,11 @@ require "yaml"
 require "rack"
 require 'coffee-script'
 require "haml"
-$LOAD_PATH << './lib'
+
+my_directory=File.dirname(File.expand_path(__FILE__))
+puts my_directory
+
+$LOAD_PATH << File.join(my_directory,'/lib')
 require "tree_struct"
 
 
@@ -98,7 +102,7 @@ get "/" do
   haml :main
 end
 
-#### still defective
+#### still defective; problem with rendering of multiple yaml lines, ok with 2, 
 # split newline --inline newlines in need of fix
 # remove empty lines starting with -, empty lines
 # get offset by indentation of first line 
@@ -106,8 +110,20 @@ end
 get "/graphic_edit/:form_name" do
   @form_name=params[:form_name]
   text=($Redis4.get @form_name).to_s
+  puts "1111"
+  puts text
   text=text.split("\n")
-  (text.collect! {|t| t.rstrip}).select! {|t| t !="-" and t.strip() !="" and t.strip() !="-"}
+  fused_lines=[]
+  text.each do |x|  
+     if x.lstrip()[0] !="-" and fused_lines[-1]
+       fused_lines[-1]=fused_lines[-1].strip() +x 
+     else 
+       fused_lines<<x 
+     end
+   end
+  text=fused_lines
+  puts text
+  (text.collect! {|t| t.rstrip}).select! {|t| (t !="-" and t.strip() !="" and t.strip() !="-")}
   offset=text[1].index "-"
   puts "OFFSET=#{offset}"
   print text
@@ -132,6 +148,7 @@ end
 get '/view/:form_name' do
   form_name=params[:form_name]
   text=($Redis4.get form_name).to_s
+  text.gsub!(":","")
   begin
     y=YAML.load text if text
   rescue
@@ -139,31 +156,43 @@ get '/view/:form_name' do
     return $stderr.puts $!.inspect
   end
   n=NodesEdges.new y
-  nodes=n.get_nodes.to_json
-  edges=n.get_edges.to_json
-  url="#{SVG_URL}/nodes_edges/"
-  puts url 
-  Nestful.post url, :params=>{:edges=>edges,:nodes=>nodes}
+  begin
+    nodes=n.get_nodes.to_json
+    edges=n.get_edges.to_json
+    url="#{SVG_URL}/nodes_edges/"
+    puts url 
+    Nestful.post url, :params=>{:edges=>edges,:nodes=>nodes}
+  rescue ":Error"
+    puts "EEEEERRRRRROOOOORRRRR"
+    return $stderr.puts $!.inspect
+  end
   #{}"nodes are #{n.get_nodes}, <br> <br> <br> edges are#{n.get_edges}"
 end
 
 
 # text directly
+# used by graphic edit
 post '/view_text' do
   text=params[:text]
+  text.gsub!(":","")
   begin
     y=YAML.load text if text
-  rescue
+  rescue ":Error"
     puts "EEEEERRRRRROOOOORRRRR"
     return $stderr.puts $!.inspect
   end
   puts text
-  n=NodesEdges.new y
-  nodes=n.get_nodes.to_json
-  edges=n.get_edges.to_json
-  url="#{SVG_URL}/nodes_edges/"
-  puts url 
-  Nestful.post url, :params=>{:edges=>edges,:nodes=>nodes}
+  begin
+    n=NodesEdges.new y
+    nodes=n.get_nodes.to_json
+    edges=n.get_edges.to_json
+    url="#{SVG_URL}/nodes_edges/"
+    puts url 
+    Nestful.post url, :params=>{:edges=>edges,:nodes=>nodes}
+  rescue ":Error"
+    puts "EEEEERRRRRROOOOORRRRR"
+    return $stderr.puts $!.inspect
+  end
 end
 
 

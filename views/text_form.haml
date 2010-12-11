@@ -1,25 +1,45 @@
 %script{:type=>"application/x-javascript",:src=>"/jquery-fieldselection.js"}
 %script{:type=>"application/x-javascript",:src=>"/code-edit.js"}
+%script{:type=>"application/x-javascript",:src=>"/coffee/text_form.js"}
 
-%h1 
-  %p=@form_name
-%div#links.info
-  %p 
-    Show example
-%div#hide.notice
-  %p 
-    Always leave a space after the Yaml's "-" and the ":".
-  %p
-    Wrap/escape : in  ":" or in ':'.
-  %p
-    Respect the "-" followed by " - pattern, e.g.:
-  %p
-    Specimen
+%div#tabs
+  %ul
+    %li
+      %a{:href=>"#tabs-1"}
+        Entry
 
-%form{:action=>"/upload_text",:method=>"post"}
-  %textarea{:class=>"autoindent",:id=>"edit",:name=>"form_content",:rows=>"40",:cols=>"80",:lang=>"en", :style=>"direction: ltr;",:wrap=>"SOFT"}=@text
-  %input{:type=>"hidden",:name=>"form_name",:value=>@form_name}
-  %input{:type=>"submit",:value=>"Send"}
+
+%div#tabs-1
+
+  %h3
+    %br
+    %p=@form_name
+  %div#links.info
+    %p 
+      Show example
+  %div#hide.notice
+    %p 
+      Always leave a space after the Yaml's "-" and the ":".
+    %p
+      Wrap/escape : in  ":" or in ':'.
+    %p
+      Respect the "-" followed by " - pattern, e.g.:
+    %p
+      Specimen
+
+  %form{:action=>"/upload_text",:method=>"post"}
+    %textarea#edit{:class=>"autoindent",:name=>"form_content",:rows=>"40",:cols=>"80",:lang=>"en", :style=>"direction: ltr;",:wrap=>"SOFT"}=@text
+    %input{:type=>"hidden",:name=>"form_name",:value=>@form_name}
+    %input{:type=>"submit",:value=>"Send"}
+
+    
+/ %div#tabs-2 
+/   .span-24
+/   %span
+/     %div#results
+/   / %p#hide_me 
+/   /   Results will show up here, hopefully...
+/   %div
     
 :javascript 
   $(document).ready(function(){

@@ -13,20 +13,24 @@
         Results
 
   %div#tabs-1
-    %button#new_entry
-      New entry
-    %button#pos_calc
-      Calculate positions
-    %button#del_entry
-      Delete Textbox
-    %button#save_alg
-      Save
-    #progressbar
-    %progress{:type=>"hidden","value"=>"0"}
+    .span-12
+      %button#new_entry
+        New entry
+      %button#del_entry
+        Delete Box
+      %button#pos_calc
+        Show Graph
+      %button#save_alg
+        Save
+    .span-6.last
+      #progressbar.button
+    .span-24
+    
   
-    %form{:name=>"text_form"}
-      %input{:type=>"text",:name=>"text_content",:size=>'50', :rows=>"5",:cols=>"40",:id=>"text_entry"} 
-        Enter the textbox content here
+    .span-20
+      %form{:name=>"text_form"}
+        %input.text{:type=>"text",:name=>"text_content",:id=>"text_entry"} 
+
 
   
 

@@ -5,47 +5,55 @@
 %div{:id=>"dialog", :title=>"Confirmation Required"}
   Are you sure you want to delete this graph?
 
-%div#accordion
 
-
-
-.span-6.colborder
-  %h6#view_view
-    VIEW
-  %h6
-    %ul#hide_view
+%div#accordion.span-24
+  %h3
+    %a.header{:href=>"#"}
+      VIEW
+  %div
+    %p
       -@all_forms.each  do |x|
         %li
-          %a{:href=>"/view/#{x}"}=x 
-.span-6
-  %h6#view_edit 
-    TEXT EDIT
-  %ul#hide_edit
-    -@all_forms.each  do |x|
-      %li
-        %a{:href=>"/edit_text/#{x}"}=x
-.span-6
-  %h6#view_graphic_edit
-    GRAPHIC EDIT
-  %ul#hide_graphic_edit
-    -@all_forms.each  do |x|
-      %li
-        %a{:href=>"/graphic_edit/#{x}"}=x
+          %a{:href=>"/view/#{x}"}=x
+  %h3
+    %a.header{:href=>"#"}
+      TEXT EDIT
+  %div
+    %p
+      -@all_forms.each  do |x|
+        %li
+          %a{:href=>"/edit_text/#{x}"}=x
+          
+          
+          
+  %h3
+    %a.header{:href=>"#"}    
+      GRAPHIC EDIT
+  %div
+    %p
+      -@all_forms.each  do |x|
+        %li
+          %a{:href=>"/graphic_edit/#{x}"}=x
         
-.span-5.last
-  %h6#view_delete 
-    DELETE
-  %ul#hide_delete
+  %h3
+    %a.header{:href=>"#"}
+      DELETE
+  %div
+    %p
     -@all_forms.each  do |x|
       %li
         %a.confirmLink{:href=>"/delete/#{x}"}=x
-.span-24
-.span-6
-  %h6
+        
+  %h3
+    %a.header{:href=>"#"}    
+      NEW ALG
+  %div
     %form{:action=>"/edit_text",:method=>"get"}
-      NEW ALG: 
-      %input{:type=>"text",:name=>"form_name",:cols=>"30"} 
-      %input{:type=>"submit",:value=>"Send"}
+      #button
+        NEW ALG:
+      %input#entry{:type=>"text",:name=>"form_name",:cols=>"30"}
+
+
 
 
 %script{:type=>"text/coffeescript"}

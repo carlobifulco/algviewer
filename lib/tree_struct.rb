@@ -54,6 +54,12 @@ class NodesEdges
                         ["PELOSI", "MERDOS", "PUZZONI", 
                         ["SUPER", "PUZZONISSIMI"]]]]]
     @list=list
+    # @list.flatten().each do  |x|
+    #   if (x.index ":" and x.rstrip()[-1]!="'" and x.rstrip()[-1]!='"')
+    #     puts "#{x} here it is"
+    #     raise ":Error"
+    #   end
+    # end
     load_array
   end
 
@@ -74,7 +80,7 @@ class NodesEdges
         end
         if @list.length ==1 then @a<<@list[0]; break
         end
-      puts "#{@a} \n"
+      puts " I am in loading the array #{@a} \n"
     end
   end
   
