@@ -1,5 +1,5 @@
 require "sinatra"
-require 'json/pure'
+require 'json'
 require "graphviz"
 require "hpricot"
 require "haml"
@@ -250,6 +250,7 @@ end
 
 
 ### This takes care of teh netsful and ajax requests
+### Returns json dictionary
 post '/nodes_edges/' do
   graph=Graph.new
   nodes=JSON.parse params[:nodes]
@@ -261,7 +262,7 @@ post '/nodes_edges/' do
   @result=graph.get_svg
   @result_pdf=graph.get_pdf
   @result_png=graph.get_png
-  haml :svg
+  {:svg=>@result,:pdf=>@result_pdf,:png=>@result_png}.to_json
 end
 
 

@@ -86,6 +86,7 @@ $(document).ready =>
 			
 	$("#button").click((e)->check_entry())
 	$("#button").button()
+	$("#button2").button()
 
 	
 	

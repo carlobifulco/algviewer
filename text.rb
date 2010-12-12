@@ -144,7 +144,20 @@ end
 #### while the other gets it directly
 
 
+#yaml load and rest call; returns dictionary response
+def rest_call(y)
+  n=NodesEdges.new y
+  nodes=n.get_nodes.to_json
+  edges=n.get_edges.to_json
+  url="#{SVG_URL}/nodes_edges/"
+  puts url 
+  r=JSON.parse(Nestful.post url, :params=>{:edges=>edges,:nodes=>nodes})
+  puts r
+  r
+end
+
 # text from redis stored form
+# called 
 get '/view/:form_name' do
   form_name=params[:form_name]
   text=($Redis4.get form_name).to_s
@@ -155,18 +168,17 @@ get '/view/:form_name' do
     puts "EEEEERRRRRROOOOORRRRR"
     return $stderr.puts $!.inspect
   end
-  n=NodesEdges.new y
   begin
-    nodes=n.get_nodes.to_json
-    edges=n.get_edges.to_json
-    url="#{SVG_URL}/nodes_edges/"
-    puts url 
-    Nestful.post url, :params=>{:edges=>edges,:nodes=>nodes}
+    r=rest_call y
+    @svg=r["svg"]
+    @png=r["png"]
+    @pdf=r["pdf"]
+    puts @pdf
+    haml :view
   rescue ":Error"
     puts "EEEEERRRRRROOOOORRRRR"
     return $stderr.puts $!.inspect
   end
-  #{}"nodes are #{n.get_nodes}, <br> <br> <br> edges are#{n.get_edges}"
 end
 
 
@@ -181,14 +193,12 @@ post '/view_text' do
     puts "EEEEERRRRRROOOOORRRRR"
     return $stderr.puts $!.inspect
   end
-  puts text
   begin
-    n=NodesEdges.new y
-    nodes=n.get_nodes.to_json
-    edges=n.get_edges.to_json
-    url="#{SVG_URL}/nodes_edges/"
-    puts url 
-    Nestful.post url, :params=>{:edges=>edges,:nodes=>nodes}
+    r=rest_call y
+    @svg=r["svg"]
+    @png=r["png"]
+    @pdf=r["pdf"]
+    haml :view
   rescue ":Error"
     puts "EEEEERRRRRROOOOORRRRR"
     return $stderr.puts $!.inspect
