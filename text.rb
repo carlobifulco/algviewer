@@ -8,9 +8,19 @@ require "yaml"
 require "rack"
 require 'coffee-script'
 require "haml"
+require "sinatra/basic_auth"
+
+authorize do |username, password|
+  username == "guest" && password == "guest"
+end
+
 
 my_directory=File.dirname(File.expand_path(__FILE__))
 puts my_directory
+
+
+set :haml, {:format => :html5 }
+enable :sessions
 
 $LOAD_PATH << File.join(my_directory,'/lib')
 require "tree_struct"
@@ -25,8 +35,42 @@ $Redis4.select TextDb
 
 $HOME="http://algviewer.heroku.com" #$HOME="http://0.0.0.0:4567"
 IMAGE_CONTAINER="./image_container"
+Dir.mkdir IMAGE_CONTAINER unless Dir.exists? IMAGE_CONTAINER
 SVG_URL="http://#{$HOST}:8080"
 puts ENV["URL"]
+
+def unique_file_name file_name
+  file_name=File.basename file_name
+  file_name=file_name.gsub("."+file_name.split(".")[-1],"")
+  # will need ot be fixed
+  t=Time.now.to_s.split.join("_")
+  File.join(IMAGE_CONTAINER,(t+"_"+file_name))
+end
+
+
+authorize do |username, password|
+  $Redis4.hset "users", username, password
+  username == "guest" && password == "guest"
+  session["username"]=username
+end
+
+post '/upload' do
+
+  puts "CALLED /upload"
+  puts params
+  
+  unless params[:file] && (tmpfile = params[:file][:tempfile]) && (name = params[:file][:filename])
+    puts "No file selected"
+    redirect "/"
+  end
+
+  file_name=unique_file_name(name)
+  fh=File.open(file_name,"w")
+  fh.write(tmpfile.read)
+  fh.close
+  puts file_name
+  redirect "/"  
+end
 
 
 #edit text form , both as a url and as a get? request
@@ -96,10 +140,13 @@ get '/application' do
 end
 
 #main web page
-get "/" do
-  puts env["HTTP_HOST"]
-  @all_forms=$Redis4.keys.sort!
-  haml :main
+# wrapped by a protect command
+protect do
+  get "/" do
+    puts env["HTTP_HOST"]
+    @all_forms=$Redis4.keys.sort!
+    haml :main
+  end
 end
 
 #### still defective; problem with rendering of multiple yaml lines, ok with 2, 
