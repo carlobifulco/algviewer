@@ -14,16 +14,16 @@
   window.pos = {};
   window.counter = 0;
   $(document).ready(__bind(function() {
-    var alg_text, boxes_to_yaml, chosen, cut, del_entry, enter_text, get_draggable_data, get_pos, get_selected, grid, make_draggable, make_layout, make_rect, make_text_position, move, offset, render_alg, rendering_ok, save_alg, sort_rect, text_multiply, unselected, x_start, y_start, z;
+    var alg_text, boxes_to_yaml, chosen, cut, del_entry, enter_text, get_draggable_data, get_pos, get_selected, grid, make_draggable, make_layout, make_rect, make_text_position, move, offset, render_alg, rendering_ok, save_alg, sort_rect, success, text_multiply, unselected, x_start, y_start, z;
     grid = 25;
     x_start = grid * 2;
-    y_start = (grid * 3) + $(".new_box").position().top;
+    y_start = (grid * 4) + $(".new_box").position().top;
     make_layout = function(i) {
       var text, text_box, x, y;
       text = i[0];
       x = x_start + (i[1] * grid);
       y = y_start + (window.counter * grid);
-      text_box = $("<div id='" + (window.counter) + "' class='ui-widget-content selectable text_box' style='position: absolute; left: " + (x) + "px; top: " + (y) + "px'>" + (text) + "</div>");
+      text_box = $("<div id='" + (window.counter) + "' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: " + (x) + "px; top: " + (y) + "px'>" + (text) + "</div>");
       text_box.draggable({
         "grid": [grid, grid],
         "opacity": 0.35,
@@ -70,7 +70,7 @@
       evt.stopPropagation();
       evt.preventDefault();
       b = $("#containment-wrapper");
-      text_box = $("<div class='ui-widget-content selectable text_box' style='position: absolute;  left: " + (x_start) + "px; top: " + (y_start - (grid)) + "px'> TEST</div>");
+      text_box = $("<div class='ui-widget-content ui-corner selectable text_box' style='position: absolute;  left: " + (x_start) + "px; top: " + (y_start - (grid)) + "px'> TEST</div>");
       text_box.draggable({
         "grid": [grid, grid],
         "opacity": 0.35,
@@ -257,15 +257,17 @@
         var h, r, size, w;
         w = $("img")[0].width;
         h = $("img")[0].height;
-        r = w / h;
-        size = 500;
-        if (r > 1) {
-          $("img")[0].height = size / r;
-          $("img")[0].width = size;
-        }
-        if (r <= 1) {
-          $("img")[0].width = size * r;
-          $("img")[0].height = size;
+        if (!(w < 500 && h < 500)) {
+          r = w / h;
+          size = 500;
+          if (r > 1) {
+            $("img")[0].height = size / r;
+            $("img")[0].width = size;
+          }
+          if (r <= 1) {
+            $("img")[0].width = size * r;
+            $("img")[0].height = size;
+          }
         }
         return $($("img")[0]).show();
       });
@@ -279,24 +281,32 @@
       return result;
     };
     render_alg = function() {
-      var result, z;
+      var alg_name, result, z;
       result = boxes_to_yaml();
+      alg_name = _.last(window.location.pathname.split("/"));
       $("#progressbar").progressbar({
         "value": 25
       });
-      return (z = $.post("/view_text", {
+      z = $.post("/view_text", {
         "text": result
       }, function(data) {
         return rendering_ok(data);
-      }));
+      });
+      return $.post("/upload_text", {
+        "form_content": result,
+        "form_name": alg_name,
+        "type": "ajax"
+      }, function(data) {
+        return success();
+      });
+    };
+    success = function() {
+      return $("#progressbar").progressbar({
+        "value": 100
+      });
     };
     save_alg = function() {
-      var alg_name, success, yaml;
-      success = function() {
-        return $("#progressbar").progressbar({
-          "value": 100
-        });
-      };
+      var alg_name, yaml;
       yaml = boxes_to_yaml();
       alg_name = _.last(window.location.pathname.split("/"));
       window.alg_name = alg_name;
@@ -341,10 +351,13 @@
       });
       window.counter = 0;
     }
-    return $(".selectable").selectable({
+    $(".selectable").selectable({
       stop: function() {
         return get_selected();
       }
     });
+    return $('#error_log').ajaxError(__bind(function() {
+      return alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!");
+    }, this));
   }, this));
 }).call(this);

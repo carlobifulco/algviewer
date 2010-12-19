@@ -2,22 +2,18 @@
 %script{:type=>"application/x-javascript",:src=>"/code-edit.js"}
 %script{:type=>"application/x-javascript",:src=>"/coffee/text_form.js"}
 
-%div#tabs
-  %ul
-    %li
-      %a{:href=>"#tabs-1"}
-        Entry
 
-
-%div#tabs-1
-
+%div#accordion.span-24
   %h3
-    %br
+    %a.header{:href=>"#"}
+      FORM NAME    
+  %div
     %p=@form_name
-  %div#links.info
-    %p 
-      Show example
-  %div#hide.notice
+        
+  %h3
+    %a.header{:href=>"#"}
+      EXAMPLE
+  %div
     %p 
       Always leave a space after the Yaml's "-" and the ":".
     %p
@@ -26,26 +22,27 @@
       Respect the "-" followed by " - pattern, e.g.:
     %p
       Specimen
+      
+  %h3
+    %a.header{:href=>"#"}
+      EDIT
+  %div
 
-  %form{:action=>"/upload_text",:method=>"post"}
-    %textarea#edit{:class=>"autoindent",:name=>"form_content",:rows=>"40",:cols=>"80",:lang=>"en", :style=>"direction: ltr;",:wrap=>"SOFT"}=@text
-    %input{:type=>"hidden",:name=>"form_name",:value=>@form_name}
-    %input{:type=>"submit",:value=>"Send"}
+    %form{:action=>"/upload_text",:method=>"post"}
+      %textarea#edit{:class=>"autoindent",:name=>"form_content",:rows=>"40",:cols=>"80",:lang=>"en", :style=>"direction: ltr;",:wrap=>"SOFT"}=@text
+      %input{:type=>"hidden",:name=>"form_name",:value=>@form_name}
+  %h3
+    %a.header{:href=>"#"}
+      SAVE
+  %div
+    %span#submit
+      SAVE
+      
+  %h3
+    %a.header{:href=>"#"}
+      VIEW --not implemented
+  %div
+    %input#submit{:type=>"submit",:value=>"Send"}
 
     
-/ %div#tabs-2 
-/   .span-24
-/   %span
-/     %div#results
-/   / %p#hide_me 
-/   /   Results will show up here, hopefully...
-/   %div
-    
-:javascript 
-  $(document).ready(function(){
-  $("#hide").hide();
-  $("#links").click(function(){
-    $("#hide").toggle();
-    $("#links").html("Close example");
-  });
-  });
+

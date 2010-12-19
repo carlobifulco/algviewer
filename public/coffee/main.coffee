@@ -1,49 +1,3 @@
-# this does a lot of stuff
-
-
-
-# javascript 
-# 45		
-# 46		  $(document).ready(function(){
-# 47		
-# 48		    $("#dialog").dialog({
-# 49		         autoOpen: false,
-# 50		         modal: true
-# 51		       });
-# 52		
-# 53		  $("#view_view").click(function(){
-# 54		    $("#hide_view").toggle();
-# 55		  });
-# 56		
-# 57		  $("#hide_edit").hide();
-# 58		  $("#view_edit").click(function(){
-# 59		    $("#hide_edit").toggle();
-# 60		  });
-# 61		
-# 62		  $("#hide_delete").hide();
-# 63		  $("#view_delete").click(function(){
-# 64		    $("#hide_delete").toggle();
-# 65		  });
-# 66		
-# 67		
-# 68		  $(".confirmLink").click(function(e) {
-# 69		     e.preventDefault();
-# 70		     var targetUrl = $(this).attr("href");
-# 71		
-# 72		     $("#dialog").dialog({
-# 73		       buttons : {
-# 74		         "Confirm" : function() {
-# 75		           window.location.href = targetUrl;
-# 76		         },
-# 77		         "Cancel" : function() {
-# 78		           $(this).dialog("close");
-# 79		         }
-# 80		       }
-# 81		     });
-# 82		
-# 83		     $("#dialog").dialog("open");
-# 84		   });
-# 85		  });
 
 $(document).ready =>
 
@@ -62,31 +16,92 @@ $(document).ready =>
 		window.e=e
 		e.preventDefault()
 		target_url=e.srcElement.href
-		$("#dialog").dialog({buttons :[{text:"Confirm","click":()->window.location.href=target_url},{text:"Cancel","click":()->$("#dialog").dialog("close")}]})
-		$("#dialog").dialog("open")
+		$("#delete").dialog({buttons :[{text:"Confirm","click":()->window.location.href=target_url},{text:"Cancel","click":()->$("#delete").dialog("close")}]})
+		$("#delete").dialog("open")
 		
 		
 ## Delete confirm alert
-	$("#dialog").dialog({"autoOpen":"false","modal":"true"})
-	$("#dialog").dialog("close")
+	$("#delete").dialog({"autoOpen":"false","modal":"true"})
+	$("#delete").dialog("close")
 	$(".confirmLink").bind("click",(e)=>confirm_link(e))
+	
+	
+## user dialog find out if already in the system
+	#$("#dialog-form").dialog("open")
+	$( "#dialog-form" ).dialog({"autoOpen": false,"height": 300,"width": 350, "modal": true})
+	$("#create-user").button()
+	
+	if not localStorage.getItem("user")
+		$("#dialog-form").dialog("open")
+		$("#dialog-form").dialog({"closeOnEscape":false,close:()->$("#dialog-form").dialog("open")})
+		$("#create-user").click((e)->check_auth(); return false)
+		
+# check auth
+	check_auth=()-> 
+		update=(r)->
+			if r=="OK"
+				localStorage.setItem("user", user)
+				window.location.url="/"
+				$("#dialog-form").dialog("destroy")
+			
+			else
+				alert("Incorrect User or Password")
+				window.location.url="/"
+				return false
+		user=$("#user")[0].value
+		pw=$("#password")[0].value
+		params={'user':"#{user}",'password':"#{pw}"}
+		r=$.post('/check_user',params,update,"json")
+		window.r=r
+
+
+		
+		
+
+		
 	
 ## Accordion
 	$( "#accordion" ).accordion()
+	# size small accordions entries
+	_.each($(".small_acc"),(e)-> e.style.height="40px")
+	_.each($(".int_acc"),(e)-> e.style.height="80px")
 
 ## Button
-	check_entry=()->
-		v=$("#entry")[0].value
+	check_entry=(r)->
+		s="#entry#{r}"
+		v=$(s)[0].value
 		if v == ""
 			alert("no entry")
 			return false
 		else
-			window.location.href="/edit_text/#{v}"
+			return true
+	window.check_entry=check_entry
 			
+	delete_dialog=(url,filename)->
+		$("#delete").dialog({buttons :[{text:"Confirm Delete #{filename}","click":()->window.location.href=url},{text:"Cancel","click":()->$("#delete").dialog("close")}]})
+		$("#delete").dialog("open")
 			
-	$("#button").click((e)->check_entry())
+	$("#text_edit_button").click((e)->window.location.href="/edit_text/#{$("#entry1")[0].value}" if check_entry(1))
+	$("#graph_edit_button").click((e)->window.location.href="/graphic_edit/#{$("#entry2")[0].value}" if check_entry(2))
+	$("#text_edit_button2").click((e)->entry=$("#autocomplete")[0].value; window.location.href="/edit_text/#{entry}" if entry)
+	$("#graph_edit_button2").click((e)->entry=$("#autocomplete")[0].value; window.location.href="/graphic_edit/#{entry}" if entry)
+	$("#delete_button2").click((e)->entry=$("#autocomplete")[0].value; delete_dialog("/delete/#{entry}",entry)  if entry)
+	$("#view_button_2").click((e)->entry=$("#autocomplete")[0].value; window.location.href="/view/#{entry}" if entry)
+		
+		
+
 	$("#button").button()
 	$("#button2").button()
+	$(".button").button()
+
+##
+	$("#all_algs_names").hide()
+	window.alg_names=eval($("#all_algs_names").text())
+	$( "#autocomplete" ).autocomplete({"source": window.alg_names})
+	
+	
+		
+
 
 	
 	

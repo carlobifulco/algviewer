@@ -19,7 +19,7 @@ $(document).ready =>
 	# grid size
 	grid=25
 	x_start=grid*2
-	y_start=(grid*3)+$(".new_box").position().top
+	y_start=(grid*4)+$(".new_box").position().top
 	#y_new_box_start=y_start-(grid*2)
 	# 
 
@@ -39,7 +39,7 @@ $(document).ready =>
 		text=i[0]
 		x=x_start+(i[1]*grid)
 		y=y_start+(window.counter*grid)
-		text_box=$("<div id='#{window.counter}' class='ui-widget-content selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
+		text_box=$("<div id='#{window.counter}' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
 		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
 		text_box.draggable("stop":offset)
 		#text_box.selectable({stop:()->alert("AAAA")})
@@ -79,7 +79,7 @@ $(document).ready =>
 		evt.stopPropagation()
 		evt.preventDefault() 
 		b=$("#containment-wrapper")
-		text_box=$("<div class='ui-widget-content selectable text_box' style='position: absolute;  left: #{x_start}px; top: #{y_start-(grid)}px'> TEST</div>")
+		text_box=$("<div class='ui-widget-content ui-corner selectable text_box' style='position: absolute;  left: #{x_start}px; top: #{y_start-(grid)}px'> TEST</div>")
 		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
 		new_text=document.text_form.text_content.value 
 		#alert(new_text)
@@ -223,14 +223,15 @@ $(document).ready =>
 		$($("img")[0]).load(()-> 
 			w=$("img")[0].width
 			h=$("img")[0].height
-			r=w/h
-			size=500
-			if r>1
-				$("img")[0].height=size/r
-				$("img")[0].width=size
-			if r<=1
-					$("img")[0].width=size*r
-					$("img")[0].height=size
+			unless (w<500 and h<500)
+				r=w/h
+				size=500
+				if r>1
+					$("img")[0].height=size/r
+					$("img")[0].width=size
+				if r<=1
+						$("img")[0].width=size*r
+						$("img")[0].height=size
 			$($("img")[0]).show()
 			)
 		alg_name=_.last(window.location.pathname.split("/"))
@@ -248,15 +249,18 @@ $(document).ready =>
 	# results
 	render_alg=()->
 		result=boxes_to_yaml()
+		alg_name=_.last(window.location.pathname.split("/"))
 		$("#progressbar" ).progressbar("value":25)
+		#show
 		z=$.post("/view_text",{"text":result},(data)->rendering_ok(data))
-	
+		# and save
+		$.post("/upload_text",{"form_content":result,"form_name":alg_name,"type":"ajax"},(data)->success())
+
+	success=()->
+		$("#progressbar" ).progressbar("value":100)
 
 	#saving
 	save_alg=()->
-		success=()->
-			$("#progressbar" ).progressbar("value":100)
-			
 		yaml=boxes_to_yaml()
 		alg_name=_.last(window.location.pathname.split("/"))
 		window.alg_name=alg_name
@@ -300,6 +304,10 @@ $(document).ready =>
 	
 	#all selectable stop linked to function
 	$(".selectable").selectable({stop:()->get_selected()})	
+	
+	#error log
+	$('#error_log').ajaxError(()=>alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!"))
+
 	
 		
 

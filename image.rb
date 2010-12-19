@@ -4,11 +4,11 @@ require "tempfile"
 require "pathname"
 require "redis"
 require 'json/pure'
-require_relative "./tree_struct"
+require_relative "./lib/tree_struct"
 
-
+$HOST="184.73.233.199" 
+$redis3=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379,:host=>$HOST)
 UseDb=3
-$redis3=Redis.new
 $redis3.select UseDb
 
 #needs to be changed in deployment
@@ -23,6 +23,8 @@ end
 set :haml, {:format => :html5 }
 enable :sessions
 
+
+ 
 
 Dir.mkdir IMAGE_CONTAINER unless Dir.exists? IMAGE_CONTAINER
 

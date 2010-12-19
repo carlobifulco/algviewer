@@ -8,11 +8,9 @@ require "yaml"
 require "rack"
 require 'coffee-script'
 require "haml"
-require "sinatra/basic_auth"
 
-authorize do |username, password|
-  username == "guest" && password == "guest"
-end
+
+
 
 
 my_directory=File.dirname(File.expand_path(__FILE__))
@@ -22,8 +20,10 @@ puts my_directory
 set :haml, {:format => :html5 }
 enable :sessions
 
+
 $LOAD_PATH << File.join(my_directory,'/lib')
 require "tree_struct"
+
 
 
 # AWS Redis and Svg generator server home
@@ -48,11 +48,6 @@ def unique_file_name file_name
 end
 
 
-authorize do |username, password|
-  $Redis4.hset "users", username, password
-  username == "guest" && password == "guest"
-  session["username"]=username
-end
 
 post '/upload' do
 
@@ -128,6 +123,7 @@ get '/coffee_test' do
   haml :coffee_test
 end
 
+
 # post '/coffee_test' do
 #   form_content=params[:graphic_form_content]
 #   haml :coffee_test
@@ -139,15 +135,32 @@ get '/application' do
   coffee :application
 end
 
-#main web page
-# wrapped by a protect command
-protect do
-  get "/" do
-    puts env["HTTP_HOST"]
-    @all_forms=$Redis4.keys.sort!
-    haml :main
+post '/check_user' do
+  puts params
+  user=params["user"]
+  password=params["password"]
+  users=["guest","carlobifulco"]
+  passwords=["guest","bifulcocarlo"]
+  if (users.include?(user) and passwords.include?(password))
+    session["user"]=user
+    puts session["user"]
+    return "OK".to_json
+  else
+    return false.to_json
   end
 end
+
+
+
+get "/" do
+  # This checks auth and stores username in session
+  username=session["user"]
+  puts env["HTTP_HOST"]
+  @all_forms=$Redis4.keys.sort!
+  haml :main
+
+end
+
 
 #### still defective; problem with rendering of multiple yaml lines, ok with 2, 
 # split newline --inline newlines in need of fix
@@ -157,6 +170,11 @@ end
 get "/graphic_edit/:form_name" do
   @form_name=params[:form_name]
   text=($Redis4.get @form_name).to_s
+  #for new forms just returns empty content
+  if text==""
+    @text_indent=""
+    return haml :coffee_test
+  end
   puts "1111"
   puts text
   text=text.split("\n")
@@ -220,6 +238,7 @@ get '/view/:form_name' do
     @svg=r["svg"]
     @png=r["png"]
     @pdf=r["pdf"]
+    @dot=r["dot"]
     puts @pdf
     haml :view
   rescue ":Error"

@@ -83,6 +83,7 @@ module JavaScript
     <script type="text/javascript" charset="utf-8">
     	function test (e) {
     		alert(e.id);
+    		window.svg_node=e;
     		return e
     		// body...
     	}
@@ -177,6 +178,15 @@ class Graph
    @g.output(:svg=>"test.svg")
   end
   
+  
+  def get_dot 
+    dot_doc=@g.output(:dot=>String)
+	@dot_md5=Digest::MD5.hexdigest(dot_doc)
+	@redis.set @dot_md5, dot_doc
+    @redis.expire @dot_md5, 3000
+    "#{$HOME}/graph_dot/#{@dot_md5}"
+  end
+  
   def get_pdf 
     pdf_doc=@g.output(:pdf=>String)
 	@pdf_md5=Digest::MD5.hexdigest(pdf_doc)
@@ -195,6 +205,7 @@ class Graph
   
   def get_svg
     svg_doc=@g.output(:svg=>String)
+    # inserts jscript onclick calls
     d=clean_svg(Hpricot.parse(svg_doc))
     (d.search("g")[1..-1]).each  do |graph|
       graph.set_attribute "onclick", "test(this)"
@@ -219,6 +230,7 @@ get '/graph_pdf/:pdf_md5' do
 end
 
 get '/graph/:svg_md5' do
+
   #content_type "image/svg+xml"
   $redis.get params[:svg_md5]
 end
@@ -233,6 +245,10 @@ get '/plot_pdf/:pdf_md5' do
   $redis.get params[:pdf_md5]
 end
 
+get '/graph_dot/:dot_md5' do
+  content_type 'text/x-yaml', :charset => 'utf-8'
+  $redis.get params[:dot_md5]
+end
 
 # get '/nodes/' do
 #   nodes=JSON.parse params[:nodes]
@@ -262,7 +278,8 @@ post '/nodes_edges/' do
   @result=graph.get_svg
   @result_pdf=graph.get_pdf
   @result_png=graph.get_png
-  {:svg=>@result,:pdf=>@result_pdf,:png=>@result_png}.to_json
+  @result_dot=graph.get_dot
+  {:svg=>@result,:pdf=>@result_pdf,:png=>@result_png,:dot=>@result_dot}.to_json
 end
 
 
