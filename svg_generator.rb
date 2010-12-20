@@ -265,7 +265,7 @@ get '/' do
 end
 
 
-### This takes care of teh netsful and ajax requests
+### This takes care of the netsful and ajax requests
 ### Returns json dictionary
 post '/nodes_edges/' do
   graph=Graph.new

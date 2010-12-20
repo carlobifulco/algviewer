@@ -250,7 +250,7 @@ end
 
 # text directly
 # used by graphic edit
-post '/view_text' do
+post '/graphic_edit_view' do
   text=params[:text]
   text.gsub!(":","")
   begin
@@ -261,10 +261,7 @@ post '/view_text' do
   end
   begin
     r=rest_call y
-    @svg=r["svg"]
-    @png=r["png"]
-    @pdf=r["pdf"]
-    haml :view
+    return r.to_json
   rescue ":Error"
     puts "EEEEERRRRRROOOOORRRRR"
     return $stderr.puts $!.inspect

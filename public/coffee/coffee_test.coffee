@@ -16,7 +16,7 @@ window.counter=0
 
 $(document).ready =>
 
-	# grid size
+	# grid size GLOBALS
 	grid=25
 	x_start=grid*2
 	y_start=(grid*4)+$(".new_box").position().top
@@ -32,16 +32,24 @@ $(document).ready =>
 
 	#returns all selected boxes in order
 
+# new text box
 
+	new_box=(x,y,text,counter_id)->
+		text_box=$("<div id='#{counter_id}' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
+		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
+		text_box.draggable("stop":offset)
+		#text_box.draggable({stop:"render_alg"})
+		return text_box
 
 ##### loads text	
 	make_layout=(i)->
 		text=i[0]
 		x=x_start+(i[1]*grid)
 		y=y_start+(window.counter*grid)
-		text_box=$("<div id='#{window.counter}' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
-		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
-		text_box.draggable("stop":offset)
+		new_box(x,y,text, window.counter)
+		# text_box=$("<div id='#{window.counter}' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
+		# text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
+		# text_box.draggable("stop":offset)
 		#text_box.selectable({stop:()->alert("AAAA")})
 		window.counter+=1
 	window.make_layout=make_layout
@@ -79,15 +87,13 @@ $(document).ready =>
 		evt.stopPropagation()
 		evt.preventDefault() 
 		b=$("#containment-wrapper")
-		text_box=$("<div class='ui-widget-content ui-corner selectable text_box' style='position: absolute;  left: #{x_start}px; top: #{y_start-(grid)}px'> TEST</div>")
-		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
+		text=document.text_form.text_content.value 
+		text="new box; select me, enter the text in the empty box and press control-e to change me" unless text
+		new_box(x_start,(y_start-grid*2),text,window.counter)
 		new_text=document.text_form.text_content.value 
 		#alert(new_text)
-		text_box.html(document.text_form.text_content.value) if new_text
-		document.text_form.text_content.value=""
-		window.rectangles.push(a)
-		window.last=a
 		$(".selectable").selectable({stop:()->get_selected()})	
+		window.counter+=1
 	
 	#updates the text of a box
 	enter_text=()->
@@ -144,6 +150,7 @@ $(document).ready =>
 				move(id,x_delta,y_delta)
 		# remove item from selection
 		$(dragged).removeClass("ui-selected").css("color","black")
+		render_alg()
 		window.u=dragged
 
 	# returns all selected items and attaches an id,text,x,y dict to window.pos
@@ -203,23 +210,8 @@ $(document).ready =>
 		$(text_box).position().top
 	window.get_pos=get_pos
 	
-
 	
-
-	
-	#updates progressbar, switches to the result tab and resizes image
-	rendering_ok=(data)->
-		$("#results").html(data)
-		$("#progressbar" ).progressbar("value": 100)
-
-		$("#progressbar" ).progressbar("value": 0)
-		#$("img")[0].height=300
-		#$("img")[0].width=$("#img").height*ratio
-		$("#hide_me").hide()
-		$($("img")[0]).hide()
-		$("#tabs").tabs("destroy")
-		$("#tabs").tabs()
-		$("#tabs").tabs("select","tabs-2")
+	resize_graph=()->
 		$($("img")[0]).load(()-> 
 			w=$("img")[0].width
 			h=$("img")[0].height
@@ -234,6 +226,37 @@ $(document).ready =>
 						$("img")[0].height=size
 			$($("img")[0]).show()
 			)
+		
+	
+	# inline rendering
+	render_inline=(data)->
+		anchor=$("#inline_graph")
+		#data=JSON.parse(data)
+		#yaml load and rest call; returns dictionary response
+		window.z=data
+		#alert(data["png"])
+		
+		anchor.html("<img src=#{data.png}></img>")
+		$("#inline_graph").show()
+		resize_graph()
+		
+	
+
+	
+	#updates progressbar, switches to the result tab and resizes image
+	rendering_on_tab=(data)->
+		$("#results").html(data)
+		$("#progressbar" ).progressbar("value": 100)
+
+		$("#progressbar" ).progressbar("value": 0)
+		#$("img")[0].height=300
+		#$("img")[0].width=$("#img").height*ratio
+		$("#hide_me").hide()
+		$($("img")[0]).hide()
+		$("#tabs").tabs("destroy")
+		$("#tabs").tabs()
+		$("#tabs").tabs("select","tabs-2")
+		resize_graph()
 		alg_name=_.last(window.location.pathname.split("/"))
 		$("#title").html(alg_name)
 	
@@ -251,8 +274,10 @@ $(document).ready =>
 		result=boxes_to_yaml()
 		alg_name=_.last(window.location.pathname.split("/"))
 		$("#progressbar" ).progressbar("value":25)
-		#show
-		z=$.post("/view_text",{"text":result},(data)->rendering_ok(data))
+		#show on tab
+		#z=$.post("/graphic_edit_view",{"text":result,"dataType":"json"},(data)->rendering_on_tab(JSON.parse(data)))
+		#window.z=z
+		z=$.post("/graphic_edit_view",{"text":result,"dataType":"json"},(data)->render_inline(JSON.parse(data)))
 		# and save
 		$.post("/upload_text",{"form_content":result,"form_name":alg_name,"type":"ajax"},(data)->success())
 
