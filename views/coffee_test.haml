@@ -2,48 +2,48 @@
 %script{:type=>"application/x-javascript",:src=>"/jquery.hotkeys-0.7.9.min.js"}
 %script{:type=>"application/x-javascript",:src=>"/coffee/coffee_test.js"}
 
-
-%div#tabs
-  %ul
-    %li
-      %a{:href=>"#tabs-1"}
-        Entry
-    %li
-      %a{:href=>"#tabs-2"}
-        Results
-
-  %div#tabs-1
-    .span-12
-      %button#new_entry
-        New Box
-      %button#del_entry
-        Delete Box
-      %button#pos_calc
-        Show Graph
-      %button#save_alg
-        Save
-    .span-6.last
-      #progressbar.button
-    .span-24
+%div
+  %nav 
+  %div#tabs
+    %ul
+      %li
+        %a{:href=>"#tabs-1"}
+        
+  
+    %div#tabs-1
+      .span-12
+        %button#home
+          Home
+        %button#new_entry
+          New Box
+        %button#del_entry
+          Delete Box
+        %button#pos_calc
+          Show Graph
+        %button#save_alg
+          Save
+      .span-6.last
+        #progressbar.button
+      .span-24
     
-    #error_log
+      #error_log
   
-    .span-12
-      %form{:name=>"text_form"}
-        %input.text{:type=>"text",:name=>"text_content",:id=>"text_entry"} 
-    #inline_graph.span-6.last
+      .span-12
+        %form{:name=>"text_form"}
+          %input.text{:type=>"text",:name=>"text_content",:id=>"text_entry"} 
+      #inline_graph.span-6.last
 
   
 
-    %div.selectable.hide_edit#containment-wrapper.new_box.ui-widget
+      %div.selectable.hide_edit#containment-wrapper.new_box.ui-widget
 
-  %div#tabs-2 
-    .span-24
-    %span
-      %div#results
-    / %p#hide_me 
-    /   Results will show up here, hopefully...
-    %div
+    %div#tabs-2 
+      .span-24
+      %span
+        %div#results
+      / %p#hide_me 
+      /   Results will show up here, hopefully...
+      %div
 
 
 %div#hide_graphic_edit{:type=>"hidden"}

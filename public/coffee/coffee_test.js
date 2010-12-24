@@ -13,8 +13,9 @@
   window.concat_object = concat_object;
   window.pos = {};
   window.counter = 0;
+  window.error = false;
   $(document).ready(__bind(function() {
-    var alg_text, boxes_to_yaml, chosen, cut, del_entry, enter_text, get_draggable_data, get_pos, get_selected, grid, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, rendering_on_tab, resize_graph, save_alg, sort_rect, success, text_multiply, unselected, x_start, y_start, z;
+    var alg_text, boxes_to_yaml, chosen, cut, del_entry, enter_text, error, get_draggable_data, get_pos, get_selected, grid, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, rendering_on_tab, resize_graph, save_alg, sort_rect, success, text_multiply, unselected, x_start, y_start, z;
     grid = 25;
     x_start = grid * 2;
     y_start = (grid * 4) + $(".new_box").position().top;
@@ -261,7 +262,7 @@
       var anchor;
       anchor = $("#inline_graph");
       window.z = data;
-      anchor.html("<img src=" + (data.png) + "></img>");
+      anchor.html("<img src=" + (data.png) + " style='opacity:0.4;z-index:1000'></img>");
       $("#inline_graph").show();
       return resize_graph();
     };
@@ -302,13 +303,16 @@
       }, function(data) {
         return render_inline(JSON.parse(data));
       });
-      return $.post("/upload_text", {
-        "form_content": result,
-        "form_name": alg_name,
-        "type": "ajax"
-      }, function(data) {
-        return success();
-      });
+      if (!(window.error)) {
+        $.post("/upload_text", {
+          "form_content": result,
+          "form_name": alg_name,
+          "type": "ajax"
+        }, function(data) {
+          return success();
+        });
+      }
+      return (window.error = false);
     };
     success = function() {
       return $("#progressbar").progressbar({
@@ -341,6 +345,9 @@
       "value": 0
     });
     $("#tabs").tabs();
+    $("#home").bind('click', function() {
+      return (window.location.pathname = "/");
+    });
     $("#new_entry").bind('click', make_rect);
     $("#del_entry").bind('click', del_entry);
     $("#save_alg").bind('click', save_alg);
@@ -366,8 +373,12 @@
         return get_selected();
       }
     });
-    return $('#error_log').ajaxError(__bind(function() {
+    error = function() {
       return alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!");
-    }, this));
+    };
+    window.error = true;
+    return $('#error_log').ajaxError(function() {
+      return error();
+    });
   }, this));
 }).call(this);

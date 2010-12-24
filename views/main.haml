@@ -18,6 +18,7 @@
     %button#create-user
       Check Authorization
 
+/ MAIN PAGE
 
 %div#accordion.span-24
 
@@ -64,9 +65,9 @@
           %input#entry1{:type=>"text",:name=>"form_name",:cols=>"30",:required=>"required"}
       .span-24.last
         %p
-          
-          
-          
+      
+      
+      
   %h3
     %a.header{:href=>"#"}    
       GRAPHIC EDIT
@@ -82,7 +83,7 @@
         NEW GRAPHIC EDIT
     .span-24.last
       %p
-        
+    
   %h3
     %a.header{:href=>"#"}
       DELETE
@@ -91,14 +92,14 @@
     -@all_forms.each  do |x|
       %li
         %a.confirmLink{:href=>"/delete/#{x}"}=x
-        
+    
 
   %h3
     %a.header{:href=>"#"}    
       EXPORT ALL
   %div.small_acc
     %a#button2{:href => '/export_all'} export all
-    
+
   %h3
     %a.header{:href=>"#"}    
       IMPORT
@@ -106,14 +107,14 @@
     %form{:action=>"/upload",:method=>"post",:enctype=>"multipart/form-data"}
       %input.button{:type=>"file",:name=>"file"}
       %input.button{:type=>"submit",:value=>"Upload"}
-      
+
       
 %span#all_algs_names
   =@all_forms.to_json
 
 
 
-%script{:type=>"text/coffeescript"}
+
   
 
 

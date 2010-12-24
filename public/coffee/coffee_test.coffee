@@ -13,6 +13,8 @@ window.concat_object=concat_object
 window.pos={}
 #global for layout of yaml
 window.counter=0
+# error is alg
+window.error=false
 
 $(document).ready =>
 
@@ -33,7 +35,6 @@ $(document).ready =>
 	#returns all selected boxes in order
 
 # new text box
-
 	new_box=(x,y,text,counter_id)->
 		text_box=$("<div id='#{counter_id}' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
 		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
@@ -41,7 +42,7 @@ $(document).ready =>
 		#text_box.draggable({stop:"render_alg"})
 		return text_box
 
-##### loads text	
+# loads text	
 	make_layout=(i)->
 		text=i[0]
 		x=x_start+(i[1]*grid)
@@ -61,8 +62,6 @@ $(document).ready =>
 		for text_position in text_positions
 			#[0] contains the actual text 
 			# screening for possible complications
-
-				
 			offset=text_multiply("  ",(text_position[1]-baseline)/grid)
 			if offset>old_offset
 				text+=old_offset+"-"+"\n"
@@ -177,6 +176,15 @@ $(document).ready =>
 			
 	window.get_draggable_data=get_draggable_data
 	
+  # # new text box
+  #     new_box=(x,y,text,counter_id)->
+  #       text_box=$("<div id='#{counter_id}' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
+  #       text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
+  #       text_box.draggable("stop":offset)
+  #       #text_box.draggable({stop:"render_alg"})
+  #       return text_box
+	
+	
 	# makes a draggable in absolute position; does not keep it selected so that process is reseted
 	make_draggable=(id,text,x,y)->
 		text_box=$("<div id='#{id}' class='ui-widget-content selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
@@ -236,7 +244,7 @@ $(document).ready =>
 		window.z=data
 		#alert(data["png"])
 		
-		anchor.html("<img src=#{data.png}></img>")
+		anchor.html("<img src=#{data.png} style='opacity:0.4;z-index:1000'></img>")
 		$("#inline_graph").show()
 		resize_graph()
 		
@@ -279,7 +287,9 @@ $(document).ready =>
 		#window.z=z
 		z=$.post("/graphic_edit_view",{"text":result,"dataType":"json"},(data)->render_inline(JSON.parse(data)))
 		# and save
-		$.post("/upload_text",{"form_content":result,"form_name":alg_name,"type":"ajax"},(data)->success())
+		unless window.error
+			$.post("/upload_text",{"form_content":result,"form_name":alg_name,"type":"ajax"},(data)->success())
+		window.error=false
 
 	success=()->
 		$("#progressbar" ).progressbar("value":100)
@@ -308,6 +318,7 @@ $(document).ready =>
 	$("#tabs").tabs()
 	
 	# Buttons
+	$("#home").bind 'click', ()->window.location.pathname="/"
 	$("#new_entry").bind 'click', make_rect
 	$("#del_entry").bind 'click', del_entry
 	$("#save_alg").bind 'click', save_alg
@@ -330,9 +341,15 @@ $(document).ready =>
 	#all selectable stop linked to function
 	$(".selectable").selectable({stop:()->get_selected()})	
 	
-	#error log
-	$('#error_log').ajaxError(()=>alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!"))
+	#error-function
+	error=()->
+	  alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!")
+		window.error=true
+	
+	$('#error_log').ajaxError(()->error())
 
+	
+	
 	
 		
 

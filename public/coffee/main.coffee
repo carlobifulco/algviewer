@@ -76,6 +76,16 @@ $(document).ready =>
 		else
 			return true
 	window.check_entry=check_entry
+	
+	check_autocomplete=(r)->
+		s="#autocomplete"
+		v=$(s)[0].value
+		if v == ""
+			alert("no entry; please enter a new name or select an old alg")
+			return false
+		else
+			return v
+	window.check_entry=check_entry
 			
 	delete_dialog=(url,filename)->
 		$("#delete").dialog({buttons :[{text:"Confirm Delete #{filename}","click":()->window.location.href=url},{text:"Cancel","click":()->$("#delete").dialog("close")}]})
@@ -83,10 +93,10 @@ $(document).ready =>
 			
 	$("#text_edit_button").click((e)->window.location.href="/edit_text/#{$("#entry1")[0].value}" if check_entry(1))
 	$("#graph_edit_button").click((e)->window.location.href="/graphic_edit/#{$("#entry2")[0].value}" if check_entry(2))
-	$("#text_edit_button2").click((e)->entry=$("#autocomplete")[0].value; window.location.href="/edit_text/#{entry}" if entry)
-	$("#graph_edit_button2").click((e)->entry=$("#autocomplete")[0].value; window.location.href="/graphic_edit/#{entry}" if entry)
-	$("#delete_button2").click((e)->entry=$("#autocomplete")[0].value; delete_dialog("/delete/#{entry}",entry)  if entry)
-	$("#view_button_2").click((e)->entry=$("#autocomplete")[0].value; window.location.href="/view/#{entry}" if entry)
+	$("#text_edit_button2").click((e)->entry=check_autocomplete(); window.location.href="/edit_text/#{entry}" if entry)
+	$("#graph_edit_button2").click((e)->entry=check_autocomplete(); window.location.href="/graphic_edit/#{entry}" if entry)
+	$("#delete_button2").click((e)->entry=check_autocomplete(); delete_dialog("/delete/#{entry}",entry)  if entry)
+	$("#view_button_2").click((e)->entry=check_autocomplete(); window.location.href="/view/#{entry}" if entry)
 		
 		
 
