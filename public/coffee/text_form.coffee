@@ -10,6 +10,10 @@ $(document).ready =>
 	$("#submit").button()
 	$("#submit").click(()->$("form").submit())
 	
+	#accordion open on text edit
+	$("#accordion").accordion("activate",2)
+
+	
 	
 	#inline graph resize function
 	resize_graph=()->
@@ -40,6 +44,9 @@ $(document).ready =>
 		result=$("#edit").val()
 		z=$.post("/graphic_edit_view",{"text":result,"dataType":"json"},(data)->render_inline(JSON.parse(data)))
 		return z
+	
+	#show graph on window load	
+	update_graph()
 		
 	# error visualization
 	show_mistake=(error_obj)->

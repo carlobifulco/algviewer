@@ -13,8 +13,6 @@ window.concat_object=concat_object
 window.pos={}
 #global for layout of yaml
 window.counter=0
-# error is alg
-window.error=false
 
 $(document).ready =>
 
@@ -34,55 +32,47 @@ $(document).ready =>
 
 	#returns all selected boxes in order
 
+# new text box
 
-#BOX CREATION
-#------------
-
-####new text box
-	new_box=(x,y,text,counter_id,positions_style)->
-		# absolute position and document containment 
-		if positions_style
-			text_box=$("<div id='#{counter_id}' class='ui-widget-content ui-corner selectable text_box' style='position: #{positions_style}; left: #{x}px; top: #{y}px'>#{text}</div>")
-		else
-			text_box=$("<div id='#{counter_id}' class='ui-widget-content ui-corner selectable text_box' style='position:absolute'; left: #{x}px; top: #{y}px'>#{text}</div>")
-		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"document","scroll":true,"zIndex":-1}).appendTo(".new_box")
-		# offset gets called and the end of each drag
+	new_box=(x,y,text,counter_id)->
+		text_box=$("<div id='#{counter_id}' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
+		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
 		text_box.draggable("stop":offset)
-		#text_box.draggable({stop:"render_alg"}#{}
+		#text_box.draggable({stop:"render_alg"})
 		return text_box
 
-#### loads text	and dysplays boxes for the first time when an alg is uploaded form Yaml
+##### loads text	
 	make_layout=(i)->
 		text=i[0]
-		# this is the indent level
 		x=x_start+(i[1]*grid)
-		#y is just progressive
 		y=y_start+(window.counter*grid)
-		new_box(x,y,text, window.counter, "absolute")
+		new_box(x,y,text, window.counter)
 		# text_box=$("<div id='#{window.counter}' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
 		# text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
 		# text_box.draggable("stop":offset)
 		#text_box.selectable({stop:()->alert("AAAA")})
 		window.counter+=1
 	window.make_layout=make_layout
-	
-	
-####enters a new box from the graphic interface
-	make_rect=(evt)->
-		evt.stopPropagation()
-		evt.preventDefault() 
-		b=$("#containment-wrapper")
-		text=document.text_form.text_content.value 
-		text="new box; select me, enter the text in the empty box and press control-e to change me" unless text
-		text_box=new_box(x_start,(y_start-(grid*2)),text,window.counter,"absolute")
-		new_text=document.text_form.text_content.value 
-		text_box.css("background","pink")
-		#alert(new_text)
-		$(".selectable").selectable({stop:()->get_selected()})	
-		window.counter+=1
-		window.text_box=text_box
 
+	#renders yaml alg structure	
+	alg_text=(text_positions)->	 
+		text="\n"
+		baseline=text_positions[0][1]
+		for text_position in text_positions
+			#[0] contains the actual text 
+			# screening for possible complications
 
+				
+			offset=text_multiply("  ",(text_position[1]-baseline)/grid)
+			if offset>old_offset
+				text+=old_offset+"-"+"\n"
+			if text_position[1]==baseline
+				text+="\n"
+			#if (text_position[0].search(":")!=-1)
+			#	alert("Error, please do not use : or ' or \"; they all need to be escaped (i.e. preceeded by \\)")
+			text+=(offset+"- "+ text_position[0].trim() +"\n")
+			old_offset=offset
+		text
 	
 	#utility for yalm alg structure
 	text_multiply=(text,n)->
@@ -92,10 +82,20 @@ $(document).ready =>
 		a.join("")
 	window.text_multiply=text_multiply
 
-
+	#enters a new box 
+	make_rect=(evt)->
+		evt.stopPropagation()
+		evt.preventDefault() 
+		b=$("#containment-wrapper")
+		text=document.text_form.text_content.value 
+		text="new box; select me, enter the text in the empty box and press control-e to change me" unless text
+		new_box(x_start,(y_start-grid*2),text,window.counter)
+		new_text=document.text_form.text_content.value 
+		#alert(new_text)
+		$(".selectable").selectable({stop:()->get_selected()})	
+		window.counter+=1
 	
-	####updates the text of a box
-	# called by control-e 
+	#updates the text of a box
 	enter_text=()->
 		b=$(".ui-selected")[0]
 		#alert(b)
@@ -108,7 +108,6 @@ $(document).ready =>
 		$(".text_box").css("color","black")
 		$(".ui-selected").css("color","red")
 		$(".ancor").css("color","black")
-	
 	
 	#kills a box
 	del_entry=()->
@@ -128,8 +127,7 @@ $(document).ready =>
 		pos_left=$(text_box).position().left
 		[text,pos_left]
 
-# Multiple dragging business	
-# --------------------------
+##### Multiple dragging business	 
 	
 	# u is the dragged item; u.position.left and top is where it got dragged
 	offset=(e,u)->
@@ -154,7 +152,6 @@ $(document).ready =>
 		$(dragged).removeClass("ui-selected").css("color","black")
 		render_alg()
 		window.u=dragged
-		$(".text_box").css("background-color","rgb(252, 187, 0)")
 
 	# returns all selected items and attaches an id,text,x,y dict to window.pos
 	get_selected=()->
@@ -180,19 +177,10 @@ $(document).ready =>
 			
 	window.get_draggable_data=get_draggable_data
 	
-  # # new text box
-  #     new_box=(x,y,text,counter_id)->
-  #       text_box=$("<div id='#{counter_id}' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
-  #       text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
-  #       text_box.draggable("stop":offset)
-  #       #text_box.draggable({stop:"render_alg"})
-  #       return text_box
-	
-	
 	# makes a draggable in absolute position; does not keep it selected so that process is reseted
 	make_draggable=(id,text,x,y)->
 		text_box=$("<div id='#{id}' class='ui-widget-content selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
-		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"document","scroll":true}).appendTo(".new_box")
+		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
 		text_box.draggable("stop":offset)
 		return text_box
 	window.make_draggable=make_draggable
@@ -213,21 +201,16 @@ $(document).ready =>
 	move=(id, x_delta,y_delta)->
 		all=cut(id)
 		(make_draggable(i.id,i.text,i.x+x_delta,i.y+y_delta) for i in all)
-		$(".text_box").css("background-color","rgb(252, 187, 0)")
 	window.move=move
 
 	unselected=()->
 		chosen()
-	
-	#gets vertical pos of a box	
+		
 	get_pos=(text_box)->
 		$(text_box).position().top
 	window.get_pos=get_pos
 	
-	# Graph rendering
-	#-----------------
 	
-	# resize of rendered graph
 	resize_graph=()->
 		$($("img")[0]).load(()-> 
 			w=$("img")[0].width
@@ -253,7 +236,7 @@ $(document).ready =>
 		window.z=data
 		#alert(data["png"])
 		
-		anchor.html("<img src=#{data.png} style='opacity:0.9;z-index:10000'></img>")
+		anchor.html("<img src=#{data.png}></img>")
 		$("#inline_graph").show()
 		resize_graph()
 		
@@ -265,43 +248,17 @@ $(document).ready =>
 		$("#results").html(data)
 		$("#progressbar" ).progressbar("value": 100)
 
-		$("#progressbar" ).progressbar("value": 5)
+		$("#progressbar" ).progressbar("value": 0)
 		#$("img")[0].height=300
 		#$("img")[0].width=$("#img").height*ratio
 		$("#hide_me").hide()
 		$($("img")[0]).hide()
+		$("#tabs").tabs("destroy")
+		$("#tabs").tabs()
+		$("#tabs").tabs("select","tabs-2")
 		resize_graph()
 		alg_name=_.last(window.location.pathname.split("/"))
 		$("#title").html(alg_name)
-	
-	
-	#Boxes to YAML
-	#-------------
-	
-	#renders yaml alg structure	from the boxes structure
-	alg_text=(text_positions)->	 
-		window.text_positions=text_positions
-		text="\n"
-		# the x coordinate of the first entry
-		baseline=text_positions[0][1]
-		# loops on each box
-		for text_position in text_positions
-			#[0] contains the actual text 
-			# screening for possible complications
-			offset=text_multiply("  ",(text_position[1]-baseline)/grid)
-			if offset>old_offset
-				text+=old_offset+"-"+"\n"
-			if text_position[1]<baseline
-				alert("Error! One of your boxes is too much on the left. Please reposition")
-				return
-			t=text_position[0].trim()
-			# 			text+="\n"
-			#if (text_position[0].search(":")!=-1)
-			#	alert("Error, please do not use : or ' or \"; they all need to be escaped (i.e. preceeded by \\)")
-			text=text + offset + "- " + t + "\n" 
-			old_offset=offset
-		text
-	
 	
 	# transform the boxes in a yaml alg
 	boxes_to_yaml=()->
@@ -313,7 +270,6 @@ $(document).ready =>
 	# ajax call to /view_text 
 	# and when results come back calls rendering_ok for showing the 
 	# results
-	# called on dragging
 	render_alg=()->
 		result=boxes_to_yaml()
 		alg_name=_.last(window.location.pathname.split("/"))
@@ -321,13 +277,10 @@ $(document).ready =>
 		#show on tab
 		#z=$.post("/graphic_edit_view",{"text":result,"dataType":"json"},(data)->rendering_on_tab(JSON.parse(data)))
 		#window.z=z
-		z=$.post("/graphic_edit_view",{"text":result,"dataType":"json"},(data)->render_inline(JSON.parse(data);success()))
+		z=$.post("/graphic_edit_view",{"text":result,"dataType":"json"},(data)->render_inline(JSON.parse(data)))
 		# and save
-		unless window.error
-			$.post("/upload_text",{"form_content":result,"form_name":alg_name,"type":"ajax"},(data)->success())
-		window.error=false
-	
-	# fill progress bar
+		$.post("/upload_text",{"form_content":result,"form_name":alg_name,"type":"ajax"},(data)->success())
+
 	success=()->
 		$("#progressbar" ).progressbar("value":100)
 
@@ -339,17 +292,6 @@ $(document).ready =>
 		window.yaml=yaml
 		$.post("/upload_text",{"form_content":yaml,"form_name":alg_name,"type":"ajax"},(data)->success())
 	window.save_alg=save_alg
-	
-	# Various stuff
-	#---------------
-	
-	# redirects to text edit
-	text_edit=()->
-		alg_name=_.last(window.location.pathname.split("/"))	
-		window.location.href="/edit_text/#{alg_name}"
-		$(document).ready =>
-			$("#accordion").accordion("activate",2)
-	
 		
 
 	#debug
@@ -366,10 +308,10 @@ $(document).ready =>
 	$("#tabs").tabs()
 	
 	# Buttons
-	$("#home").bind 'click', ()->window.location.pathname="/"
 	$("#new_entry").bind 'click', make_rect
 	$("#del_entry").bind 'click', del_entry
-	$("#text_edit").bind 'click', text_edit
+	$("#save_alg").bind 'click', save_alg
+	$("#pos_calc").bind 'click',()->render_alg()
 	$("button").button()
 	
 	#draggables selectables
@@ -378,32 +320,19 @@ $(document).ready =>
 
 	
 	#graphic edit mode
-	# rendering of the alg
 	#alg structure is linked to the #hide_graphic_edit in the dom
-	# and then each node is rendered
 	$("#hide_graphic_edit").hide()
 	window.a=eval($("#hide_graphic_edit").text())
 	if window.a
 		_.each(window.a, (i)->make_layout(i))
-	render_alg()
-		# this is the y coordinate offset
-		#window.counter=0
+		window.counter=0
 	
 	#all selectable stop linked to function
 	$(".selectable").selectable({stop:()->get_selected()})	
 	
-	####error-function
-	error=()->
-	  alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!")
-		window.error=true
-	
-	$('#error_log').ajaxError(()->error())
-	
-	# accordion activation
-	#$( "#accordion" ).accordion()
+	#error log
+	$('#error_log').ajaxError(()=>alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!"))
 
-	
-	
 	
 		
 
