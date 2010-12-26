@@ -43,11 +43,14 @@ end
 #=> [[["CANE", "Gatto"], ["CANE", "ELEFANTE"], ["CANE", "ippo"]], [["ippo", "SENSA"], ["ippo", "Capelli"]], [["Capelli", "CORIANDOLI"], ["Capelli", "MAAZ"]], [["MAAZ", "GATII"]], [["GATII", "PELOSI"], ["GATII", "MERDOS"], ["GATII", "PUZZONI"]], [["PUZZONI", "SUPER"], ["PUZZONI", "PUZZONISSIMI"]]]
 #>> n.get_nodes
 #=> ["CANE", "Gatto", "ELEFANTE", "ippo", "SENSA", "Capelli", "CORIANDOLI", "MAAZ", "GATII", "PELOSI", "MERDOS", "PUZZONI", "SUPER", "PUZZONISSIMI"]
+#>> NodesEdges.new ["zfdfsf", "zfdfsf", ["THis is a test", ["minimum energy", ["maximum load", "kjkj", ["Massive power", nil, nil, "sdfsdfsd"]]]]] 
+
 class NodesEdges
   
   attr_accessor :list,:a
   include Mani
   
+  # list is a ruby version of a YAML structure
   def initialize list=["CANE", 
                         ["Gatto", "ELEFANTE", "ippo", ["SENSA", "Capelli"], ["CORIANDOLI", "MAAZ"], 
                         ["GATII", 
@@ -63,20 +66,30 @@ class NodesEdges
     load_array
   end
 
+  # @a=[["CANE", ["Gatto", "ELEFANTE", "ippo"]], "Gatto", "ELEFANTE", ["ippo", ["SENSA", "Capelli"]], "SENSA", ["Capelli", ["CORIANDOLI", "MAAZ"]], 
+  # basically a structure with a each node and of each node with listed children
   def load_array 
     @a=[]
     while true
+        # get rid of nil in list; 
+        @list.select!{|x| x!= nil}
+        # node followed by array of nodes
         if (@list[0].class ==String and @list[1].class ==Array) 
           @a<<[@list[0],@list[1].select{|x| x if x.class==String}]
           @list.delete_at 0
           next
+        #node followed by node
         elsif  (@list[0].class ==String and @list[1].class ==String)
           @a<<@list[0]
           @list.delete_at 0
           next
-        elsif @list[0].class==Array then
+        # removes outer [] from array
+        elsif @list[0].class==Array 
           @list=unnest @list
           next
+        # skip nil
+        elsif  @list[0]==nil
+           @list.delete_at 0
         end
         if @list.length ==1 then @a<<@list[0]; break
         end

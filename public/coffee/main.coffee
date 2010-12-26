@@ -86,6 +86,17 @@ $(document).ready =>
 		else
 			return v
 	window.check_entry=check_entry
+	
+	# checks text in the autocompletion field. if not opens mathcing accordion
+	# else is sends to mathing alg web page
+	no_entry_open_accordion=(n)->
+		entry=$("#autocomplete")[0].value 
+		if not entry
+			$("#accordion").accordion("activate",n) 
+			return false
+		else
+			entry
+		
 			
 	delete_dialog=(url,filename)->
 		$("#delete").dialog({buttons :[{text:"Confirm Delete #{filename}","click":()->window.location.href=url},{text:"Cancel","click":()->$("#delete").dialog("close")}]})
@@ -93,10 +104,10 @@ $(document).ready =>
 			
 	$("#text_edit_button").click((e)->window.location.href="/edit_text/#{$("#entry1")[0].value}" if check_entry(1))
 	$("#graph_edit_button").click((e)->window.location.href="/graphic_edit/#{$("#entry2")[0].value}" if check_entry(2))
-	$("#text_edit_button2").click((e)->entry=check_autocomplete(); window.location.href="/edit_text/#{entry}" if entry)
-	$("#graph_edit_button2").click((e)->entry=check_autocomplete(); window.location.href="/graphic_edit/#{entry}" if entry)
-	$("#delete_button2").click((e)->entry=check_autocomplete(); delete_dialog("/delete/#{entry}",entry)  if entry)
-	$("#view_button_2").click((e)->entry=check_autocomplete(); window.location.href="/view/#{entry}" if entry)
+	$("#text_edit_button2").click((e)->entry=no_entry_open_accordion(2); window.location.href="/edit_text/#{entry}" if entry)
+	$("#graph_edit_button2").click((e)->entry=no_entry_open_accordion(3); window.location.href="/graphic_edit/#{entry}" if entry)
+	$("#delete_button2").click((e)->entry=no_entry_open_accordion(4); delete_dialog("/delete/#{entry}",entry)  if entry)
+	$("#view_button_2").click((e)->entry=no_entry_open_accordion(1); window.location.href="/view/#{entry}" if entry)
 		
 		
 

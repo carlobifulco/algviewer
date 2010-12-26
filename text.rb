@@ -190,6 +190,7 @@ get "/graphic_edit/:form_name" do
   puts text
   (text.collect! {|t| t.rstrip}).select! {|t| (t !="-" and t.strip() !="" and t.strip() !="-")}
   offset=text[1].index "-"
+  offset=2 if offset==0
   puts "OFFSET=#{offset}"
   print text
   puts text
@@ -221,18 +222,41 @@ def rest_call(y)
   r
 end
 
+# cleanup of text before yaml load
+def text_cleanup(text)
+  text.gsub!(":","")
+  # this should eliminate a final - in an alg that is getting built
+  # by splitting lines and reuniting them except for the last if it is a lone"-"
+  # this is repeated twice since the empty - could be followed by a \n
+  puts "INITIAL #{text}"
+  text=text.strip()
+  text=text.split("\n")[0..-2].join("\n") if text.split("\n")[-1].strip()=="-"
+  text=text.strip()
+  puts "TEXT:#{text}"
+  puts "----------"
+  return text
+end
+
+def yaml_load(text)
+  begin
+    y=YAML.load text if text
+    puts "YAML: #{y}"
+    return y
+  rescue ":Error"
+    puts "EEEEERRRRRROOOOORRRRR"
+    return $stderr.puts $!.inspect
+  end
+end
+
+
 # text from redis stored form
 # called 
 get '/view/:form_name' do
   form_name=params[:form_name]
   text=($Redis4.get form_name).to_s
-  text.gsub!(":","")
-  begin
-    y=YAML.load text if text
-  rescue
-    puts "EEEEERRRRRROOOOORRRRR"
-    return $stderr.puts $!.inspect
-  end
+  # eliminate colomns in the rendering
+  text=text_cleanup(text)
+  y=yaml_load(text)
   begin
     r=rest_call y
     @svg=r["svg"]
@@ -250,15 +274,11 @@ end
 
 # text directly
 # used by graphic edit
+# also by all AJAX calls
 post '/graphic_edit_view' do
   text=params[:text]
-  text.gsub!(":","")
-  begin
-    y=YAML.load text if text
-  rescue ":Error"
-    puts "EEEEERRRRRROOOOORRRRR"
-    return $stderr.puts $!.inspect
-  end
+  text=text_cleanup(text)
+  y=yaml_load(text)
   begin
     r=rest_call y
     return r.to_json

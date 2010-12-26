@@ -1,7 +1,4 @@
 (function() {
-  var __bind = function(func, context) {
-    return function(){ return func.apply(context, arguments); };
-  };
   function concat_object(obj) {
   str='';
   for(prop in obj)
@@ -9,25 +6,30 @@
     str+=prop + " value :"+ obj[prop]+"\n";
   }
   return(str);
-};
+};  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   window.concat_object = concat_object;
   window.pos = {};
   window.counter = 0;
   window.error = false;
   $(document).ready(__bind(function() {
-    var alg_text, boxes_to_yaml, chosen, cut, del_entry, enter_text, error, get_draggable_data, get_pos, get_selected, grid, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, rendering_on_tab, resize_graph, save_alg, sort_rect, success, text_multiply, unselected, x_start, y_start, z;
+    var alg_text, boxes_to_yaml, chosen, cut, del_entry, enter_text, error, get_draggable_data, get_pos, get_selected, grid, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, rendering_on_tab, resize_graph, save_alg, sort_rect, success, text_edit, text_multiply, unselected, x_start, y_start, z;
     grid = 25;
     x_start = grid * 2;
     y_start = (grid * 4) + $(".new_box").position().top;
-    new_box = function(x, y, text, counter_id) {
+    new_box = function(x, y, text, counter_id, positions_style) {
       var text_box;
-      text_box = $("<div id='" + (counter_id) + "' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: " + (x) + "px; top: " + (y) + "px'>" + (text) + "</div>");
+      if (positions_style) {
+        text_box = $("<div id='" + counter_id + "' class='ui-widget-content ui-corner selectable text_box' style='position: " + positions_style + "; left: " + x + "px; top: " + y + "px'>" + text + "</div>");
+      } else {
+        text_box = $("<div id='" + counter_id + "' class='ui-widget-content ui-corner selectable text_box' style='position:absolute'; left: " + x + "px; top: " + y + "px'>" + text + "</div>");
+      }
       text_box.draggable({
         "grid": [grid, grid],
         "opacity": 0.35,
         "refreshPositions": "true",
-        "containment": "parent",
-        "scroll": true
+        "containment": "document",
+        "scroll": true,
+        "zIndex": -1
       }).appendTo(".new_box");
       text_box.draggable({
         "stop": offset
@@ -39,28 +41,29 @@
       text = i[0];
       x = x_start + (i[1] * grid);
       y = y_start + (window.counter * grid);
-      new_box(x, y, text, window.counter);
+      new_box(x, y, text, window.counter, "absolute");
       return window.counter += 1;
     };
     window.make_layout = make_layout;
-    alg_text = function(text_positions) {
-      var _i, _len, _ref, baseline, offset, old_offset, text, text_position;
-      text = "\n";
-      baseline = text_positions[0][1];
-      _ref = text_positions;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        text_position = _ref[_i];
-        offset = text_multiply("  ", (text_position[1] - baseline) / grid);
-        if (offset > old_offset) {
-          text += old_offset + "-" + "\n";
-        }
-        if (text_position[1] === baseline) {
-          text += "\n";
-        }
-        text += (offset + "- " + text_position[0].trim() + "\n");
-        old_offset = offset;
+    make_rect = function(evt) {
+      var b, new_text, text, text_box;
+      evt.stopPropagation();
+      evt.preventDefault();
+      b = $("#containment-wrapper");
+      text = document.text_form.text_content.value;
+      if (!text) {
+        text = "new box; select me, enter the text in the empty box and press control-e to change me";
       }
-      return text;
+      text_box = new_box(x_start, y_start - (grid * 2), text, window.counter, "absolute");
+      new_text = document.text_form.text_content.value;
+      text_box.css("background", "pink");
+      $(".selectable").selectable({
+        stop: function() {
+          return get_selected();
+        }
+      });
+      window.counter += 1;
+      return window.text_box = text_box;
     };
     text_multiply = function(text, n) {
       var a, i;
@@ -71,30 +74,12 @@
       return a.join("");
     };
     window.text_multiply = text_multiply;
-    make_rect = function(evt) {
-      var b, new_text, text;
-      evt.stopPropagation();
-      evt.preventDefault();
-      b = $("#containment-wrapper");
-      text = document.text_form.text_content.value;
-      if (!(text)) {
-        text = "new box; select me, enter the text in the empty box and press control-e to change me";
-      }
-      new_box(x_start, y_start - grid * 2, text, window.counter);
-      new_text = document.text_form.text_content.value;
-      $(".selectable").selectable({
-        stop: function() {
-          return get_selected();
-        }
-      });
-      return window.counter += 1;
-    };
     enter_text = function() {
       var b;
       b = $(".ui-selected")[0];
       if (b) {
         b.innerText = document.text_form.text_content.value;
-        return (document.text_form.text_content.value = "");
+        return document.text_form.text_content.value = "";
       }
     };
     chosen = function() {
@@ -106,17 +91,18 @@
       return $(".ui-selected").remove();
     };
     sort_rect = function() {
-      var _i, _len, _ref, _result, sorted_box, sorted_boxes, text_boxes, text_positions;
+      var sorted_box, sorted_boxes, text_boxes, text_positions;
       text_boxes = $(".text_box");
       sorted_boxes = _.sortBy(text_boxes, get_pos);
       window.sorted_boxes = sorted_boxes;
       text_positions = (function() {
-        _result = []; _ref = sorted_boxes;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          sorted_box = _ref[_i];
-          _result.push(make_text_position(sorted_box));
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = sorted_boxes.length; _i < _len; _i++) {
+          sorted_box = sorted_boxes[_i];
+          _results.push(make_text_position(sorted_box));
         }
-        return _result;
+        return _results;
       })();
       window.text_positions = text_positions;
       return text_positions;
@@ -148,18 +134,20 @@
       }
       $(dragged).removeClass("ui-selected").css("color", "black");
       render_alg();
-      return (window.u = dragged);
+      window.u = dragged;
+      return $(".text_box").css("background-color", "rgb(252, 187, 0)");
     };
     get_selected = function() {
-      var _i, _len, _ref, _result, data, i, s;
+      var data, i, s;
       s = _.sortBy($(".ui-selected"), get_pos);
       data = (function() {
-        _result = []; _ref = s;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          i = _ref[_i];
-          _result.push(get_draggable_data(i));
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = s.length; _i < _len; _i++) {
+          i = s[_i];
+          _results.push(get_draggable_data(i));
         }
-        return _result;
+        return _results;
       })();
       window.pos[_.size(window.pos)] = data;
       return s;
@@ -181,12 +169,12 @@
     window.get_draggable_data = get_draggable_data;
     make_draggable = function(id, text, x, y) {
       var text_box;
-      text_box = $("<div id='" + (id) + "' class='ui-widget-content selectable text_box' style='position: absolute; left: " + (x) + "px; top: " + (y) + "px'>" + (text) + "</div>");
+      text_box = $("<div id='" + id + "' class='ui-widget-content selectable text_box' style='position: absolute; left: " + x + "px; top: " + y + "px'>" + text + "</div>");
       text_box.draggable({
         "grid": [grid, grid],
         "opacity": 0.35,
         "refreshPositions": "true",
-        "containment": "parent",
+        "containment": "document",
         "scroll": true
       }).appendTo(".new_box");
       text_box.draggable({
@@ -196,39 +184,35 @@
     };
     window.make_draggable = make_draggable;
     cut = function(id) {
-      var _i, _len, _ref, _result, data, i, s;
+      var data, i, s, _i, _len;
       s = get_selected();
       s = _.reject(s, function(i) {
         return i.id === id;
       });
       data = (function() {
-        _result = []; _ref = s;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          i = _ref[_i];
-          _result.push(get_draggable_data(i));
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = s.length; _i < _len; _i++) {
+          i = s[_i];
+          _results.push(get_draggable_data(i));
         }
-        return _result;
+        return _results;
       })();
-      (function() {
-        _result = []; _ref = s;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          i = _ref[_i];
-          _result.push($(i).remove());
-        }
-        return _result;
-      })();
+      for (_i = 0, _len = s.length; _i < _len; _i++) {
+        i = s[_i];
+        $(i).remove();
+      }
       return data;
     };
     window.cut = cut;
     move = function(id, x_delta, y_delta) {
-      var _i, _len, _ref, _result, all, i;
+      var all, i, _i, _len;
       all = cut(id);
-      _result = []; _ref = all;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        i = _ref[_i];
-        _result.push(make_draggable(i.id, i.text, i.x + x_delta, i.y + y_delta));
+      for (_i = 0, _len = all.length; _i < _len; _i++) {
+        i = all[_i];
+        make_draggable(i.id, i.text, i.x + x_delta, i.y + y_delta);
       }
-      return _result;
+      return $(".text_box").css("background-color", "rgb(252, 187, 0)");
     };
     window.move = move;
     unselected = function() {
@@ -262,7 +246,7 @@
       var anchor;
       anchor = $("#inline_graph");
       window.z = data;
-      anchor.html("<img src=" + (data.png) + " style='opacity:0.4;z-index:1000'></img>");
+      anchor.html("<img src=" + data.png + " style='opacity:0.9;z-index:10000'></img>");
       $("#inline_graph").show();
       return resize_graph();
     };
@@ -273,16 +257,34 @@
         "value": 100
       });
       $("#progressbar").progressbar({
-        "value": 0
+        "value": 5
       });
       $("#hide_me").hide();
       $($("img")[0]).hide();
-      $("#tabs").tabs("destroy");
-      $("#tabs").tabs();
-      $("#tabs").tabs("select", "tabs-2");
       resize_graph();
       alg_name = _.last(window.location.pathname.split("/"));
       return $("#title").html(alg_name);
+    };
+    alg_text = function(text_positions) {
+      var baseline, old_offset, t, text, text_position, _i, _len;
+      window.text_positions = text_positions;
+      text = "\n";
+      baseline = text_positions[0][1];
+      for (_i = 0, _len = text_positions.length; _i < _len; _i++) {
+        text_position = text_positions[_i];
+        offset = text_multiply("  ", (text_position[1] - baseline) / grid);
+        if (offset > old_offset) {
+          text += old_offset + "-" + "\n";
+        }
+        if (text_position[1] < baseline) {
+          alert("Error! One of your boxes is too much on the left. Please reposition");
+          return;
+        }
+        t = text_position[0].trim();
+        text = text + offset + "- " + t + "\n";
+        old_offset = offset;
+      }
+      return text;
     };
     boxes_to_yaml = function() {
       var result;
@@ -301,9 +303,9 @@
         "text": result,
         "dataType": "json"
       }, function(data) {
-        return render_inline(JSON.parse(data));
+        return render_inline(JSON.parse(data), success());
       });
-      if (!(window.error)) {
+      if (!window.error) {
         $.post("/upload_text", {
           "form_content": result,
           "form_name": alg_name,
@@ -312,7 +314,7 @@
           return success();
         });
       }
-      return (window.error = false);
+      return window.error = false;
     };
     success = function() {
       return $("#progressbar").progressbar({
@@ -334,6 +336,14 @@
       });
     };
     window.save_alg = save_alg;
+    text_edit = function() {
+      var alg_name;
+      alg_name = _.last(window.location.pathname.split("/"));
+      window.location.href = "/edit_text/" + alg_name;
+      return $(document).ready(__bind(function() {
+        return $("#accordion").accordion("activate", 2);
+      }, this));
+    };
     window.alg_text = alg_text;
     window.sort_rect = sort_rect;
     $(document).bind('keydown', 'Return', function(evt) {
@@ -346,14 +356,11 @@
     });
     $("#tabs").tabs();
     $("#home").bind('click', function() {
-      return (window.location.pathname = "/");
+      return window.location.pathname = "/";
     });
     $("#new_entry").bind('click', make_rect);
     $("#del_entry").bind('click', del_entry);
-    $("#save_alg").bind('click', save_alg);
-    $("#pos_calc").bind('click', function() {
-      return render_alg();
-    });
+    $("#text_edit").bind('click', text_edit);
     $("button").button();
     $(".selectable").selectable({
       "selected": chosen,
@@ -366,8 +373,8 @@
       _.each(window.a, function(i) {
         return make_layout(i);
       });
-      window.counter = 0;
     }
+    render_alg();
     $(".selectable").selectable({
       stop: function() {
         return get_selected();

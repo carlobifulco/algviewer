@@ -29,8 +29,10 @@
   %div
 
     %form{:action=>"/upload_text",:method=>"post"}
+      .inline_graph#inline_graph
       %textarea#edit{:class=>"autoindent",:name=>"form_content",:rows=>"40",:cols=>"80",:lang=>"en", :style=>"direction: ltr;",:wrap=>"SOFT"}=@text
       %input{:type=>"hidden",:name=>"form_name",:value=>@form_name}
+   
   %h3
     %a.header{:href=>"#"}
       SAVE
@@ -38,11 +40,8 @@
     %span#submit
       SAVE
       
-  %h3
-    %a.header{:href=>"#"}
-      VIEW --not implemented
-  %div
-    %input#submit{:type=>"submit",:value=>"Send"}
+
+      
 
     
 
