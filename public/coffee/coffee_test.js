@@ -14,7 +14,7 @@
   window.pos = {};
   window.counter = 0;
   $(document).ready(__bind(function() {
-    var alg_text, boxes_to_yaml, chosen, cut, del_entry, enter_text, get_draggable_data, get_pos, get_selected, grid, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, rendering_on_tab, resize_graph, save_alg, sort_rect, success, text_multiply, unselected, x_start, y_start, z;
+    var alg_text, boxes_to_yaml, chosen, cut, del_entry, enter_text, get_draggable_data, get_pos, get_selected, grid, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, rendering_on_tab, resize_graph, save_alg, sort_rect, success, text_edit, text_multiply, unselected, x_start, y_start, z;
     grid = 25;
     x_start = grid * 2;
     y_start = (grid * 4) + $(".new_box").position().top;
@@ -25,7 +25,7 @@
         "grid": [grid, grid],
         "opacity": 0.35,
         "refreshPositions": "true",
-        "containment": "parent",
+        "containment": "window",
         "scroll": true
       }).appendTo(".new_box");
       text_box.draggable({
@@ -75,7 +75,7 @@
       evt.stopPropagation();
       evt.preventDefault();
       b = $("#containment-wrapper");
-      text = document.text_form.text_content.value;
+      text = String(document.text_form.text_content.value);
       if (!(text)) {
         text = "new box; select me, enter the text in the empty box and press control-e to change me";
       }
@@ -185,7 +185,7 @@
         "grid": [grid, grid],
         "opacity": 0.35,
         "refreshPositions": "true",
-        "containment": "parent",
+        "containment": "window",
         "scroll": true
       }).appendTo(".new_box");
       text_box.draggable({
@@ -341,12 +341,17 @@
       "value": 0
     });
     $("#tabs").tabs();
+    text_edit = function() {
+      var alg_name;
+      alg_name = _.last(window.location.pathname.split("/"));
+      return (window.location.href = ("/edit_text/" + (alg_name)));
+    };
+    $("#home").bind('click', function() {
+      return (window.location.pathname = "/");
+    });
     $("#new_entry").bind('click', make_rect);
     $("#del_entry").bind('click', del_entry);
-    $("#save_alg").bind('click', save_alg);
-    $("#pos_calc").bind('click', function() {
-      return render_alg();
-    });
+    $("#text_edit").bind('click', text_edit);
     $("button").button();
     $(".selectable").selectable({
       "selected": chosen,
@@ -366,8 +371,9 @@
         return get_selected();
       }
     });
-    return $('#error_log').ajaxError(__bind(function() {
+    $('#error_log').ajaxError(__bind(function() {
       return alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!");
     }, this));
+    return render_alg();
   }, this));
 }).call(this);

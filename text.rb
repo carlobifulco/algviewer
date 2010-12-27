@@ -232,6 +232,20 @@ def text_cleanup(text)
   text=text.strip()
   text=text.split("\n")[0..-2].join("\n") if text.split("\n")[-1].strip()=="-"
   text=text.strip()
+  new_text=[]
+  # eliminates ints and floats by wrapping them in quotes. The tree_struc alg wants only arrays or strings
+  text.split("\n").each do |x| 
+    x.rstrip!
+    # if "- 222.333" m[1] is 222 and m[2] is .333
+    m=x.match /-\s(\d+)(\.?\d+)?$/
+    if m
+      new_text<<x.gsub(m[1],'"'+m[1]+'"') if not m[2]
+      new_text<<x.gsub(m[1]+m[2],'"'+m[1]+m[2]+'"') if m[2]
+    else
+      new_text<<x
+    end
+  end
+  text=new_text.join("\n")
   puts "TEXT:#{text}"
   puts "----------"
   return text

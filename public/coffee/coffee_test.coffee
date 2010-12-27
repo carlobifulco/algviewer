@@ -36,7 +36,7 @@ $(document).ready =>
 
 	new_box=(x,y,text,counter_id)->
 		text_box=$("<div id='#{counter_id}' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
-		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
+		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"window","scroll":true}).appendTo(".new_box")
 		text_box.draggable("stop":offset)
 		#text_box.draggable({stop:"render_alg"})
 		return text_box
@@ -87,7 +87,7 @@ $(document).ready =>
 		evt.stopPropagation()
 		evt.preventDefault() 
 		b=$("#containment-wrapper")
-		text=document.text_form.text_content.value 
+		text=String(document.text_form.text_content.value)
 		text="new box; select me, enter the text in the empty box and press control-e to change me" unless text
 		new_box(x_start,(y_start-grid*2),text,window.counter)
 		new_text=document.text_form.text_content.value 
@@ -180,7 +180,7 @@ $(document).ready =>
 	# makes a draggable in absolute position; does not keep it selected so that process is reseted
 	make_draggable=(id,text,x,y)->
 		text_box=$("<div id='#{id}' class='ui-widget-content selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
-		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
+		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"window","scroll":true}).appendTo(".new_box")
 		text_box.draggable("stop":offset)
 		return text_box
 	window.make_draggable=make_draggable
@@ -307,11 +307,17 @@ $(document).ready =>
 	$("#progressbar").progressbar("value":0)
 	$("#tabs").tabs()
 	
+	
+	text_edit=()->
+		alg_name=_.last(window.location.pathname.split("/"))	
+		window.location.href="/edit_text/#{alg_name}"
+
+	
 	# Buttons
+	$("#home").bind 'click', ()->window.location.pathname="/"
 	$("#new_entry").bind 'click', make_rect
 	$("#del_entry").bind 'click', del_entry
-	$("#save_alg").bind 'click', save_alg
-	$("#pos_calc").bind 'click',()->render_alg()
+	$("#text_edit").bind 'click', text_edit
 	$("button").button()
 	
 	#draggables selectables
@@ -332,6 +338,9 @@ $(document).ready =>
 	
 	#error log
 	$('#error_log').ajaxError(()=>alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!"))
+	
+	# render on first load
+	render_alg()
 
 	
 		

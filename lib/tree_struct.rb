@@ -73,6 +73,13 @@ class NodesEdges
     while true
         # get rid of nil in list; 
         @list.select!{|x| x!= nil}
+        # get rid of ints and floats
+        # if (@list[0].class==Fixnum or  @list[0].class==Float)
+        #   @list[0]="'#{@list[0]}'"
+        #   next
+        # elsif (@list[1].class==Fixnum or  @list[1].class==Float)
+        #   @list[1]="'#{list[0]}'"
+        #   next
         # node followed by array of nodes
         if (@list[0].class ==String and @list[1].class ==Array) 
           @a<<[@list[0],@list[1].select{|x| x if x.class==String}]

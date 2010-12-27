@@ -4,7 +4,7 @@
 
 
 
-.span-12
+
 %button#home
   Home
 %button#new_entry
@@ -14,32 +14,25 @@
 %button#text_edit
   Text Edit Graph
 
-.span-12.last
-  #progressbar
-  
-  
 
-
-%div.ui_widget
-
-  .span-24
-  #error_log
-
-  .span-12
-    %form{:name=>"text_form"}
-      %input.text{:type=>"text",:name=>"text_content",:id=>"text_entry"} 
+#progressbar
 
   
-  %div.selectable.hide_edit#containment-wrapper.new_box.ui-widget
-    #inline_graph.inline_graph_edit
 
-%div#tabs-2 
-  .span-24
-  %span
-    %div#results
-  / %p#hide_me 
-  /   Results will show up here, hopefully...
-  %div
+
+%div
+
+
+
+%form{:name=>"text_form"}
+  %input.text{:type=>"text",:name=>"text_content",:id=>"text_entry"} 
+
+  
+%div.selectable#containment-wrapper.new_box
+
+#inline_graph.inline_graph_edit
+
+
 
 
 

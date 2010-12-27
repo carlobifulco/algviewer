@@ -9,11 +9,12 @@
     / %script{:type=>"application/x-javascript",:src=>"http://code.jquery.com/mobile/1.0a1/jquery.mobile-1.0a1.min.js"}
     
     -# %link{:rel=>"stylesheet", :type=>"text/css", :href=> $HOME}
-    %link{:rel=>"stylesheet", :href=>"/css/blueprint/screen.css", :type=>"text/css", :media=>"screen, projection"}
-    %link{:rel=>"stylesheet", :href=>"/css/blueprint/print.css", :type=>"text/css", :media=>"print"}
-    <!--[if lt IE 8]>
-    %link{:rel=>"stylesheet", :type=>"text/css",:href=>"/css/blueprint/ie.css" ,:media=>"screen, projection"}
-    <![endif]-->
+    / %link{:rel=>"stylesheet", :href=>"/css/blueprint/screen.css", :type=>"text/css", :media=>"screen, projection"}
+    / %link{:rel=>"stylesheet", :href=>"/css/blueprint/print.css", :type=>"text/css", :media=>"print"}
+    / <!--[if lt IE 8]>
+    / %link{:rel=>"stylesheet", :type=>"text/css",:href=>"/css/blueprint/ie.css" ,:media=>"screen, projection"}
+    -# <![endif]-->
+   
     %link{:rel=>"stylesheet", :type=>"text/css",:href=>"/jquery-ui-1.8.6.custom.css" ,:media=>"screen, projection"}
     / %link{:rel=>"stylesheet", :type=>"text/css", :href=>"http://code.jquery.com/mobile/1.0a1/jquery.mobile-1.0a1.min.css"}
     %link{:rel=>"stylesheet", :type=>"text/css",:href=>"/sass" ,:media=>"screen, projection"}
@@ -24,11 +25,12 @@
         .small.prepend-16
       - #%hr.space
       - #%hr.space
-      = yield
+    = yield
+    .container
       %hr.space
       .span-24.last
         .small.prepend-16
-          %br
-          copyright &copy 
-          %a{:href => 'http://twitter.com/carlobifulco'} cbb 
-          2010
+          / %br
+          / copyright &copy 
+          / %a{:href => 'http://twitter.com/carlobifulco'} cbb 
+          / 2010
