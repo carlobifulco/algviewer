@@ -36,7 +36,7 @@ $(document).ready =>
 
 	new_box=(x,y,text,counter_id)->
 		text_box=$("<div id='#{counter_id}' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
-		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"window","scroll":true}).appendTo(".new_box")
+		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","scroll":true}).appendTo(".new_box")
 		text_box.draggable("stop":offset)
 		#text_box.draggable({stop:"render_alg"})
 		return text_box
@@ -180,7 +180,7 @@ $(document).ready =>
 	# makes a draggable in absolute position; does not keep it selected so that process is reseted
 	make_draggable=(id,text,x,y)->
 		text_box=$("<div id='#{id}' class='ui-widget-content selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
-		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"window","scroll":true}).appendTo(".new_box")
+		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","scroll":true}).appendTo(".new_box")
 		text_box.draggable("stop":offset)
 		return text_box
 	window.make_draggable=make_draggable

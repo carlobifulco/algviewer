@@ -25,7 +25,6 @@
         "grid": [grid, grid],
         "opacity": 0.35,
         "refreshPositions": "true",
-        "containment": "window",
         "scroll": true
       }).appendTo(".new_box");
       text_box.draggable({
@@ -185,7 +184,6 @@
         "grid": [grid, grid],
         "opacity": 0.35,
         "refreshPositions": "true",
-        "containment": "window",
         "scroll": true
       }).appendTo(".new_box");
       text_box.draggable({
