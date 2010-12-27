@@ -1,0 +1,37 @@
+
+%script{:type=>"application/x-javascript",:src=>"/coffee/view.js"}
+
+
+%div#accordion.span-24
+  %h3
+    %a.header{:href=>"#"}
+      PREVIEW
+  %div
+    .span-6
+      #title
+    .span-16.last
+      %a{:href=>@pdf}
+        %img{:src=>@png}
+    
+  %h3
+    %a.header{:href=>"#"}
+      DOWNLOADS
+  %div.small_acc
+    %p
+      .span-2
+        %a.links{:href=>@pdf}
+          pdf
+      .span-2
+        %a.links{:href=>@svg}
+          svg
+      .span-2.last
+        %a.links{:href=>@png}
+          png
+      .span-2.last
+        %a.links{:href=>@dot}
+          dot
+
+      
+      
+
+

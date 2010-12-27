@@ -15,14 +15,19 @@
       EXAMPLE
   %div
     %p 
-      Always leave a space after the Yaml's "-" and the ":".
-    %p
-      Wrap/escape : in  ":" or in ':'.
-    %p
-      Respect the "-" followed by " - pattern, e.g.:
-    %p
-      Specimen
-      
+      The tree structure is based on text indentation. All entries need to be preceded by a "-" 
+      All indented braches need to preceded by a line with a lone "-" at the previous indentation level. For example:
+    %xmp.left
+      \- Mammals
+      \- 
+      \  - Cats
+      \  -
+      \    - Siamese
+      \  - Dogs
+      \  -
+      \    - Dobermann
+    %img.right{:src=>"/images/example.png"}
+    
   %h3
     %a.header{:href=>"#"}
       EDIT

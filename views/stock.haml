@@ -1,0 +1,57 @@
+%script{:type=>"application/x-javascript",:src=>"/coffee/stock.js"}
+
+.span-24
+
+
+
+
+
+
+%ul.ul-none
+  .span-8.column
+    %li.success
+      Capital:
+      %input#capital.small{:type=>"text"}
+  .span-8.column
+    %li.success
+      Entry Price:
+      %input#entry_price.small{:type=>"text"}
+  .span-7.column.last
+    %li.success
+      Exit Price:
+      %input#exit_price.small{:type=>"text"}
+  
+    
+%br
+.span-24   
+%br 
+  %ul.ul-none
+    .span-8.column
+    %li.success
+      Positions Number:
+      %input.positions.small{:type=>"text"}
+  %br
+  %ul
+    %li.notice.ul-none
+      %input#submit{:type=>"submit"}        
+        
+
+
+.span-6
+  %div#results.span-8
+    %ul.ul-none
+      %li
+        %h6#stocks_number.alert
+          Stocks Number:
+      %li
+        %h6#exit.alert
+          Upper Exit Price:
+      %li
+        %h6#lower_exit.alert
+          Lower Exit Price:
+  
+
+
+
+
+  
