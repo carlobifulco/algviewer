@@ -1,3 +1,121 @@
+require "json"
+
+$t="""
+- 1
+-
+  - 2
+  -
+    - 3
+    -
+      - 4
+      -
+        - a
+
+
+- a
+-
+  - b
+  -
+    - c
+    -
+      - d
+      -
+        - 1
+        - 2
+        - 3
+        - 4
+"""
+
+
+
+$t2= """
+- 1
+-
+  - 2
+  -
+    - 3
+    -
+      - 4
+
+- a
+
+- a
+-
+  - b
+  -
+    - c
+    -
+      - d
+      -
+        - 1
+        - 2
+        - 3
+        - 4
+        """
+
+
+
+
+
+$t3="""
+- 1
+-
+  - 2
+  - 3
+  - new box; select me, enter the text in the empty box and press controle to change me
+
+- a"""
+
+
+
+#doctest: testing Text2Box
+#>> n=Text2Box.new $t2
+#>> n.get_text_indent 
+#FUSED TEXT:
+#["- 1", "-", "  - 2", "  -", "    - 3", "    -", "      - 4", "- a", "- a", "-", "  - b", "  -", "    - c", "    -", "      - d", "      -", "        - 1", "        - 2", "        - 3", "        - 4"]
+#OFFSET=2
+#[0,1,2,3,0,0,1,2,3,4,4,4,4]
+#=> "[[\" 1\",0],[\"   2\",1],[\"     3\",2],[\"       4\",3],[\" a\",0],[\" a\",0],[\"   b\",1],[\"     c\",2],[\"       d\",3],[\"         1\",4],[\"         2\",4],[\"         3\",4],[\"         4\",4]]"
+
+
+class Text2Box
+  
+  attr_accessor :text
+  
+  def initialize text
+    @text=text
+  end
+  
+  def get_text_indent
+    text=@text.split("\n")
+    # get rid of empty lines that do not add to the YAML structure
+    text.select!{|x| x if x.strip() !=""}
+    fused_lines=[]
+    text.each do |x|  
+       if x.lstrip()[0] !="-" and fused_lines[-1]
+         fused_lines[-1]=fused_lines[-1].strip() +x 
+       else 
+         fused_lines<<x 
+       end
+     end
+    text=fused_lines
+    puts "FUSED TEXT:\n #{text}"
+    (text.collect! {|t| t.rstrip}).select! {|t| (t !="-" and t.strip() !="" and t.strip() !="-")}
+    offset=text[1].index "-"
+    offset=2 if offset==0
+    puts "OFFSET=#{offset}"
+    #print text
+    #puts text
+    boxes_indent=text.collect {|x| (x.index("-")/offset)}
+    text.collect! {|x| x.delete "-"}
+    #puts boxes_indent
+    puts boxes_indent.to_json
+    text_indent=(text.zip boxes_indent).to_json
+    return text_indent
+  end
+end
+
+
 
 
 

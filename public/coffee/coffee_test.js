@@ -42,13 +42,14 @@
     };
     window.make_layout = make_layout;
     alg_text = function(text_positions) {
-      var _i, _len, _ref, baseline, offset, old_offset, text, text_position;
+      var _i, _len, _ref, baseline, indent_level, offset, old_offset, text, text_position;
       text = "\n";
       baseline = text_positions[0][1];
       _ref = text_positions;
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         text_position = _ref[_i];
-        offset = text_multiply("  ", (text_position[1] - baseline) / grid);
+        indent_level = Math.round((text_position[1] - baseline) / grid);
+        offset = text_multiply("  ", indent_level);
         if (offset > old_offset) {
           text += old_offset + "-" + "\n";
         }
@@ -287,6 +288,7 @@
       window.yaml = result;
       return result;
     };
+    window.boxes_to_yaml = boxes_to_yaml;
     render_alg = function() {
       var alg_name, result, z;
       result = boxes_to_yaml();
@@ -318,14 +320,7 @@
       yaml = boxes_to_yaml();
       alg_name = _.last(window.location.pathname.split("/"));
       window.alg_name = alg_name;
-      window.yaml = yaml;
-      return $.post("/upload_text", {
-        "form_content": yaml,
-        "form_name": alg_name,
-        "type": "ajax"
-      }, function(data) {
-        return success();
-      });
+      return (window.yaml = yaml);
     };
     window.save_alg = save_alg;
     window.alg_text = alg_text;
@@ -356,7 +351,7 @@
       "unselected": unselected
     });
     $(".draggable").draggable();
-    $("#hide_graphic_edit").hide();
+    $(".hide").hide();
     window.a = eval($("#hide_graphic_edit").text());
     if (window.a) {
       _.each(window.a, function(i) {

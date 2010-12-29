@@ -57,13 +57,15 @@ $(document).ready =>
 	#renders yaml alg structure	
 	alg_text=(text_positions)->	 
 		text="\n"
+		# presumes the first box is the leftest. better would be the most left handed
 		baseline=text_positions[0][1]
 		for text_position in text_positions
 			#[0] contains the actual text 
 			# screening for possible complications
-
-				
-			offset=text_multiply("  ",(text_position[1]-baseline)/grid)
+			# indent level needs to be rounded 
+			indent_level=Math.round((text_position[1]-baseline)/grid)
+			offset=text_multiply("  ",indent_level)
+			#console.log(indent_level)
 			if offset>old_offset
 				text+=old_offset+"-"+"\n"
 			if text_position[1]==baseline
@@ -266,6 +268,7 @@ $(document).ready =>
 		# for debugging
 		window.yaml=result
 		return result
+	window.boxes_to_yaml=boxes_to_yaml
 		
 	# ajax call to /view_text 
 	# and when results come back calls rendering_ok for showing the 
@@ -290,7 +293,7 @@ $(document).ready =>
 		alg_name=_.last(window.location.pathname.split("/"))
 		window.alg_name=alg_name
 		window.yaml=yaml
-		$.post("/upload_text",{"form_content":yaml,"form_name":alg_name,"type":"ajax"},(data)->success())
+		#$.post("/upload_text",{"form_content":yaml,"form_name":alg_name,"type":"ajax"},(data)->success())
 	window.save_alg=save_alg
 		
 
@@ -327,7 +330,7 @@ $(document).ready =>
 	
 	#graphic edit mode
 	#alg structure is linked to the #hide_graphic_edit in the dom
-	$("#hide_graphic_edit").hide()
+	$(".hide").hide()
 	window.a=eval($("#hide_graphic_edit").text())
 	if window.a
 		_.each(window.a, (i)->make_layout(i))

@@ -175,29 +175,11 @@ get "/graphic_edit/:form_name" do
     @text_indent=""
     return haml :coffee_test
   end
-  puts "1111"
-  puts text
-  text=text.split("\n")
-  fused_lines=[]
-  text.each do |x|  
-     if x.lstrip()[0] !="-" and fused_lines[-1]
-       fused_lines[-1]=fused_lines[-1].strip() +x 
-     else 
-       fused_lines<<x 
-     end
-   end
-  text=fused_lines
-  puts text
-  (text.collect! {|t| t.rstrip}).select! {|t| (t !="-" and t.strip() !="" and t.strip() !="-")}
-  offset=text[1].index "-"
-  offset=2 if offset==0
-  puts "OFFSET=#{offset}"
-  print text
-  puts text
-  boxes_indent=text.collect {|x| (x.index("-")/offset)}
-  text.collect! {|x| x.delete "-"}
-  puts boxes_indent.to_json
-  @text_indent=(text.zip boxes_indent).to_json
+  # Text2Box from lib/tree_struct.rb transforms Yaml in the array of tuples
+  @text=text
+  @test="AAAA"
+  t=Text2Box.new text
+  @text_indent=t.get_text_indent()
   url="/coffee_test"
   haml :coffee_test
     #@text.select! {|x| x.delete! "-"}
@@ -205,9 +187,7 @@ get "/graphic_edit/:form_name" do
 end
 
 
-#### The next two should be one function; 
-#### the only difference among them is that one gets the text from the redis form, 
-#### while the other gets it directly
+
 
 
 #yaml load and rest call; returns dictionary response
