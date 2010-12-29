@@ -1,11 +1,13 @@
 (function() {
-  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
+  var __bind = function(func, context) {
+    return function(){ return func.apply(context, arguments); };
+  };
   $(document).ready(__bind(function() {
     var render_inline, resize_graph, show_mistake, update_graph;
     window.debug = false;
     $("#accordion").accordion();
     $(".ui-accordion-content")[0].style.height = "40px";
-    $(".ui-accordion-content")[1].style.height = "140px";
+    $(".ui-accordion-content")[1].style.height = "320px";
     $(".ui-accordion-content")[3].style.height = "40px";
     $("#submit").button();
     $("#submit").click(function() {
@@ -35,7 +37,7 @@
     render_inline = function(data) {
       var anchor;
       anchor = $("#inline_graph");
-      anchor.html("<img id=graph src=" + data.png + " style='opacity:0.9;z-index:10000'></img>");
+      anchor.html("<img id=graph src=" + (data.png) + " style='opacity:0.9;z-index:10000'></img>");
       $("#inline_graph").show();
       return resize_graph();
     };
@@ -53,11 +55,7 @@
     update_graph();
     show_mistake = function(error_obj) {
       window.error_obj = error_obj;
-      if (window.debug) {
-        return $('#inline_graph').html(error_obj.responseText);
-      } else {
-        return $('#inline_graph').html("<h3>ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!</h3");
-      }
+      return window.debug ? $('#inline_graph').html(error_obj.responseText) : $('#inline_graph').html("<h3>ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!</h3");
     };
     window.show_mistake = show_mistake;
     $('#inline_graph').ajaxError(function(o, e) {
@@ -66,6 +64,6 @@
     $(document).bind('keydown', 'Return', function(evt) {
       return update_graph();
     });
-    return window.update_graph = update_graph;
+    return (window.update_graph = update_graph);
   }, this));
 }).call(this);
