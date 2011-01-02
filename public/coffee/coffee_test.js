@@ -14,7 +14,7 @@
   window.pos = {};
   window.counter = 0;
   $(document).ready(__bind(function() {
-    var alg_text, boxes_to_yaml, chosen, cut, del_entry, enter_text, get_draggable_data, get_pos, get_selected, grid, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, rendering_on_tab, resize_graph, save_alg, sort_rect, success, text_edit, text_multiply, unselected, x_start, y_start, z;
+    var alg_text, boxes_to_yaml, chosen, cut, del_entry, enter_text, get_draggable_data, get_pos, get_selected, grid, handle_drag_over, handle_file_select, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, resize_graph, save, save_alg, sort_rect, success, text_edit, text_multiply, unselected, x_start, y_start, z;
     grid = 25;
     x_start = grid * 2;
     y_start = (grid * 4) + $(".new_box").position().top;
@@ -76,6 +76,7 @@
       evt.preventDefault();
       b = $("#containment-wrapper");
       text = String(document.text_form.text_content.value);
+      document.text_form.text_content.value = "";
       if (!(text)) {
         text = "new box; select me, enter the text in the empty box and press control-e to change me";
       }
@@ -102,7 +103,10 @@
       return $(".ancor").css("color", "black");
     };
     del_entry = function() {
-      return $(".ui-selected").remove();
+      var yaml_structure;
+      $(".ui-selected").remove();
+      yaml_structure = boxes_to_yaml();
+      return save(yaml_structure);
     };
     sort_rect = function() {
       var _i, _len, _ref, _result, sorted_box, sorted_boxes, text_boxes, text_positions;
@@ -260,27 +264,9 @@
       var anchor;
       anchor = $("#inline_graph");
       window.z = data;
-      anchor.html("<img src=" + (data.png) + "></img>");
+      anchor.html("<img class=inline_graph src=" + (data.png) + "></img>");
       $("#inline_graph").show();
       return resize_graph();
-    };
-    rendering_on_tab = function(data) {
-      var alg_name;
-      $("#results").html(data);
-      $("#progressbar").progressbar({
-        "value": 100
-      });
-      $("#progressbar").progressbar({
-        "value": 0
-      });
-      $("#hide_me").hide();
-      $($("img")[0]).hide();
-      $("#tabs").tabs("destroy");
-      $("#tabs").tabs();
-      $("#tabs").tabs("select", "tabs-2");
-      resize_graph();
-      alg_name = _.last(window.location.pathname.split("/"));
-      return $("#title").html(alg_name);
     };
     boxes_to_yaml = function() {
       var result;
@@ -290,20 +276,24 @@
     };
     window.boxes_to_yaml = boxes_to_yaml;
     render_alg = function() {
-      var alg_name, result, z;
-      result = boxes_to_yaml();
-      alg_name = _.last(window.location.pathname.split("/"));
+      var yaml_structure, z;
       $("#progressbar").progressbar({
         "value": 25
       });
+      yaml_structure = boxes_to_yaml();
       z = $.post("/graphic_edit_view", {
-        "text": result,
+        "text": yaml_structure,
         "dataType": "json"
       }, function(data) {
         return render_inline(JSON.parse(data));
       });
+      return save(yaml_structure);
+    };
+    save = function(yaml_structure) {
+      var alg_name;
+      alg_name = _.last(window.location.pathname.split("/"));
       return $.post("/upload_text", {
-        "form_content": result,
+        "form_content": yaml_structure,
         "form_name": alg_name,
         "type": "ajax"
       }, function(data) {
@@ -325,10 +315,17 @@
     window.save_alg = save_alg;
     window.alg_text = alg_text;
     window.sort_rect = sort_rect;
-    $(document).bind('keydown', 'Return', function(evt) {
-      return make_rect(evt);
+    $(document).keyup(function(e) {
+      if (e.keyCode === 17) {
+        return (window.is_ctrl = false);
+      }
     });
-    $(document).bind('keydown', 'Ctrl+e', enter_text);
+    $("#text_entry").keydown(function(e) {
+      e.stopPropagation();
+      if (e.keyCode === 13) {
+        return make_rect(e);
+      }
+    });
     z = 0;
     $("#progressbar").progressbar({
       "value": 0
@@ -367,6 +364,17 @@
     $('#error_log').ajaxError(__bind(function() {
       return alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!");
     }, this));
-    return render_alg();
+    render_alg();
+    handle_file_select = function(evt) {
+      var files;
+      evt.stopPropagation();
+      evt.preventDefault();
+      files = evt.dataTransfer.files;
+      return alert(files);
+    };
+    window.handle_file_select = handle_file_select;
+    return (handle_drag_over = function(evt) {
+      return alert("DRAGGED OVER");
+    });
   }, this));
 }).call(this);

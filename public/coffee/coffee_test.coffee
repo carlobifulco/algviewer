@@ -7,6 +7,9 @@
   }
   return(str);
 }`
+
+
+
 window.concat_object=concat_object
 
 #global for dragging
@@ -90,6 +93,7 @@ $(document).ready =>
 		evt.preventDefault() 
 		b=$("#containment-wrapper")
 		text=String(document.text_form.text_content.value)
+		document.text_form.text_content.value=""
 		text="new box; select me, enter the text in the empty box and press control-e to change me" unless text
 		new_box(x_start,(y_start-grid*2),text,window.counter)
 		new_text=document.text_form.text_content.value 
@@ -114,6 +118,8 @@ $(document).ready =>
 	#kills a box
 	del_entry=()->
 		$(".ui-selected").remove()
+		yaml_structure=boxes_to_yaml()
+		save(yaml_structure)
 
 	#sorts the boxes so that they can get rendered in text in order
 	sort_rect=()->
@@ -238,29 +244,14 @@ $(document).ready =>
 		window.z=data
 		#alert(data["png"])
 		
-		anchor.html("<img src=#{data.png}></img>")
+		anchor.html("<img class=inline_graph src=#{data.png}></img>")
 		$("#inline_graph").show()
+		#$("inline_graph").onclick()
 		resize_graph()
 		
 	
 
-	
-	#updates progressbar, switches to the result tab and resizes image
-	rendering_on_tab=(data)->
-		$("#results").html(data)
-		$("#progressbar" ).progressbar("value": 100)
 
-		$("#progressbar" ).progressbar("value": 0)
-		#$("img")[0].height=300
-		#$("img")[0].width=$("#img").height*ratio
-		$("#hide_me").hide()
-		$($("img")[0]).hide()
-		$("#tabs").tabs("destroy")
-		$("#tabs").tabs()
-		$("#tabs").tabs("select","tabs-2")
-		resize_graph()
-		alg_name=_.last(window.location.pathname.split("/"))
-		$("#title").html(alg_name)
 	
 	# transform the boxes in a yaml alg
 	boxes_to_yaml=()->
@@ -274,15 +265,18 @@ $(document).ready =>
 	# and when results come back calls rendering_ok for showing the 
 	# results
 	render_alg=()->
-		result=boxes_to_yaml()
-		alg_name=_.last(window.location.pathname.split("/"))
 		$("#progressbar" ).progressbar("value":25)
-		#show on tab
-		#z=$.post("/graphic_edit_view",{"text":result,"dataType":"json"},(data)->rendering_on_tab(JSON.parse(data)))
-		#window.z=z
-		z=$.post("/graphic_edit_view",{"text":result,"dataType":"json"},(data)->render_inline(JSON.parse(data)))
+		yaml_structure=boxes_to_yaml()
+		#show on tab inline rendering
+		z=$.post("/graphic_edit_view",{"text":yaml_structure,"dataType":"json"},(data)->render_inline(JSON.parse(data)))
 		# and save
-		$.post("/upload_text",{"form_content":result,"form_name":alg_name,"type":"ajax"},(data)->success())
+		save(yaml_structure)
+		
+	save=(yaml_structure)->
+		# get algname
+		alg_name=_.last(window.location.pathname.split("/"))
+		# acutal save
+		$.post("/upload_text",{"form_content":yaml_structure,"form_name":alg_name,"type":"ajax"},(data)->success())
 
 	success=()->
 		$("#progressbar" ).progressbar("value":100)
@@ -302,8 +296,12 @@ $(document).ready =>
 	window.sort_rect=sort_rect
 	
 	#keys bindings
-	$(document).bind('keydown', 'Return', (evt)->make_rect(evt))
-	$(document).bind('keydown', 'Ctrl+e', enter_text)
+	
+	$(document).keyup((e)-> window.is_ctrl=false if e.keyCode==17)
+	$("#text_entry").keydown((e)-> e.stopPropagation(); make_rect(e) if e.keyCode==13)
+	# $(document).bind('keydown', 'Return', (evt)->make_rect(evt))
+	# $(document).bind('keydown', 'Ctrl+e', enter_text)
+	# $(document).bind('keydown', 'Ctrl+a', alert)
 	z=0
 	
 	# bar and tabs
@@ -345,8 +343,29 @@ $(document).ready =>
 	# render on first load
 	render_alg()
 
+	handle_file_select=(evt)->
+	  evt.stopPropagation()
+	  evt.preventDefault()
+	  files=evt.dataTransfer.files
+	  alert(files)
+	window.handle_file_select=handle_file_select
 	
-		
+	handle_drag_over=(evt)->
+		alert("DRAGGED OVER")
+
+	
+	# test=()->
+	#   	d = $('#content')[0]
+	# 	return d
+  # $("drop_zone").bind('dragover', handle_drag_over, false)
+  # #drop_zone.addEventListener('drop', handle_file_select, false)
+  # window.drop_zone=drop_zone
+ 		#alert(drop_zone)
+
+	# window.test=test
+	
+	#alert ("TEST")
+
 
 
 # toogling
