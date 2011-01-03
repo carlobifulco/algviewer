@@ -19,6 +19,9 @@
     grid = 25;
     x_start = grid * 2;
     y_start = (grid * 4) + $(".new_box").position().top;
+    $.ajaxSetup({
+      cache: false
+    });
     new_box = function(x, y, text, counter_id) {
       var text_box;
       text_box = $("<div id='" + (counter_id) + "' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: " + (x) + "px; top: " + (y) + "px'>" + (text) + "</div>");
@@ -42,6 +45,34 @@
       return window.counter += 1;
     };
     window.make_layout = make_layout;
+    make_rect = function(evt) {
+      var b, new_text, text;
+      evt.stopPropagation();
+      evt.preventDefault();
+      b = $("#containment-wrapper");
+      text = String(document.text_form.text_content.value);
+      document.text_form.text_content.value = "";
+      if (!(text)) {
+        text = "new box; select me, enter the text in the empty box and press control-e to change me";
+      }
+      new_box(x_start, y_start - grid * 2, text, window.counter);
+      new_text = document.text_form.text_content.value;
+      $(".selectable").selectable({
+        stop: function() {
+          return get_selected();
+        }
+      });
+      $("#text_entry").focus();
+      return window.counter += 1;
+    };
+    edit_text = function() {
+      var b;
+      b = $(".ui-selected")[0];
+      if (b !== "") {
+        b.innerText = document.text_form.text_content.value;
+        return (document.text_form.text_content.value = "");
+      }
+    };
     alg_text = function(text_positions) {
       var _i, _len, _ref, baseline, indent_level, offset, old_offset, text, text_position;
       text = "\n";
@@ -71,45 +102,6 @@
       return a.join("");
     };
     window.text_multiply = text_multiply;
-    make_rect = function(evt) {
-      var b, new_text, text;
-      evt.stopPropagation();
-      evt.preventDefault();
-      b = $("#containment-wrapper");
-      text = String(document.text_form.text_content.value);
-      document.text_form.text_content.value = "";
-      if (!(text)) {
-        text = "new box; select me, enter the text in the empty box and press control-e to change me";
-      }
-      new_box(x_start, y_start - grid * 2, text, window.counter);
-      new_text = document.text_form.text_content.value;
-      $(".selectable").selectable({
-        stop: function() {
-          return get_selected();
-        }
-      });
-      $("#text_entry").focus();
-      return window.counter += 1;
-    };
-    edit_text = function() {
-      var b;
-      b = $(".ui-selected")[0];
-      if (b !== "") {
-        b.innerText = document.text_form.text_content.value;
-        return (document.text_form.text_content.value = "");
-      }
-    };
-    chosen = function() {
-      $(".text_box").css("color", "black");
-      $(".ui-selected").css("color", "red");
-      return $(".ancor").css("color", "black");
-    };
-    del_entry = function() {
-      var yaml_structure;
-      $(".ui-selected").remove();
-      yaml_structure = boxes_to_yaml();
-      return render_alg();
-    };
     sort_rect = function() {
       var _i, _len, _ref, _result, sorted_box, sorted_boxes, text_boxes, text_positions;
       text_boxes = $(".text_box");
@@ -131,6 +123,24 @@
       text = $(text_box).text();
       pos_left = $(text_box).position().left;
       return [text, pos_left];
+    };
+    boxes_to_yaml = function() {
+      var result;
+      result = alg_text(sort_rect());
+      window.yaml = result;
+      return result;
+    };
+    window.boxes_to_yaml = boxes_to_yaml;
+    chosen = function() {
+      $(".text_box").css("color", "black");
+      $(".ui-selected").css("color", "red");
+      return $(".ancor").css("color", "black");
+    };
+    del_entry = function() {
+      var yaml_structure;
+      $(".ui-selected").remove();
+      yaml_structure = boxes_to_yaml();
+      return render_alg();
     };
     offset = function(e, u) {
       var dragged, id, new_data, old_data, x, x_delta, y, y_delta;
@@ -307,13 +317,6 @@
         return $("#text_entry").focus();
       }
     };
-    boxes_to_yaml = function() {
-      var result;
-      result = alg_text(sort_rect());
-      window.yaml = result;
-      return result;
-    };
-    window.boxes_to_yaml = boxes_to_yaml;
     render_alg = function() {
       var yaml_structure, z;
       $("#progressbar").progressbar({
@@ -355,6 +358,20 @@
     window.save_alg = save_alg;
     window.alg_text = alg_text;
     window.sort_rect = sort_rect;
+    $("#progressbar").progressbar({
+      "value": 0
+    });
+    $("#tabs").tabs();
+    alg_text_edit = function() {
+      var alg_name;
+      alg_name = _.last(window.location.pathname.split("/"));
+      return (window.location.href = ("/edit_text/" + (alg_name)));
+    };
+    alg_view = function() {
+      var alg_name;
+      alg_name = _.last(window.location.pathname.split("/"));
+      return (window.location.href = ("/view/" + (alg_name)));
+    };
     enter = function(e) {
       var selected;
       e.stopPropagation();
@@ -378,20 +395,6 @@
     $("#text_entry").keydown(function(e) {
       return enter(e);
     });
-    $("#progressbar").progressbar({
-      "value": 0
-    });
-    $("#tabs").tabs();
-    alg_text_edit = function() {
-      var alg_name;
-      alg_name = _.last(window.location.pathname.split("/"));
-      return (window.location.href = ("/edit_text/" + (alg_name)));
-    };
-    alg_view = function() {
-      var alg_name;
-      alg_name = _.last(window.location.pathname.split("/"));
-      return (window.location.href = ("/view/" + (alg_name)));
-    };
     $("#home").bind('click', function() {
       return (window.location.pathname = "/");
     });
@@ -406,6 +409,14 @@
       "unselected": unselected
     });
     $(".draggable").draggable();
+    $(".selectable").selectable({
+      stop: function() {
+        return get_selected();
+      }
+    });
+    $('#error_log').ajaxError(__bind(function() {
+      return alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!");
+    }, this));
     initial_layout = function(text_indent) {
       var boxes_struct;
       boxes_struct = JSON.parse(JSON.parse(text_indent));
@@ -418,21 +429,10 @@
       render_alg();
       return (window.counter = 0);
     };
-    $.ajaxSetup({
-      cache: false
-    });
     $(".hide").hide();
     alg_name = _.last(window.location.pathname.split("/"));
-    z = $.get("/ajax_text_indent/" + (alg_name), function(text_indent) {
+    return (z = $.get("/ajax_text_indent/" + (alg_name), function(text_indent) {
       return initial_layout(text_indent);
-    });
-    $(".selectable").selectable({
-      stop: function() {
-        return get_selected();
-      }
-    });
-    return $('#error_log').ajaxError(__bind(function() {
-      return alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!");
-    }, this));
+    }));
   }, this));
 }).call(this);

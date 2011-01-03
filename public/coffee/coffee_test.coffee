@@ -22,24 +22,22 @@ window.image_is_large=false
 #on load jquery
 $(document).ready =>
 
+#GLOBALS
+#-------
+	
 	# grid size GLOBALS
 	grid=25
 	x_start=grid*2
 	y_start=(grid*4)+$(".new_box").position().top
-	#y_new_box_start=y_start-(grid*2)
-	# 
-
-
-		
-		# i=[[" Urine Cytology",0],[" Positive",1]...
-		# places the boxes if needed
 	
-		#get all selected boxes
+	#block caching
+	$.ajaxSetup({cache: false})
 
-	#returns all selected boxes in order
 
-# new text box
+#New text boxes
+#--------------
 
+	# a new box
 	new_box=(x,y,text,counter_id)->
 		text_box=$("<div id='#{counter_id}' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
 		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","scroll":true}).appendTo(".new_box")
@@ -47,18 +45,42 @@ $(document).ready =>
 		#text_box.draggable({stop:"render_alg"})
 		return text_box
 
-##### loads text	
+	# makes boxes out of list of tuples 0=text,1=indent 	
 	make_layout=(i)->
 		text=i[0]
 		x=x_start+(i[1]*grid)
 		y=y_start+(window.counter*grid)
 		new_box(x,y,text, window.counter)
-		# text_box=$("<div id='#{window.counter}' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
-		# text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","containment":"parent","scroll":true}).appendTo(".new_box")
-		# text_box.draggable("stop":offset)
-		#text_box.selectable({stop:()->alert("AAAA")})
+		#this takes care of the vertical order
 		window.counter+=1
 	window.make_layout=make_layout
+	
+	
+	#enters a new box on manual text entry
+	make_rect=(evt)->
+		evt.stopPropagation()
+		evt.preventDefault() 
+		b=$("#containment-wrapper")
+		text=String(document.text_form.text_content.value)
+		document.text_form.text_content.value=""
+		text="new box; select me, enter the text in the empty box and press control-e to change me" unless text
+		new_box(x_start,(y_start-grid*2),text,window.counter)
+		new_text=document.text_form.text_content.value 
+		#alert(new_text)
+		$(".selectable").selectable({stop:()->get_selected()})	
+		$("#text_entry").focus()
+		window.counter+=1
+	
+	#updates the text of a box
+	edit_text=()->
+		b=$(".ui-selected")[0]
+		if b !=""
+			b.innerText=document.text_form.text_content.value
+			document.text_form.text_content.value=""
+
+
+#From boxes to yaml
+#-----------------
 
 	#renders yaml alg structure	
 	alg_text=(text_positions)->	 
@@ -89,42 +111,7 @@ $(document).ready =>
 			a.push(text)
 		a.join("")
 	window.text_multiply=text_multiply
-
-	#enters a new box 
-	make_rect=(evt)->
-		evt.stopPropagation()
-		evt.preventDefault() 
-		b=$("#containment-wrapper")
-		text=String(document.text_form.text_content.value)
-		document.text_form.text_content.value=""
-		text="new box; select me, enter the text in the empty box and press control-e to change me" unless text
-		new_box(x_start,(y_start-grid*2),text,window.counter)
-		new_text=document.text_form.text_content.value 
-		#alert(new_text)
-		$(".selectable").selectable({stop:()->get_selected()})	
-		$("#text_entry").focus()
-		window.counter+=1
 	
-	#updates the text of a box
-	edit_text=()->
-		b=$(".ui-selected")[0]
-		#alert(b)
-		if b !=""
-			b.innerText=document.text_form.text_content.value
-			document.text_form.text_content.value=""
-
-	# css for when selected
-	chosen=()->
-		$(".text_box").css("color","black")
-		$(".ui-selected").css("color","red")
-		$(".ancor").css("color","black")
-	
-	#kills a box
-	del_entry=()->
-		$(".ui-selected").remove()
-		yaml_structure=boxes_to_yaml()
-		render_alg()
-
 	#sorts the boxes so that they can get rendered in text in order
 	sort_rect=()->
 		text_boxes= $(".text_box")
@@ -133,15 +120,46 @@ $(document).ready =>
 		text_positions=(make_text_position(sorted_box) for sorted_box in sorted_boxes)
 		window.text_positions=text_positions
 		text_positions
-
+	
+	# get postions from a box
 	make_text_position=(text_box)->
 		text=$(text_box).text()
 		pos_left=$(text_box).position().left
 		[text,pos_left]
+		
+	# transform the boxes in a yaml alg
+	boxes_to_yaml=()->
+		result=alg_text(sort_rect())
+		# for debugging
+		window.yaml=result
+		return result
+	window.boxes_to_yaml=boxes_to_yaml
 
-##### Multiple dragging business	 
+
+# Selected box
+#-------------
+	# css for when selected
+	chosen=()->
+		$(".text_box").css("color","black")
+		$(".ui-selected").css("color","red")
+		$(".ancor").css("color","black")
+	
+	
+# Kill Box
+#----------	
+	#kills a box
+	del_entry=()->
+		$(".ui-selected").remove()
+		yaml_structure=boxes_to_yaml()
+		render_alg()
+
+
+
+#Multiple dragging business	 
+#--------------------------
 	
 	# u is the dragged item; u.position.left and top is where it got dragged
+	# gets always called one done with dragging
 	offset=(e,u)->
 		# just one gets dragged, the other folllow
 		dragged=$(u.helper[0])[0]
@@ -222,7 +240,11 @@ $(document).ready =>
 		$(text_box).position().top
 	window.get_pos=get_pos
 	
+	#Graph resizing and dysplay
+	#--------------------------
+	
 	#finds largest parameter of the graph; then sets that parameter to max based on window size and the other to nil
+	#for dysplay of the graph in the R half of window
 	resize_graph=()->
 		image=$('#graph_preview')
 		window.image=image
@@ -249,13 +271,10 @@ $(document).ready =>
 		
 	
 	# inline rendering
+	# of graph
 	render_inline=(data)->
 		anchor=$("#inline_graph")
-		#data=JSON.parse(data)
-		#yaml load and rest call; returns dictionary response
 		window.z=data
-		#alert(data["png"])
-		
 		anchor.html("<img class=inline_graph id=graph_preview src=#{data.png}></img>")
 		image=$("#graph_preview")
 		image.hide()
@@ -266,7 +285,7 @@ $(document).ready =>
 		# on old for now
 		
 	
-	
+	# to be activated on click on graph
 	expand_graph=()->
 		im=	$('#graph_preview')
 		if not window.image_is_large
@@ -295,14 +314,9 @@ $(document).ready =>
 	
 
 
-	
-	# transform the boxes in a yaml alg
-	boxes_to_yaml=()->
-		result=alg_text(sort_rect())
-		# for debugging
-		window.yaml=result
-		return result
-	window.boxes_to_yaml=boxes_to_yaml
+	#Rendering and Saving
+	#--------------------
+
 		
 	# ajax call to /view_text 
 	# and when results come back calls rendering_ok for showing the 
@@ -339,24 +353,9 @@ $(document).ready =>
 	window.alg_text=alg_text
 	window.sort_rect=sort_rect
 	
-	#####keys bindings
-	
-	#enter text or edit box
-	enter=(e)->
-		e.stopPropagation()
-		selected=$(".ui-selected")[0] 
-		if e.keyCode==13 
-			if not selected
-				make_rect(e)
-			else
-				e.preventDefault() 
-				selected.innerText=document.text_form.text_content.value
-				document.text_form.text_content.value=""
-				render_alg()
+
 			
-			
-	$(document).keyup((e)-> window.is_ctrl=false if e.keyCode==17)
-	$("#text_entry").keydown((e)->enter(e))
+
 	# $(document).bind('keydown', 'Return', (evt)->make_rect(evt))
 	# $(document).bind('keydown', 'Ctrl+e', enter_text)
 	# $(document).bind('keydown', 'Ctrl+a', alert)
@@ -376,6 +375,30 @@ $(document).ready =>
 	
 		
 
+	#Bindings
+	#--------
+	
+	#####keys bindings
+	
+	#enter text or edit box
+	enter=(e)->
+		e.stopPropagation()
+		selected=$(".ui-selected")[0] 
+		if e.keyCode==13 
+			if not selected
+				make_rect(e)
+			else
+				e.preventDefault() 
+				selected.innerText=document.text_form.text_content.value
+				document.text_form.text_content.value=""
+				render_alg()
+	
+	#Ctrl			
+	$(document).keyup((e)-> window.is_ctrl=false if e.keyCode==17)
+	#Return
+	$("#text_entry").keydown((e)->enter(e))
+	
+	
 	
 	# Buttons
 	$("#home").bind 'click', ()->window.location.pathname="/"
@@ -389,34 +412,6 @@ $(document).ready =>
 	#draggables selectables
 	$(".selectable").selectable({"selected":chosen, "unselected":unselected})
 	$(".draggable").draggable()
-
-	# gets boxes struct from ajax call and then lays them out
-	initial_layout=(text_indent)->
-		# not sure while I need ot parse this twice
-		boxes_struct=JSON.parse(JSON.parse(text_indent))
-		window.boxes_struct=boxes_struct
-		#window.a=eval($("#hide_graphic_edit").text())
-		
-		#alert boxes_struct
-		if boxes_struct
-			_.each(boxes_struct, (i)->make_layout(i))
-		# render on first load
-		render_alg()
-		window.counter=0
-		
-	#block caching
-	$.ajaxSetup({cache: false})	
-	
-	# hides a copy of teh alg structure
-	$(".hide").hide()
-	
-	# actually get the struc and renders it
-	alg_name=_.last(window.location.pathname.split("/"))	
-	z=$.get("/ajax_text_indent/#{alg_name}",(text_indent)->initial_layout(text_indent))
-	# window.a=eval($("#hide_graphic_edit").text())
-	# if window.a
-	# 	_.each(window.a, (i)->make_layout(i))
-	# 	window.counter=0
 	
 	#all selectable stop linked to function
 	$(".selectable").selectable({stop:()->get_selected()})	
@@ -424,38 +419,33 @@ $(document).ready =>
 	#error log
 	$('#error_log').ajaxError(()=>alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!"))
 	
+	#Initial Rendering on load of the graph
+	#--------------------------------------
+
+	# gets boxes struct from ajax call and then lays them out
+	initial_layout=(text_indent)->
+		# not sure while I need ot parse this twice
+		boxes_struct=JSON.parse(JSON.parse(text_indent))
+		window.boxes_struct=boxes_struct
+		if boxes_struct
+			_.each(boxes_struct, (i)->make_layout(i))
+		render_alg()
+		window.counter=0
+		
+	# hides a copy of the alg structure
+	$(".hide").hide()
+	
+	# actually get the struc and renders it
+	alg_name=_.last(window.location.pathname.split("/"))	
+	z=$.get("/ajax_text_indent/#{alg_name}",(text_indent)->initial_layout(text_indent))
+
+
+	
 
 	
 
 
 	
-
-	
-	# test=()->
-	#   	d = $('#content')[0]
-	# 	return d
-  # $("drop_zone").bind('dragover', handle_drag_over, false)
-  # #drop_zone.addEventListener('drop', handle_file_select, false)
-  # window.drop_zone=drop_zone
- 		#alert(drop_zone)
-
-	# window.test=test
-	
-	#alert ("TEST")
-
-
-
-# toogling
-	# $(".hide_edit").hide()
-	# $("#view_view").click(()=> 
-	# 	$(".hide_edit").toggle() 
-	# 	z=not z
-	# 	$("#view_view").html("HIDE HERE") if z
-	# 	$("#view_view").html("SHOW HERE") if not z
-	# 	)
-	# 	
-
-
 
 
 

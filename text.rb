@@ -9,6 +9,7 @@ require "rack"
 require 'coffee-script'
 require "haml"
 
+####
 
 
 
@@ -20,7 +21,7 @@ puts my_directory
 set :haml, {:format => :html5 }
 enable :sessions
 
-
+# lib for the generation of the DOT Files
 $LOAD_PATH << File.join(my_directory,'/lib')
 require "tree_struct"
 
@@ -39,34 +40,9 @@ Dir.mkdir IMAGE_CONTAINER unless Dir.exists? IMAGE_CONTAINER
 SVG_URL="http://#{$HOST}:8080"
 puts ENV["URL"]
 
-def unique_file_name file_name
-  file_name=File.basename file_name
-  file_name=file_name.gsub("."+file_name.split(".")[-1],"")
-  # will need ot be fixed
-  t=Time.now.to_s.split.join("_")
-  File.join(IMAGE_CONTAINER,(t+"_"+file_name))
-end
 
-
-
-post '/upload' do
-
-  puts "CALLED /upload"
-  puts params
-  
-  unless params[:file] && (tmpfile = params[:file][:tempfile]) && (name = params[:file][:filename])
-    puts "No file selected"
-    redirect "/"
-  end
-
-  file_name=unique_file_name(name)
-  fh=File.open(file_name,"w")
-  fh.write(tmpfile.read)
-  fh.close
-  puts file_name
-  redirect "/"  
-end
-
+#Text Edit
+#------------
 
 #edit text form , both as a url and as a get? request
 get "/edit_text/:form_name" do
@@ -80,6 +56,8 @@ get "/edit_text" do
   redirect "/edit_text/#{x}"
 end
 
+#Delete
+#-------
 
 #delete text form
 get "/delete/:form_name" do
@@ -88,7 +66,8 @@ get "/delete/:form_name" do
   redirect "/"
 end
 
-
+# CSS
+#-----
 # css as sass
 get '/sass' do
   content_type 'text/css', :charset => 'utf-8'
@@ -118,23 +97,9 @@ post '/upload_text' do
  redirect "/" 
 end
 
-# the playground
-get '/coffee_test' do
-  haml :coffee_test
-end
 
-
-# post '/coffee_test' do
-#   form_content=params[:graphic_form_content]
-#   haml :coffee_test
-# end
-
-#never got this to work
-get '/application' do
-  content_type 'application/javascript'
-  coffee :application
-end
-
+#Password Login
+#---------------
 post '/check_user' do
   puts params
   user=params["user"]
@@ -162,6 +127,14 @@ get "/" do
 end
 
 
+
+# Graphic rendering of the boxes
+#-------------------------------
+
+
+# Text2Box created tuple list with text at 0 and indent at 1
+# this is then used by coffee to create the boxes and to appropriately
+# indent them
 def text_indent(form_name)
   text=($Redis4.get form_name).to_s
   if text==""
@@ -173,7 +146,7 @@ def text_indent(form_name)
 end
 
 
-#### Graphic rendering of the boxes
+
 
 # just serving the page
 get "/graphic_edit/:form_name" do
@@ -196,6 +169,10 @@ get '/test' do
 end
 
 
+#DOT ENGINE
+#-----------
+
+#Call to dot engine at SVG_URL default
 #yaml load and rest call; returns dictionary response
 def rest_call(y)
   n=NodesEdges.new y
@@ -237,6 +214,7 @@ def text_cleanup(text)
   return text
 end
 
+# loads yaml text
 def yaml_load(text)
   begin
     y=YAML.load text if text
