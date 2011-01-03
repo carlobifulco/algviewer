@@ -173,24 +173,17 @@ def text_indent(form_name)
 end
 
 
-#### still defective; problem with rendering of multiple yaml lines, ok with 2, 
-# split newline --inline newlines in need of fix
-# remove empty lines starting with -, empty lines
-# get offset by indentation of first line 
-# then create array of tuples with e.g. [[" Colon Ca", 0], [" Kras Codons 12 and 13 exon 2 (40% of cases)", 1], ...
+#### Graphic rendering of the boxes
+
+# just serving the page
 get "/graphic_edit/:form_name" do
-  # no cache
-  response["Cache-Control"] = "public, max-age=0"
-  @form_name=params[:form_name]
-  @text_indent=text_indent(@form_name)
-  url="/coffee_test"
   haml :coffee_test
-    #@text.select! {|x| x.delete! "-"}
-  #haml :graphic_edit
 end
 
 
-# for ajax 
+# for ajax called for rendering of the boxes
+#create array of tuples with e.g. [[" Colon Ca", 0], [" Kras Codons 12 and 13 exon 2 (40% of cases)", 1], ...
+# This in then rendered by coffee into boxes
 get '/ajax_text_indent/:form_name' do
   form_name=params[:form_name]
   text_indent=text_indent(form_name)
