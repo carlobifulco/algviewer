@@ -13,8 +13,9 @@
   window.concat_object = concat_object;
   window.pos = {};
   window.counter = 0;
+  window.image_is_large = false;
   $(document).ready(__bind(function() {
-    var alg_text, boxes_to_yaml, chosen, cut, del_entry, enter_text, get_draggable_data, get_pos, get_selected, grid, handle_drag_over, handle_file_select, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, resize_graph, save, save_alg, sort_rect, success, text_edit, text_multiply, unselected, x_start, y_start, z;
+    var alg_name, alg_text, alg_text_edit, alg_view, boxes_to_yaml, chosen, cut, del_entry, edit_text, enter, expand_graph, get_draggable_data, get_pos, get_selected, grid, initial_layout, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, resize_graph, save, save_alg, sort_rect, success, text_multiply, unselected, x_start, y_start, z;
     grid = 25;
     x_start = grid * 2;
     y_start = (grid * 4) + $(".new_box").position().top;
@@ -87,12 +88,13 @@
           return get_selected();
         }
       });
+      $("#text_entry").focus();
       return window.counter += 1;
     };
-    enter_text = function() {
+    edit_text = function() {
       var b;
       b = $(".ui-selected")[0];
-      if (b) {
+      if (b !== "") {
         b.innerText = document.text_form.text_content.value;
         return (document.text_form.text_content.value = "");
       }
@@ -106,7 +108,7 @@
       var yaml_structure;
       $(".ui-selected").remove();
       yaml_structure = boxes_to_yaml();
-      return save(yaml_structure);
+      return render_alg();
     };
     sort_rect = function() {
       var _i, _len, _ref, _result, sorted_box, sorted_boxes, text_boxes, text_positions;
@@ -241,32 +243,69 @@
     };
     window.get_pos = get_pos;
     resize_graph = function() {
-      return $($("img")[0]).load(function() {
-        var h, r, size, w;
-        w = $("img")[0].width;
-        h = $("img")[0].height;
-        if (!(w < 500 && h < 500)) {
-          r = w / h;
-          size = 500;
-          if (r > 1) {
-            $("img")[0].height = size / r;
-            $("img")[0].width = size;
-          }
-          if (r <= 1) {
-            $("img")[0].width = size * r;
-            $("img")[0].height = size;
-          }
-        }
-        return $($("img")[0]).show();
-      });
+      var h, image, w, w_height, w_width;
+      image = $('#graph_preview');
+      window.image = image;
+      w_height = $(window).height();
+      w_width = $(window).width();
+      w = image.width();
+      h = image.height();
+      if (w > h) {
+        image.width((w_width / 2) - 50);
+        image.height("");
+      } else {
+        image.height(w_height - 150);
+        image.width("");
+      }
+      window.image_h = image.height();
+      window.image_w = image.width();
+      return (window.image_top = image.css("top"));
     };
+    window.resize_graph = resize_graph;
     render_inline = function(data) {
-      var anchor;
+      var anchor, image;
       anchor = $("#inline_graph");
       window.z = data;
-      anchor.html("<img class=inline_graph src=" + (data.png) + "></img>");
-      $("#inline_graph").show();
-      return resize_graph();
+      anchor.html("<img class=inline_graph id=graph_preview src=" + (data.png) + "></img>");
+      image = $("#graph_preview");
+      image.hide();
+      image.click(function() {
+        return expand_graph();
+      });
+      return image.load(function() {
+        resize_graph();
+        return image.show();
+      });
+    };
+    expand_graph = function() {
+      var h, im, w;
+      im = $('#graph_preview');
+      if (!window.image_is_large) {
+        im.addClass("image_full");
+        h = ($(window).height() - 100);
+        w = ($(window).width() - 50);
+        if (window.image_h > window.image_w) {
+          im.height(h);
+          im.width("");
+          im.css("top", 5);
+        }
+        if (window.image_w >= window.image_h) {
+          im.width(w);
+          im.height("");
+          im.css("top", 100);
+        }
+        window.image_is_large = true;
+        return im.effect("bounce", function() {
+          return im.show();
+        });
+      } else {
+        im.removeClass("image_full");
+        im.css("height", window.image_h);
+        im.css("width", window.image_w);
+        im.css("top", window.image_top);
+        window.image_is_large = false;
+        return $("#text_entry").focus();
+      }
     };
     boxes_to_yaml = function() {
       var result;
@@ -287,7 +326,8 @@
       }, function(data) {
         return render_inline(JSON.parse(data));
       });
-      return save(yaml_structure);
+      save(yaml_structure);
+      return $("#text_entry").focus();
     };
     save = function(yaml_structure) {
       var alg_name;
@@ -315,66 +355,84 @@
     window.save_alg = save_alg;
     window.alg_text = alg_text;
     window.sort_rect = sort_rect;
+    enter = function(e) {
+      var selected;
+      e.stopPropagation();
+      selected = $(".ui-selected")[0];
+      if (e.keyCode === 13) {
+        if (!selected) {
+          return make_rect(e);
+        } else {
+          e.preventDefault();
+          selected.innerText = document.text_form.text_content.value;
+          document.text_form.text_content.value = "";
+          return render_alg();
+        }
+      }
+    };
     $(document).keyup(function(e) {
       if (e.keyCode === 17) {
         return (window.is_ctrl = false);
       }
     });
     $("#text_entry").keydown(function(e) {
-      e.stopPropagation();
-      if (e.keyCode === 13) {
-        return make_rect(e);
-      }
+      return enter(e);
     });
-    z = 0;
     $("#progressbar").progressbar({
       "value": 0
     });
     $("#tabs").tabs();
-    text_edit = function() {
+    alg_text_edit = function() {
       var alg_name;
       alg_name = _.last(window.location.pathname.split("/"));
       return (window.location.href = ("/edit_text/" + (alg_name)));
+    };
+    alg_view = function() {
+      var alg_name;
+      alg_name = _.last(window.location.pathname.split("/"));
+      return (window.location.href = ("/view/" + (alg_name)));
     };
     $("#home").bind('click', function() {
       return (window.location.pathname = "/");
     });
     $("#new_entry").bind('click', make_rect);
     $("#del_entry").bind('click', del_entry);
-    $("#text_edit").bind('click', text_edit);
+    $("#text_edit").bind('click', alg_text_edit);
+    $("#edit_entry").bind('click', edit_text);
+    $("#view").bind('click', alg_view);
     $("button").button();
     $(".selectable").selectable({
       "selected": chosen,
       "unselected": unselected
     });
     $(".draggable").draggable();
+    initial_layout = function(text_indent) {
+      var boxes_struct;
+      boxes_struct = JSON.parse(JSON.parse(text_indent));
+      window.boxes_struct = boxes_struct;
+      if (boxes_struct) {
+        _.each(boxes_struct, function(i) {
+          return make_layout(i);
+        });
+      }
+      render_alg();
+      return (window.counter = 0);
+    };
+    $.ajaxSetup({
+      cache: false
+    });
     $(".hide").hide();
-    window.a = eval($("#hide_graphic_edit").text());
-    if (window.a) {
-      _.each(window.a, function(i) {
-        return make_layout(i);
-      });
-      window.counter = 0;
-    }
+    alg_name = _.last(window.location.pathname.split("/"));
+    z = $.get("/ajax_text_indent/" + (alg_name), function(text_indent) {
+      return initial_layout(text_indent);
+    });
     $(".selectable").selectable({
       stop: function() {
         return get_selected();
       }
     });
-    $('#error_log').ajaxError(__bind(function() {
+    return $('#error_log').ajaxError(__bind(function() {
       return alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!");
     }, this));
-    render_alg();
-    handle_file_select = function(evt) {
-      var files;
-      evt.stopPropagation();
-      evt.preventDefault();
-      files = evt.dataTransfer.files;
-      return alert(files);
-    };
-    window.handle_file_select = handle_file_select;
-    return (handle_drag_over = function(evt) {
-      return alert("DRAGGED OVER");
-    });
   }, this));
 }).call(this);

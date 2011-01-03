@@ -2,55 +2,65 @@
 
 %script{:type=>"application/x-javascript",:src=>"/coffee/coffee_test.js"}
 
+%div.left.filler
+  %img{:src=>"/images/filler.png"}
+
+%div.top_banner.right
 
 
+  %button#home
+    Home
+  %button#new_entry
+    New Box
+  %button#del_entry
+    Delete Box
+  %button#edit_entry
+    Edit Box
+  %button#text_edit
+    Text Edit Graph
+  %button#view
+    View Graph
 
-%button#home
-  Home
-%button#new_entry
-  New Box
-%button#del_entry
-  Delete Box
-%button#text_edit
-  Text Edit Graph
 
-
-#progressbar
+  #progressbar
 
   
+
+
+  %div
+
+
+
+  %form{:name=>"text_form"}
+    %input.text{:type=>"text",:name=>"text_content",:id=>"text_entry"} 
+
 
 
 %div
-
-
-
-%form{:name=>"text_form"}
-  %input.text{:type=>"text",:name=>"text_content",:id=>"text_entry"} 
-
   
-%div.selectable#containment-wrapper.new_box
+  %div.selectable#containment-wrapper.new_box
 
-%figure
-  #inline_graph.inline_graph_edit
-
-
+  %figure
+    #inline_graph.inline_graph_edit
 
 
 
 
-/ Here is the graph layour
-%div.hide#hide_graphic_edit{:type=>"hidden"}
-  =@text_indent
 
-%div#content
+
+  / Here is the graph layour
+  %div.hide#hide_graphic_edit{:type=>"hidden"}
+    =@text_indent
+
+  %div#content
   
 
 
-%p.hide
-  =@text
-%p.hide
-  debugging text
-  =@test
+  %p.hide
+    =@text
+  %p.hide
+    debugging text
+    =@test
 
 
 

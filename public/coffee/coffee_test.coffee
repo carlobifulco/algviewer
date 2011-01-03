@@ -16,7 +16,10 @@ window.concat_object=concat_object
 window.pos={}
 #global for layout of yaml
 window.counter=0
+#global for image resizing
+window.image_is_large=false
 
+#on load jquery
 $(document).ready =>
 
 	# grid size GLOBALS
@@ -99,13 +102,14 @@ $(document).ready =>
 		new_text=document.text_form.text_content.value 
 		#alert(new_text)
 		$(".selectable").selectable({stop:()->get_selected()})	
+		$("#text_entry").focus()
 		window.counter+=1
 	
 	#updates the text of a box
-	enter_text=()->
+	edit_text=()->
 		b=$(".ui-selected")[0]
 		#alert(b)
-		if b
+		if b !=""
 			b.innerText=document.text_form.text_content.value
 			document.text_form.text_content.value=""
 
@@ -119,7 +123,7 @@ $(document).ready =>
 	del_entry=()->
 		$(".ui-selected").remove()
 		yaml_structure=boxes_to_yaml()
-		save(yaml_structure)
+		render_alg()
 
 	#sorts the boxes so that they can get rendered in text in order
 	sort_rect=()->
@@ -218,22 +222,30 @@ $(document).ready =>
 		$(text_box).position().top
 	window.get_pos=get_pos
 	
-	
+	#finds largest parameter of the graph; then sets that parameter to max based on window size and the other to nil
 	resize_graph=()->
-		$($("img")[0]).load(()-> 
-			w=$("img")[0].width
-			h=$("img")[0].height
-			unless (w<500 and h<500)
-				r=w/h
-				size=500
-				if r>1
-					$("img")[0].height=size/r
-					$("img")[0].width=size
-				if r<=1
-						$("img")[0].width=size*r
-						$("img")[0].height=size
-			$($("img")[0]).show()
-			)
+		image=$('#graph_preview')
+		window.image=image
+		w_height=$(window).height()
+		w_width=$(window).width()
+		# image_height=w_height-100
+		w=image.width()
+		h=image.height()
+		if w>h
+			# document half
+			image.width((w_width/2)-50)
+			image.height("")
+		else
+			#using window height; document set to large number
+			image.height((w_height-150))
+			image.width("")
+		# set global standardt for resizing
+		window.image_h=image.height()
+		window.image_w=image.width()
+		window.image_top=image.css("top")
+	
+	window.resize_graph=resize_graph
+		
 		
 	
 	# inline rendering
@@ -244,11 +256,42 @@ $(document).ready =>
 		window.z=data
 		#alert(data["png"])
 		
-		anchor.html("<img class=inline_graph src=#{data.png}></img>")
-		$("#inline_graph").show()
-		#$("inline_graph").onclick()
-		resize_graph()
+		anchor.html("<img class=inline_graph id=graph_preview src=#{data.png}></img>")
+		image=$("#graph_preview")
+		image.hide()
+		image.click(()->expand_graph())
+		# resize picture and show once ready
+		image.load(()->resize_graph();image.show())
+
+		# on old for now
 		
+	
+	
+	expand_graph=()->
+		im=	$('#graph_preview')
+		if not window.image_is_large
+			
+			im.addClass("image_full")
+			h=($(window).height()-100)
+			w=($(window).width()-50)
+			if window.image_h>window.image_w
+				im.height(h)
+				im.width("")
+				im.css("top",5)
+			if window.image_w>=window.image_h
+				im.width(w)
+				im.height("")
+				im.css("top",100)
+			window.image_is_large=true
+			im.effect("bounce",()->im.show())
+		else
+			im.removeClass("image_full")
+			im.css("height",window.image_h)
+			im.css("width",window.image_w)
+			im.css("top",window.image_top)
+			window.image_is_large=false
+			$("#text_entry").focus()
+			
 	
 
 
@@ -271,6 +314,7 @@ $(document).ready =>
 		z=$.post("/graphic_edit_view",{"text":yaml_structure,"dataType":"json"},(data)->render_inline(JSON.parse(data)))
 		# and save
 		save(yaml_structure)
+		$("#text_entry").focus()
 		
 	save=(yaml_structure)->
 		# get algname
@@ -295,44 +339,84 @@ $(document).ready =>
 	window.alg_text=alg_text
 	window.sort_rect=sort_rect
 	
-	#keys bindings
+	#####keys bindings
 	
+	#enter text or edit box
+	enter=(e)->
+		e.stopPropagation()
+		selected=$(".ui-selected")[0] 
+		if e.keyCode==13 
+			if not selected
+				make_rect(e)
+			else
+				e.preventDefault() 
+				selected.innerText=document.text_form.text_content.value
+				document.text_form.text_content.value=""
+				render_alg()
+			
+			
 	$(document).keyup((e)-> window.is_ctrl=false if e.keyCode==17)
-	$("#text_entry").keydown((e)-> e.stopPropagation(); make_rect(e) if e.keyCode==13)
+	$("#text_entry").keydown((e)->enter(e))
 	# $(document).bind('keydown', 'Return', (evt)->make_rect(evt))
 	# $(document).bind('keydown', 'Ctrl+e', enter_text)
 	# $(document).bind('keydown', 'Ctrl+a', alert)
-	z=0
 	
 	# bar and tabs
 	$("#progressbar").progressbar("value":0)
 	$("#tabs").tabs()
 	
 	
-	text_edit=()->
+	alg_text_edit=()->
 		alg_name=_.last(window.location.pathname.split("/"))	
 		window.location.href="/edit_text/#{alg_name}"
+	
+	alg_view=()->
+		alg_name=_.last(window.location.pathname.split("/"))	
+		window.location.href="/view/#{alg_name}"
+	
+		
 
 	
 	# Buttons
 	$("#home").bind 'click', ()->window.location.pathname="/"
 	$("#new_entry").bind 'click', make_rect
 	$("#del_entry").bind 'click', del_entry
-	$("#text_edit").bind 'click', text_edit
+	$("#text_edit").bind 'click', alg_text_edit
+	$("#edit_entry").bind 'click', edit_text 
+	$("#view").bind 'click', alg_view 
 	$("button").button()
 	
 	#draggables selectables
 	$(".selectable").selectable({"selected":chosen, "unselected":unselected})
 	$(".draggable").draggable()
 
-	
-	#graphic edit mode
-	#alg structure is linked to the #hide_graphic_edit in the dom
-	$(".hide").hide()
-	window.a=eval($("#hide_graphic_edit").text())
-	if window.a
-		_.each(window.a, (i)->make_layout(i))
+	# gets boxes struct from ajax call and then lays them out
+	initial_layout=(text_indent)->
+		# not sure while I need ot parse this twice
+		boxes_struct=JSON.parse(JSON.parse(text_indent))
+		window.boxes_struct=boxes_struct
+		#window.a=eval($("#hide_graphic_edit").text())
+		
+		#alert boxes_struct
+		if boxes_struct
+			_.each(boxes_struct, (i)->make_layout(i))
+		# render on first load
+		render_alg()
 		window.counter=0
+		
+	#block caching
+	$.ajaxSetup({cache: false})	
+	
+	# hides a copy of teh alg structure
+	$(".hide").hide()
+	
+	# actually get the struc and renders it
+	alg_name=_.last(window.location.pathname.split("/"))	
+	z=$.get("/ajax_text_indent/#{alg_name}",(text_indent)->initial_layout(text_indent))
+	# window.a=eval($("#hide_graphic_edit").text())
+	# if window.a
+	# 	_.each(window.a, (i)->make_layout(i))
+	# 	window.counter=0
 	
 	#all selectable stop linked to function
 	$(".selectable").selectable({stop:()->get_selected()})	
@@ -340,18 +424,11 @@ $(document).ready =>
 	#error log
 	$('#error_log').ajaxError(()=>alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!"))
 	
-	# render on first load
-	render_alg()
 
-	handle_file_select=(evt)->
-	  evt.stopPropagation()
-	  evt.preventDefault()
-	  files=evt.dataTransfer.files
-	  alert(files)
-	window.handle_file_select=handle_file_select
 	
-	handle_drag_over=(evt)->
-		alert("DRAGGED OVER")
+
+
+	
 
 	
 	# test=()->

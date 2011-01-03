@@ -162,24 +162,27 @@ get "/" do
 end
 
 
+def text_indent(form_name)
+  text=($Redis4.get form_name).to_s
+  if text==""
+    return false
+  else
+    t=Text2Box.new text
+    return t.get_text_indent()
+  end
+end
+
+
 #### still defective; problem with rendering of multiple yaml lines, ok with 2, 
 # split newline --inline newlines in need of fix
 # remove empty lines starting with -, empty lines
 # get offset by indentation of first line 
 # then create array of tuples with e.g. [[" Colon Ca", 0], [" Kras Codons 12 and 13 exon 2 (40% of cases)", 1], ...
 get "/graphic_edit/:form_name" do
+  # no cache
+  response["Cache-Control"] = "public, max-age=0"
   @form_name=params[:form_name]
-  text=($Redis4.get @form_name).to_s
-  #for new forms just returns empty content
-  if text==""
-    @text_indent=""
-    return haml :coffee_test
-  end
-  # Text2Box from lib/tree_struct.rb transforms Yaml in the array of tuples
-  @text=text
-  @test="AAAA"
-  t=Text2Box.new text
-  @text_indent=t.get_text_indent()
+  @text_indent=text_indent(@form_name)
   url="/coffee_test"
   haml :coffee_test
     #@text.select! {|x| x.delete! "-"}
@@ -187,7 +190,17 @@ get "/graphic_edit/:form_name" do
 end
 
 
+# for ajax 
+get '/ajax_text_indent/:form_name' do
+  form_name=params[:form_name]
+  text_indent=text_indent(form_name)
+  return text_indent.to_json
+end
 
+
+get '/test' do
+  haml :test
+end
 
 
 #yaml load and rest call; returns dictionary response
