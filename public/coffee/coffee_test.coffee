@@ -26,7 +26,7 @@ $(document).ready =>
 #-------
 	
 	# grid size GLOBALS
-	grid=25
+	grid=48
 	x_start=grid*2
 	y_start=(grid*4)+$(".new_box").position().top
 	
@@ -365,13 +365,14 @@ $(document).ready =>
 	$("#tabs").tabs()
 	
 	
-	alg_text_edit=()->
+	get_alg_name=()->
 		alg_name=_.last(window.location.pathname.split("/"))	
-		window.location.href="/edit_text/#{alg_name}"
+	
+	alg_text_edit=()->	
+		window.location.href="/edit_text/#{get_alg_name()}"
 	
 	alg_view=()->
-		alg_name=_.last(window.location.pathname.split("/"))	
-		window.location.href="/view/#{alg_name}"
+		window.location.href="/view/#{get_alg_name()}"
 	
 		
 
@@ -419,6 +420,59 @@ $(document).ready =>
 	#error log
 	$('#error_log').ajaxError(()=>alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!"))
 	
+	
+	
+
+	#Color wheeel 
+	#------------
+	#applies color to selectio ans tores values in local storage upon each change.
+	#thes are the reimplemented on each reload of the alg
+	#the use of local storage makes this for now local browser specific 
+	
+	#get boxes in vertical order
+	get_boxes=()->
+		text_boxes= $(".text_box")
+		sorted_boxes=_.sortBy(text_boxes, get_pos)
+	
+	#Color wheel called function
+	#Applies color to all selected items
+	choose_color=(color)->
+		$(get_selected()).css("background",color)
+		store_boxes_colors()
+		
+		
+	#Activate selector	
+	$("#colorpicker").farbtastic(choose_color)
+	
+	
+	# Get colors from boxes
+	# loops over all boxes and gets their color
+	# stores theyr value in localStorage 
+	store_boxes_colors=()->
+		bc={}
+		#boxes is verical order
+		sorted_boxes=get_boxes()
+		colors=($(i).css("background-color") for i in sorted_boxes)
+		#store this in localStorage variable composed of alg name and _colors
+		color_key="#{get_alg_name()}_colors"
+		localStorage.setItem(color_key,JSON.stringify(colors))
+		
+	window.store_boxes_colors=store_boxes_colors
+	
+	# Apply color to box
+	set_boxes_colors=()->
+		color_key="#{get_alg_name()}_colors"
+		colors_list=JSON.parse(localStorage.getItem(color_key))
+		boxes=get_boxes()
+		#zip index and col and then apply them to each box
+		position_colors=_.zip([0...colors_list.length],colors_list)
+		window.position_colors=position_colors
+		($(boxes[pos_col[0]]).css("background-color",pos_col[1]) for pos_col in position_colors)
+	window.set_boxes_colors=set_boxes_colors
+	
+		
+	
+	
 	#Initial Rendering on load of the graph
 	#--------------------------------------
 
@@ -427,9 +481,14 @@ $(document).ready =>
 		# not sure while I need ot parse this twice
 		boxes_struct=JSON.parse(JSON.parse(text_indent))
 		window.boxes_struct=boxes_struct
+		#make boxes
 		if boxes_struct
 			_.each(boxes_struct, (i)->make_layout(i))
+		#render alg
 		render_alg()
+		# color boxes
+		set_boxes_colors()
+		# zero counter for next run
 		window.counter=0
 		
 	# hides a copy of the alg structure
@@ -438,6 +497,9 @@ $(document).ready =>
 	# actually get the struc and renders it
 	alg_name=_.last(window.location.pathname.split("/"))	
 	z=$.get("/ajax_text_indent/#{alg_name}",(text_indent)->initial_layout(text_indent))
+
+
+
 
 
 	

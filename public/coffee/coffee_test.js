@@ -15,8 +15,8 @@
   window.counter = 0;
   window.image_is_large = false;
   $(document).ready(__bind(function() {
-    var alg_name, alg_text, alg_text_edit, alg_view, boxes_to_yaml, chosen, cut, del_entry, edit_text, enter, expand_graph, get_draggable_data, get_pos, get_selected, grid, initial_layout, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, resize_graph, save, save_alg, sort_rect, success, text_multiply, unselected, x_start, y_start, z;
-    grid = 25;
+    var alg_name, alg_text, alg_text_edit, alg_view, boxes_to_yaml, choose_color, chosen, cut, del_entry, edit_text, enter, expand_graph, get_alg_name, get_boxes, get_draggable_data, get_pos, get_selected, grid, initial_layout, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, resize_graph, save, save_alg, set_boxes_colors, sort_rect, store_boxes_colors, success, text_multiply, unselected, x_start, y_start, z;
+    grid = 48;
     x_start = grid * 2;
     y_start = (grid * 4) + $(".new_box").position().top;
     $.ajaxSetup({
@@ -362,15 +362,15 @@
       "value": 0
     });
     $("#tabs").tabs();
-    alg_text_edit = function() {
+    get_alg_name = function() {
       var alg_name;
-      alg_name = _.last(window.location.pathname.split("/"));
-      return (window.location.href = ("/edit_text/" + (alg_name)));
+      return (alg_name = _.last(window.location.pathname.split("/")));
+    };
+    alg_text_edit = function() {
+      return (window.location.href = ("/edit_text/" + (get_alg_name())));
     };
     alg_view = function() {
-      var alg_name;
-      alg_name = _.last(window.location.pathname.split("/"));
-      return (window.location.href = ("/view/" + (alg_name)));
+      return (window.location.href = ("/view/" + (get_alg_name())));
     };
     enter = function(e) {
       var selected;
@@ -417,6 +417,51 @@
     $('#error_log').ajaxError(__bind(function() {
       return alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!");
     }, this));
+    get_boxes = function() {
+      var sorted_boxes, text_boxes;
+      text_boxes = $(".text_box");
+      return (sorted_boxes = _.sortBy(text_boxes, get_pos));
+    };
+    choose_color = function(color) {
+      $(get_selected()).css("background", color);
+      return store_boxes_colors();
+    };
+    $("#colorpicker").farbtastic(choose_color);
+    store_boxes_colors = function() {
+      var _i, _len, _ref, _result, bc, color_key, colors, i, sorted_boxes;
+      bc = {};
+      sorted_boxes = get_boxes();
+      colors = (function() {
+        _result = []; _ref = sorted_boxes;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          i = _ref[_i];
+          _result.push($(i).css("background-color"));
+        }
+        return _result;
+      })();
+      color_key = ("" + (get_alg_name()) + "_colors");
+      return localStorage.setItem(color_key, JSON.stringify(colors));
+    };
+    window.store_boxes_colors = store_boxes_colors;
+    set_boxes_colors = function() {
+      var _i, _len, _ref, _result, boxes, color_key, colors_list, pos_col, position_colors;
+      color_key = ("" + (get_alg_name()) + "_colors");
+      colors_list = JSON.parse(localStorage.getItem(color_key));
+      boxes = get_boxes();
+      position_colors = _.zip((function() {
+        _result = []; _ref = colors_list.length;
+        for (var _i = 0; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i += 1 : _i -= 1){ _result.push(_i); }
+        return _result;
+      }).call(this), colors_list);
+      window.position_colors = position_colors;
+      _result = []; _ref = position_colors;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        pos_col = _ref[_i];
+        _result.push($(boxes[pos_col[0]]).css("background-color", pos_col[1]));
+      }
+      return _result;
+    };
+    window.set_boxes_colors = set_boxes_colors;
     initial_layout = function(text_indent) {
       var boxes_struct;
       boxes_struct = JSON.parse(JSON.parse(text_indent));
@@ -427,6 +472,7 @@
         });
       }
       render_alg();
+      set_boxes_colors();
       return (window.counter = 0);
     };
     $(".hide").hide();

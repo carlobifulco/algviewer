@@ -1,6 +1,8 @@
 
 
 %script{:type=>"application/x-javascript",:src=>"/coffee/coffee_test.js"}
+%script{:type=>"application/x-javascript",:src=>"/farbtasic/farbtastic.js"}
+%link{:rel=>"stylesheet", :href=>"/farbtasic/farbtastic.css", :type=>"text/css"}
 
 %div.left.filler
   %img{:src=>"/images/filler.png"}
@@ -19,6 +21,7 @@
   %button#view
     View Graph
   #progressbar
+  
 
   
 
@@ -29,6 +32,8 @@
 
   %form{:name=>"text_form"}
     %input.text{:type=>"text",:name=>"text_content",:id=>"text_entry"} 
+  %button#colorpicker
+    Color
 
 
 
