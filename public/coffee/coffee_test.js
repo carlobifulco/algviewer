@@ -237,12 +237,15 @@
     move = function(id, x_delta, y_delta) {
       var _i, _len, _ref, _result, all, i;
       all = cut(id);
-      _result = []; _ref = all;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        i = _ref[_i];
-        _result.push(make_draggable(i.id, i.text, i.x + x_delta, i.y + y_delta));
-      }
-      return _result;
+      (function() {
+        _result = []; _ref = all;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          i = _ref[_i];
+          _result.push(make_draggable(i.id, i.text, i.x + x_delta, i.y + y_delta));
+        }
+        return _result;
+      })();
+      return set_boxes_colors();
     };
     window.move = move;
     unselected = function() {
@@ -261,10 +264,10 @@
       w = image.width();
       h = image.height();
       if (w > h) {
-        image.width((w_width / 2) - 50);
+        image.width(350);
         image.height("");
       } else {
-        image.height(w_height - 150);
+        image.height(350);
         image.width("");
       }
       window.image_h = image.height();
@@ -305,7 +308,7 @@
           im.css("top", 100);
         }
         window.image_is_large = true;
-        return im.effect("bounce", function() {
+        return im.effect("slide", function() {
           return im.show();
         });
       } else {
@@ -422,44 +425,47 @@
       text_boxes = $(".text_box");
       return (sorted_boxes = _.sortBy(text_boxes, get_pos));
     };
-    choose_color = function(color) {
-      $(get_selected()).css("background", color);
-      return store_boxes_colors();
-    };
-    $("#colorpicker").farbtastic(choose_color);
     store_boxes_colors = function() {
       var _i, _len, _ref, _result, bc, color_key, colors, i, sorted_boxes;
       bc = {};
       sorted_boxes = get_boxes();
-      colors = (function() {
-        _result = []; _ref = sorted_boxes;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          i = _ref[_i];
-          _result.push($(i).css("background-color"));
-        }
-        return _result;
-      })();
-      color_key = ("" + (get_alg_name()) + "_colors");
-      return localStorage.setItem(color_key, JSON.stringify(colors));
+      if (sorted_boxes) {
+        colors = (function() {
+          _result = []; _ref = sorted_boxes;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            i = _ref[_i];
+            _result.push($(i).css("background-color"));
+          }
+          return _result;
+        })();
+        color_key = ("" + (get_alg_name()) + "_colors");
+        return localStorage.setItem(color_key, JSON.stringify(colors));
+      }
     };
     window.store_boxes_colors = store_boxes_colors;
+    choose_color = function(color) {
+      $(get_selected()).css("background", color);
+      return store_boxes_colors();
+    };
     set_boxes_colors = function() {
       var _i, _len, _ref, _result, boxes, color_key, colors_list, pos_col, position_colors;
       color_key = ("" + (get_alg_name()) + "_colors");
       colors_list = JSON.parse(localStorage.getItem(color_key));
       boxes = get_boxes();
-      position_colors = _.zip((function() {
-        _result = []; _ref = colors_list.length;
-        for (var _i = 0; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i += 1 : _i -= 1){ _result.push(_i); }
+      if (colors_list) {
+        position_colors = _.zip((function() {
+          _result = []; _ref = colors_list.length;
+          for (var _i = 0; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i += 1 : _i -= 1){ _result.push(_i); }
+          return _result;
+        }).call(this), colors_list);
+        window.position_colors = position_colors;
+        _result = []; _ref = position_colors;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          pos_col = _ref[_i];
+          _result.push($(boxes[pos_col[0]]).css("background-color", pos_col[1]));
+        }
         return _result;
-      }).call(this), colors_list);
-      window.position_colors = position_colors;
-      _result = []; _ref = position_colors;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        pos_col = _ref[_i];
-        _result.push($(boxes[pos_col[0]]).css("background-color", pos_col[1]));
       }
-      return _result;
     };
     window.set_boxes_colors = set_boxes_colors;
     initial_layout = function(text_indent) {
@@ -473,12 +479,15 @@
       }
       render_alg();
       set_boxes_colors();
+      $.farbtastic("#colorpicker").setColor("#f896c2");
       return (window.counter = 0);
     };
     $(".hide").hide();
     alg_name = _.last(window.location.pathname.split("/"));
-    return (z = $.get("/ajax_text_indent/" + (alg_name), function(text_indent) {
+    z = $.get("/ajax_text_indent/" + (alg_name), function(text_indent) {
       return initial_layout(text_indent);
-    }));
+    });
+    $("#colorpicker").farbtastic(choose_color);
+    return $("#colorpicker").draggable();
   }, this));
 }).call(this);

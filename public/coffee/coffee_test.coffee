@@ -231,6 +231,7 @@ $(document).ready =>
 	move=(id, x_delta,y_delta)->
 		all=cut(id)
 		(make_draggable(i.id,i.text,i.x+x_delta,i.y+y_delta) for i in all)
+		set_boxes_colors()
 	window.move=move
 
 	unselected=()->
@@ -243,7 +244,7 @@ $(document).ready =>
 	#Graph resizing and dysplay
 	#--------------------------
 	
-	#finds largest parameter of the graph; then sets that parameter to max based on window size and the other to nil
+	#finds largest parameter of the graph; then sets that parameter to max based on space available in right corner nd the other to nil
 	#for dysplay of the graph in the R half of window
 	resize_graph=()->
 		image=$('#graph_preview')
@@ -255,11 +256,11 @@ $(document).ready =>
 		h=image.height()
 		if w>h
 			# document half
-			image.width((w_width/2)-50)
+			image.width(350)
 			image.height("")
 		else
 			#using window height; document set to large number
-			image.height((w_height-150))
+			image.height(350)
 			image.width("")
 		# set global standardt for resizing
 		window.image_h=image.height()
@@ -302,7 +303,7 @@ $(document).ready =>
 				im.height("")
 				im.css("top",100)
 			window.image_is_large=true
-			im.effect("bounce",()->im.show())
+			im.effect("slide",()->im.show())
 		else
 			im.removeClass("image_full")
 			im.css("height",window.image_h)
@@ -425,26 +426,15 @@ $(document).ready =>
 
 	#Color wheeel 
 	#------------
-	#applies color to selectio ans tores values in local storage upon each change.
-	#thes are the reimplemented on each reload of the alg
+	#applies color to selectio and stores values in local storage upon each change.
+	#these are the reimplemented on each reload of the alg
 	#the use of local storage makes this for now local browser specific 
 	
 	#get boxes in vertical order
 	get_boxes=()->
 		text_boxes= $(".text_box")
 		sorted_boxes=_.sortBy(text_boxes, get_pos)
-	
-	#Color wheel called function
-	#Applies color to all selected items
-	choose_color=(color)->
-		$(get_selected()).css("background",color)
-		store_boxes_colors()
 		
-		
-	#Activate selector	
-	$("#colorpicker").farbtastic(choose_color)
-	
-	
 	# Get colors from boxes
 	# loops over all boxes and gets their color
 	# stores theyr value in localStorage 
@@ -452,25 +442,38 @@ $(document).ready =>
 		bc={}
 		#boxes is verical order
 		sorted_boxes=get_boxes()
-		colors=($(i).css("background-color") for i in sorted_boxes)
-		#store this in localStorage variable composed of alg name and _colors
-		color_key="#{get_alg_name()}_colors"
-		localStorage.setItem(color_key,JSON.stringify(colors))
+		if sorted_boxes
+			colors=($(i).css("background-color") for i in sorted_boxes)
+			#store this in localStorage variable composed of alg name and _colors
+			color_key="#{get_alg_name()}_colors"
+			localStorage.setItem(color_key,JSON.stringify(colors))
 		
 	window.store_boxes_colors=store_boxes_colors
 	
-	# Apply color to box
+	
+	#Color wheel called function
+	#Applies color to all selected items
+	# stores the situation so that it can be reapplied
+	choose_color=(color)->
+		#alert(color)
+		$(get_selected()).css("background",color)
+		store_boxes_colors()
+	
+	# Apply color to all boxes
+	# gets colors from localStorage
 	set_boxes_colors=()->
 		color_key="#{get_alg_name()}_colors"
 		colors_list=JSON.parse(localStorage.getItem(color_key))
+		#alert(colors_list)
 		boxes=get_boxes()
 		#zip index and col and then apply them to each box
-		position_colors=_.zip([0...colors_list.length],colors_list)
-		window.position_colors=position_colors
-		($(boxes[pos_col[0]]).css("background-color",pos_col[1]) for pos_col in position_colors)
+		if colors_list
+			position_colors=_.zip([0...colors_list.length],colors_list)
+			window.position_colors=position_colors
+			($(boxes[pos_col[0]]).css("background-color",pos_col[1]) for pos_col in position_colors)
 	window.set_boxes_colors=set_boxes_colors
 	
-		
+
 	
 	
 	#Initial Rendering on load of the graph
@@ -488,6 +491,8 @@ $(document).ready =>
 		render_alg()
 		# color boxes
 		set_boxes_colors()
+		# set default value for color picker --after the boxes are painted, which I am not sure why seems necessary
+		$.farbtastic("#colorpicker").setColor("#f896c2")
 		# zero counter for next run
 		window.counter=0
 		
@@ -497,6 +502,14 @@ $(document).ready =>
 	# actually get the struc and renders it
 	alg_name=_.last(window.location.pathname.split("/"))	
 	z=$.get("/ajax_text_indent/#{alg_name}",(text_indent)->initial_layout(text_indent))
+	
+	#Activate selector	
+	#$.farbtastic("#colorpicker").setColor("#f896c2")
+	$("#colorpicker").farbtastic(choose_color)
+	$("#colorpicker").draggable()
+	
+	
+	
 
 
 

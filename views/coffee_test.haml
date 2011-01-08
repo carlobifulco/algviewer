@@ -4,10 +4,10 @@
 %script{:type=>"application/x-javascript",:src=>"/farbtasic/farbtastic.js"}
 %link{:rel=>"stylesheet", :href=>"/farbtasic/farbtastic.css", :type=>"text/css"}
 
-%div.left.filler
-  %img{:src=>"/images/filler.png"}
+%div.filler.span-6
+  / %img{:src=>"/images/filler.png"}
 
-%div.top_banner.right
+%div.top_banner.span-15
   %button#home
     Home
   %button#new_entry
@@ -23,6 +23,7 @@
   #progressbar
   
 
+
   
 
 
@@ -32,17 +33,20 @@
 
   %form{:name=>"text_form"}
     %input.text{:type=>"text",:name=>"text_content",:id=>"text_entry"} 
-  %button#colorpicker
+  %button#colorpicker.right
     Color
 
+%div.span-4.last
 
-
+/ This is were all the boxes will show up
 %div
-  
   %div.selectable#containment-wrapper.new_box
 
-  %figure
-    #inline_graph.inline_graph_edit
+/ the preview of the graph
+#inline_graph.inline_graph_edit.right
+ 
+
+ 
 
 
 
