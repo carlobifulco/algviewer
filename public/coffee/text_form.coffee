@@ -1,6 +1,9 @@
 $(document).ready =>
-
+	# GLOBALS
 	window.debug=false
+	window.graph_large=false
+	
+	
 	# bar and tabs
 	$("#accordion").accordion()
 	$(".ui-accordion-content")[0].style.height="40px"
@@ -14,30 +17,23 @@ $(document).ready =>
 	$("#accordion").accordion("activate",2)
 
 	
-	
-	#inline graph resize function
-	resize_graph=()->
-		$($("img")[0]).load(()-> 
-			w=$("img")[0].width
-			h=$("img")[0].height
-			unless (w<500 and h<500)
-				r=w/h
-				size=500
-				if r>1
-					$("img")[0].height=size/r
-					$("img")[0].width=size
-				if r<=1
-						$("img")[0].width=size*r
-						$("img")[0].height=size
-			$($("img")[0]).show()
-			)
+	resize=()->
+		if not window.graph_large
+			$("#text_graph_image").removeClass("text_graph_image_small")
+			$("#text_graph_image").addClass("text_graph_image_large")
+			window.graph_large=true
+		else
+			$("#text_graph_image").removeClass("text_graph_image_large")
+			$("#text_graph_image").addClass("text_graph_image_small")
+			window.graph_large=false
 	
 	#rendering of the png files
 	render_inline=(data)->
-		anchor=$("#inline_graph")
-		anchor.html("<img id=graph src=#{data.png} style='opacity:0.9;z-index:10000'></img>")
-		$("#inline_graph").show()
-		resize_graph()
+		anchor=$("#text_graph")
+		anchor.html("<img id=text_graph_image class=text_graph_image_small src=#{data.png} style='opacity:0.9;z-index:10000'></img>")
+		$("#text_graph").show()
+		$("#text_graph").click(resize)
+		
 	
 	# update call; ajax pist; then rendered inline above
 	update_graph=()->

@@ -3,8 +3,9 @@
     return function(){ return func.apply(context, arguments); };
   };
   $(document).ready(__bind(function() {
-    var render_inline, resize_graph, show_mistake, update_graph;
+    var render_inline, resize, show_mistake, update_graph;
     window.debug = false;
+    window.graph_large = false;
     $("#accordion").accordion();
     $(".ui-accordion-content")[0].style.height = "40px";
     $(".ui-accordion-content")[1].style.height = "320px";
@@ -14,32 +15,23 @@
       return $("form").submit();
     });
     $("#accordion").accordion("activate", 2);
-    resize_graph = function() {
-      return $($("img")[0]).load(function() {
-        var h, r, size, w;
-        w = $("img")[0].width;
-        h = $("img")[0].height;
-        if (!(w < 500 && h < 500)) {
-          r = w / h;
-          size = 500;
-          if (r > 1) {
-            $("img")[0].height = size / r;
-            $("img")[0].width = size;
-          }
-          if (r <= 1) {
-            $("img")[0].width = size * r;
-            $("img")[0].height = size;
-          }
-        }
-        return $($("img")[0]).show();
-      });
+    resize = function() {
+      if (!window.graph_large) {
+        $("#text_graph_image").removeClass("text_graph_image_small");
+        $("#text_graph_image").addClass("text_graph_image_large");
+        return (window.graph_large = true);
+      } else {
+        $("#text_graph_image").removeClass("text_graph_image_large");
+        $("#text_graph_image").addClass("text_graph_image_small");
+        return (window.graph_large = false);
+      }
     };
     render_inline = function(data) {
       var anchor;
-      anchor = $("#inline_graph");
-      anchor.html("<img id=graph src=" + (data.png) + " style='opacity:0.9;z-index:10000'></img>");
-      $("#inline_graph").show();
-      return resize_graph();
+      anchor = $("#text_graph");
+      anchor.html("<img id=text_graph_image class=text_graph_image_small src=" + (data.png) + " style='opacity:0.9;z-index:10000'></img>");
+      $("#text_graph").show();
+      return $("#text_graph").click(resize);
     };
     update_graph = function() {
       var result, z;

@@ -18,7 +18,7 @@
       The tree structure is based on text indentation. All entries need to be preceded by a "-" 
       All indented braches need to preceded by a line with a lone "-" at the previous indentation level. For example:
     %xmp.left
-      \- Mammals
+      \- Felines
       \- 
       \  - Cats
       \  -
@@ -34,7 +34,7 @@
   %div
 
     %form{:action=>"/upload_text",:method=>"post"}
-      .inline_graph#inline_graph
+      #text_graph
       %textarea#edit{:class=>"autoindent",:name=>"form_content",:rows=>"40",:cols=>"80",:lang=>"en", :style=>"direction: ltr;",:wrap=>"SOFT"}=@text
       %input{:type=>"hidden",:name=>"form_name",:value=>@form_name}
    

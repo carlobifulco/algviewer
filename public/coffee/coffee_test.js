@@ -24,7 +24,7 @@
     });
     new_box = function(x, y, text, counter_id) {
       var text_box;
-      text_box = $("<div id='" + (counter_id) + "' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: " + (x) + "px; top: " + (y) + "px'>" + (text) + "</div>");
+      text_box = $("<div id='" + (counter_id) + "' class='ui-widget-content ui-corner text_box' style='position: absolute; left: " + (x) + "px; top: " + (y) + "px'>" + (text) + "</div>");
       text_box.draggable({
         "grid": [grid, grid],
         "opacity": 0.35,
@@ -53,24 +53,21 @@
       text = String(document.text_form.text_content.value);
       document.text_form.text_content.value = "";
       if (!(text)) {
-        text = "new box; select me, enter the text in the empty box and press control-e to change me";
+        text = "New box; enter new text in the entry form, select me and press Edit Box to change me";
       }
       new_box(x_start, y_start - grid * 2, text, window.counter);
       new_text = document.text_form.text_content.value;
-      $(".selectable").selectable({
-        stop: function() {
-          return get_selected();
-        }
-      });
       $("#text_entry").focus();
       return window.counter += 1;
     };
     edit_text = function() {
       var b;
-      b = $(".ui-selected")[0];
-      if (b !== "") {
-        b.innerText = document.text_form.text_content.value;
-        return (document.text_form.text_content.value = "");
+      b = get_selected();
+      if (b.length === 1) {
+        $(b[0]).text($("#text_entry").val());
+        return $("#text_entry").val("");
+      } else {
+        return $("#text_entry").val("");
       }
     };
     alg_text = function(text_positions) {
@@ -177,6 +174,13 @@
         return _result;
       })();
       window.pos[_.size(window.pos)] = data;
+      if (s.length === 1) {
+        if ($("#text_entry").val() === "") {
+          $("#text_entry").val($(s).text()).focus();
+        } else {
+          $("#text_entry").focus();
+        }
+      }
       return s;
     };
     window.get_selected = get_selected;
@@ -295,6 +299,7 @@
       im = $('#graph_preview');
       if (!window.image_is_large) {
         im.addClass("image_full");
+        im.css("opacity", "1");
         h = ($(window).height() - 100);
         w = ($(window).width() - 50);
         if (window.image_h > window.image_w) {
@@ -408,14 +413,11 @@
     $("#view").bind('click', alg_view);
     $("button").button();
     $(".selectable").selectable({
-      "selected": chosen,
-      "unselected": unselected
+      "selected": chosen
     });
     $(".draggable").draggable();
     $(".selectable").selectable({
-      stop: function() {
-        return get_selected();
-      }
+      stop: get_selected
     });
     $('#error_log').ajaxError(__bind(function() {
       return alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!");

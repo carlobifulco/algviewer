@@ -34,15 +34,15 @@ $(document).ready =>
 	$.ajaxSetup({cache: false})
 
 
+
 #New text boxes
 #--------------
 
 	# a new box
 	new_box=(x,y,text,counter_id)->
-		text_box=$("<div id='#{counter_id}' class='ui-widget-content ui-corner selectable text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
+		text_box=$("<div id='#{counter_id}' class='ui-widget-content ui-corner text_box' style='position: absolute; left: #{x}px; top: #{y}px'>#{text}</div>")
 		text_box.draggable({"grid":[grid,grid],"opacity":0.35,"refreshPositions":"true","scroll":true}).appendTo(".new_box")
 		text_box.draggable("stop":offset)
-		#text_box.draggable({stop:"render_alg"})
 		return text_box
 
 	# makes boxes out of list of tuples 0=text,1=indent 	
@@ -63,20 +63,23 @@ $(document).ready =>
 		b=$("#containment-wrapper")
 		text=String(document.text_form.text_content.value)
 		document.text_form.text_content.value=""
-		text="new box; select me, enter the text in the empty box and press control-e to change me" unless text
+		text="New box; enter new text in the entry form, select me and press Edit Box to change me" unless text
 		new_box(x_start,(y_start-grid*2),text,window.counter)
 		new_text=document.text_form.text_content.value 
 		#alert(new_text)
-		$(".selectable").selectable({stop:()->get_selected()})	
+		#$(".selectable").selectable({stop:get_selected, unselected:()->alert("sdsdsd")})	
 		$("#text_entry").focus()
 		window.counter+=1
 	
 	#updates the text of a box
 	edit_text=()->
-		b=$(".ui-selected")[0]
-		if b !=""
-			b.innerText=document.text_form.text_content.value
-			document.text_form.text_content.value=""
+		b=get_selected()
+		if b.length==1	
+			$(b[0]).text($("#text_entry").val())
+			$("#text_entry").val("")
+		else
+			$("#text_entry").val("")
+		
 
 
 #From boxes to yaml
@@ -184,11 +187,18 @@ $(document).ready =>
 		window.u=dragged
 
 	# returns all selected items and attaches an id,text,x,y dict to window.pos
+	# also enters selected text in text entry of only one box is selected
 	get_selected=()->
 		s=_.sortBy($(".ui-selected"), get_pos) 
 		data=(get_draggable_data(i) for i in s)
 		
 		window.pos[_.size(window.pos)]=data 
+		if s.length==1 
+			if $("#text_entry").val()==""
+				$("#text_entry").val($(s).text()).focus()
+			else
+				$("#text_entry").focus()
+			#$(s[0]).selectable("unseleted":()->$("#text_entry").v)
 		return s
 		#alert(s)
 	window.get_selected=get_selected
@@ -292,6 +302,7 @@ $(document).ready =>
 		if not window.image_is_large
 			
 			im.addClass("image_full")
+			im.css("opacity","1")
 			h=($(window).height()-100)
 			w=($(window).width()-50)
 			if window.image_h>window.image_w
@@ -412,11 +423,11 @@ $(document).ready =>
 	$("button").button()
 	
 	#draggables selectables
-	$(".selectable").selectable({"selected":chosen, "unselected":unselected})
+	$(".selectable").selectable({"selected":chosen})
 	$(".draggable").draggable()
 	
 	#all selectable stop linked to function
-	$(".selectable").selectable({stop:()->get_selected()})	
+	$(".selectable").selectable({stop:get_selected})	
 	
 	#error log
 	$('#error_log').ajaxError(()=>alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!"))
