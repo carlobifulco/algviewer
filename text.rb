@@ -9,9 +9,25 @@ require "rack"
 require 'coffee-script'
 require "haml"
 
-####
 
+#SVG SERVER SETUP
+#----------------
 
+# location of svg REST service. localhost if test 
+if ARGV.length !=0
+  test=true if ARGV[0]=="test"
+else
+  test=false
+end
+
+# choosing local server if test parameter, otherwise go to ec2
+if not test
+  SVG_URL="http://#{$HOST}:8080"
+  puts "connecting to EC2 server at #{SVG_URL}"
+else
+  SVG_URL="http://0.0.0.0:8080"
+  puts "connecting to test svg server at #{SVG_URL}"
+end
 
 
 my_directory=File.dirname(File.expand_path(__FILE__))
@@ -37,7 +53,9 @@ $Redis4.select TextDb
 $HOME="http://algviewer.heroku.com" #$HOME="http://0.0.0.0:4567"
 IMAGE_CONTAINER="./image_container"
 Dir.mkdir IMAGE_CONTAINER unless Dir.exists? IMAGE_CONTAINER
-SVG_URL="http://#{$HOST}:8080"
+
+
+
 puts ENV["URL"]
 
 
@@ -174,13 +192,18 @@ end
 
 #Call to dot engine at SVG_URL default
 #yaml load and rest call; returns dictionary response
-def rest_call(y)
+def rest_call(y,colors=false)
   n=NodesEdges.new y
   nodes=n.get_nodes.to_json
   edges=n.get_edges.to_json
+  #calls nodes_edges on svg_genrator
   url="#{SVG_URL}/nodes_edges/"
   puts url 
-  r=JSON.parse(Nestful.post url, :params=>{:edges=>edges,:nodes=>nodes})
+  if not colors
+    r=JSON.parse(Nestful.post url, :params=>{:edges=>edges,:nodes=>nodes})
+  else
+    r=JSON.parse(Nestful.post url, :params=>{:edges=>edges,:nodes=>nodes,:colors=>colors})
+  end
   puts r
   r
 end
@@ -253,12 +276,15 @@ end
 # text directly
 # used by graphic edit
 # also by all AJAX calls
+# Also getting colors. Still need to send them to svg_generator...
 post '/graphic_edit_view' do
   text=params[:text]
+  colors=params[:hex]
+  puts "colorts #{colors}"
   text=text_cleanup(text)
   y=yaml_load(text)
   begin
-    r=rest_call y
+    r=rest_call(y,colors)
     return r.to_json
   rescue ":Error"
     puts "EEEEERRRRRROOOOORRRRR"

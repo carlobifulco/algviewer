@@ -32,6 +32,19 @@ $(document).ready =>
 	
 	#block caching
 	$.ajaxSetup({cache: false})
+	
+	
+#RGB -> HEX
+#------------
+
+	# argument in "rgb(0, 70, 255)" format
+	rgb2hex= (rgb)->
+	 	rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+	 	return "#" +
+	  ("0" + parseInt(rgb[1],10).toString(16)).slice(-2) +
+	  ("0" + parseInt(rgb[2],10).toString(16)).slice(-2) +
+	  ("0" + parseInt(rgb[3],10).toString(16)).slice(-2)
+	window.rgb2hex=rgb2hex
 
 
 
@@ -79,6 +92,7 @@ $(document).ready =>
 			$("#text_entry").val("")
 		else
 			$("#text_entry").val("")
+		$("#text_entry").focus()
 		
 
 
@@ -195,7 +209,8 @@ $(document).ready =>
 		window.pos[_.size(window.pos)]=data 
 		if s.length==1 
 			if $("#text_entry").val()==""
-				$("#text_entry").val($(s).text()).focus()
+				$("#text_entry").val($.trim($(s).text()))
+				$("#text_entry").focus()
 			else
 				$("#text_entry").focus()
 			#$(s[0]).selectable("unseleted":()->$("#text_entry").v)
@@ -336,8 +351,9 @@ $(document).ready =>
 	render_alg=()->
 		$("#progressbar" ).progressbar("value":25)
 		yaml_structure=boxes_to_yaml()
+		colors=colors_to_hex(unique_colors())
 		#show on tab inline rendering
-		z=$.post("/graphic_edit_view",{"text":yaml_structure,"dataType":"json"},(data)->render_inline(JSON.parse(data)))
+		z=$.post("/graphic_edit_view",{"text":yaml_structure,"hex":colors, "dataType":"json"},(data)->render_inline(JSON.parse(data)))
 		# and save
 		save(yaml_structure)
 		$("#text_entry").focus()
@@ -445,6 +461,29 @@ $(document).ready =>
 	get_boxes=()->
 		text_boxes= $(".text_box")
 		sorted_boxes=_.sortBy(text_boxes, get_pos)
+	window.get_boxes=get_boxes
+	
+	
+	#boxes_text
+	boxes_text=()->
+		( $(i).text().trim() for i in get_boxes())
+	window.boxes_text=boxes_text
+	
+	#returns zipped pairs of nodes and colors
+	get_nodes_colors=()->
+		selected=[]
+		nodes_colors=_.zip(boxes_text(),sorted_colors())
+	window.get_nodes_colors=get_nodes_colors
+	
+
+	
+	#get colors in sorted order
+	sorted_colors=()->
+		sorted_boxes=get_boxes()
+		colors=($(i).css("background-color") for i in get_boxes())
+	window.sorted_colors=sorted_colors
+	
+
 		
 	# Get colors from boxes
 	# loops over all boxes and gets their color
@@ -484,7 +523,23 @@ $(document).ready =>
 			($(boxes[pos_col[0]]).css("background-color",pos_col[1]) for pos_col in position_colors)
 	window.set_boxes_colors=set_boxes_colors
 	
-
+	#Rendering of colored graphs
+	#---------------------------
+	
+	#unique colors
+	unique_colors=()->
+		all_colors=sorted_colors()
+		all_boxes=boxes_text()
+		unique_boxes=_.uniq(boxes_text())
+		unique_pos=( all_boxes.indexOf(i) for i in unique_boxes)
+		(all_colors[i] for i in unique_pos)
+	window.unique_colors=unique_colors
+	
+	#utility for possible colored graphs; returns JSON
+	# Usage: update of the graph calls colors_to_hex(unique_colors())
+	colors_to_hex=(colors_array)->
+		JSON.stringify((rgb2hex(i) for i in colors_array))
+	window.colors_to_hex=colors_to_hex
 	
 	
 	#Initial Rendering on load of the graph
@@ -498,10 +553,11 @@ $(document).ready =>
 		#make boxes
 		if boxes_struct
 			_.each(boxes_struct, (i)->make_layout(i))
-		#render alg
-		render_alg()
+
 		# color boxes
 		set_boxes_colors()
+		#render alg
+		render_alg()
 		# set default value for color picker --after the boxes are painted, which I am not sure why seems necessary
 		$.farbtastic("#colorpicker").setColor("#f896c2")
 		# zero counter for next run

@@ -15,13 +15,18 @@
   window.counter = 0;
   window.image_is_large = false;
   $(document).ready(__bind(function() {
-    var alg_name, alg_text, alg_text_edit, alg_view, boxes_to_yaml, choose_color, chosen, cut, del_entry, edit_text, enter, expand_graph, get_alg_name, get_boxes, get_draggable_data, get_pos, get_selected, grid, initial_layout, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, resize_graph, save, save_alg, set_boxes_colors, sort_rect, store_boxes_colors, success, text_multiply, unselected, x_start, y_start, z;
+    var alg_name, alg_text, alg_text_edit, alg_view, boxes_text, boxes_to_yaml, choose_color, chosen, colors_to_hex, cut, del_entry, edit_text, enter, expand_graph, get_alg_name, get_boxes, get_draggable_data, get_nodes_colors, get_pos, get_selected, grid, initial_layout, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, resize_graph, rgb2hex, save, save_alg, set_boxes_colors, sort_rect, sorted_colors, store_boxes_colors, success, text_multiply, unique_colors, unselected, x_start, y_start, z;
     grid = 48;
     x_start = grid * 2;
     y_start = (grid * 4) + $(".new_box").position().top;
     $.ajaxSetup({
       cache: false
     });
+    rgb2hex = function(rgb) {
+      rgb = rgb.match(/^rgb\((\d+),\s*(\d+),\s*(\d+)\)$/);
+      return "#" + ("0" + parseInt(rgb[1], 10).toString(16)).slice(-2) + ("0" + parseInt(rgb[2], 10).toString(16)).slice(-2) + ("0" + parseInt(rgb[3], 10).toString(16)).slice(-2);
+    };
+    window.rgb2hex = rgb2hex;
     new_box = function(x, y, text, counter_id) {
       var text_box;
       text_box = $("<div id='" + (counter_id) + "' class='ui-widget-content ui-corner text_box' style='position: absolute; left: " + (x) + "px; top: " + (y) + "px'>" + (text) + "</div>");
@@ -65,10 +70,11 @@
       b = get_selected();
       if (b.length === 1) {
         $(b[0]).text($("#text_entry").val());
-        return $("#text_entry").val("");
+        $("#text_entry").val("");
       } else {
-        return $("#text_entry").val("");
+        $("#text_entry").val("");
       }
+      return $("#text_entry").focus();
     };
     alg_text = function(text_positions) {
       var _i, _len, _ref, baseline, indent_level, offset, old_offset, text, text_position;
@@ -176,7 +182,8 @@
       window.pos[_.size(window.pos)] = data;
       if (s.length === 1) {
         if ($("#text_entry").val() === "") {
-          $("#text_entry").val($(s).text()).focus();
+          $("#text_entry").val($.trim($(s).text()));
+          $("#text_entry").focus();
         } else {
           $("#text_entry").focus();
         }
@@ -326,13 +333,15 @@
       }
     };
     render_alg = function() {
-      var yaml_structure, z;
+      var colors, yaml_structure, z;
       $("#progressbar").progressbar({
         "value": 25
       });
       yaml_structure = boxes_to_yaml();
+      colors = colors_to_hex(unique_colors());
       z = $.post("/graphic_edit_view", {
         "text": yaml_structure,
+        "hex": colors,
         "dataType": "json"
       }, function(data) {
         return render_inline(JSON.parse(data));
@@ -427,6 +436,36 @@
       text_boxes = $(".text_box");
       return (sorted_boxes = _.sortBy(text_boxes, get_pos));
     };
+    window.get_boxes = get_boxes;
+    boxes_text = function() {
+      var _i, _len, _ref, _result, i;
+      _result = []; _ref = get_boxes();
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        i = _ref[_i];
+        _result.push($(i).text().trim());
+      }
+      return _result;
+    };
+    window.boxes_text = boxes_text;
+    get_nodes_colors = function() {
+      var nodes_colors, selected;
+      selected = [];
+      return (nodes_colors = _.zip(boxes_text(), sorted_colors()));
+    };
+    window.get_nodes_colors = get_nodes_colors;
+    sorted_colors = function() {
+      var _i, _len, _ref, _result, colors, i, sorted_boxes;
+      sorted_boxes = get_boxes();
+      return (colors = (function() {
+        _result = []; _ref = get_boxes();
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          i = _ref[_i];
+          _result.push($(i).css("background-color"));
+        }
+        return _result;
+      })());
+    };
+    window.sorted_colors = sorted_colors;
     store_boxes_colors = function() {
       var _i, _len, _ref, _result, bc, color_key, colors, i, sorted_boxes;
       bc = {};
@@ -470,6 +509,39 @@
       }
     };
     window.set_boxes_colors = set_boxes_colors;
+    unique_colors = function() {
+      var _i, _len, _ref, _result, all_boxes, all_colors, i, unique_boxes, unique_pos;
+      all_colors = sorted_colors();
+      all_boxes = boxes_text();
+      unique_boxes = _.uniq(boxes_text());
+      unique_pos = (function() {
+        _result = []; _ref = unique_boxes;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          i = _ref[_i];
+          _result.push(all_boxes.indexOf(i));
+        }
+        return _result;
+      })();
+      _result = []; _ref = unique_pos;
+      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+        i = _ref[_i];
+        _result.push(all_colors[i]);
+      }
+      return _result;
+    };
+    window.unique_colors = unique_colors;
+    colors_to_hex = function(colors_array) {
+      var _i, _len, _ref, _result, i;
+      return JSON.stringify((function() {
+        _result = []; _ref = colors_array;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          i = _ref[_i];
+          _result.push(rgb2hex(i));
+        }
+        return _result;
+      })());
+    };
+    window.colors_to_hex = colors_to_hex;
     initial_layout = function(text_indent) {
       var boxes_struct;
       boxes_struct = JSON.parse(JSON.parse(text_indent));
@@ -479,8 +551,8 @@
           return make_layout(i);
         });
       }
-      render_alg();
       set_boxes_colors();
+      render_alg();
       $.farbtastic("#colorpicker").setColor("#f896c2");
       return (window.counter = 0);
     };

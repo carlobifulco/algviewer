@@ -11,12 +11,37 @@ require "tempfile"
 require "pathname"
 
 
+# SVG GENERATOR
+#-------------
+#Restful servis serving from p :8080
+#generates graphs stores them temporarly in redis and serves them from there
+
+
 # needs full path otherwise this crushes
-load "/home/ubuntu/Dropbox/code/pathforms/stock.rb"
+# load "/home/ubuntu/Dropbox/code/pathforms/stock.rb"
 # get additional routes
 # %w(stock).each {|feature| load "#{feature}.rb"}
 
-$redis=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379)
+
+#Redis connection
+#-----------------
+
+# location of REDIS service. localhost if not test; oterwise redirects to EC2 
+if ARGV.length !=0
+  $test=true if ARGV[2]=="test"
+else
+  $test=false
+end
+
+puts ARGV[2]
+puts $test
+
+#local host if running on ec2; otherwise connect to ec2
+$redis=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379) if not $test
+$redis=Redis.new(:host => "184.73.233.199", :password=>"redisreallysucks",:thread_safe=>true,:port=>6379) if $test
+puts $redis.to_enum
+
+
 $HOME="http://184.73.233.199:8080"
 
 set :haml, {:format => :html5 }
@@ -125,13 +150,25 @@ class Graph
     # @g.edge[:dir]      = "forward"
     # @g.edge[:arrowsize]= "0.5"
     
-    @redis=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379)
+    # one redis per instance
+    #local host if running on ec2; otherwise connect to ec2
+    @redis=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379) if not $test
+    @redis=Redis.new(:host => "184.73.233.199", :password=>"redisreallysucks",:thread_safe=>true,:port=>6379) if $test
+    
   end
   
-  def add_nodes(nodes)
-    nodes.each do |node|
-       add_node(node)
-     end
+  def add_nodes(nodes,colors=false)
+    if not colors
+      nodes.each do |node|
+         add_node(node)
+       end
+    else
+      nodes_colors=nodes.zip(colors)
+      nodes_colors.each do |node_color|
+        add_node_color(node_color[0],node_color[1])
+        puts "COLORS"
+      end
+    end
   end
   
   def add_edges(edges_lists)
@@ -151,7 +188,18 @@ class Graph
         end
       end  
     end
-    
+  
+  def add_node_color(node,color)
+    begin
+    new_node=@g.add_node(node)
+   # text='<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0"><TR><TD FIXEDSIZE="TRUE" WIDTH="300"  ALIGN="CENTER" HEIGHT="60">'+node+'</TD></TR></TABLE>>'
+    new_node[:label]=para node
+    new_node[:fillcolor]=color
+    puts "node added #{node}"
+    rescue
+   "failed"
+    end
+  end
   
   def add_node(node)
     begin
@@ -163,7 +211,7 @@ class Graph
      puts "node added #{node}"
     rescue
    "failed"
- end
+    end
   end
   
   def add_edge(edge_tuple)
@@ -264,16 +312,26 @@ get '/' do
   haml :index
 end
 
+#GRaph generation REST
+#--------------------
 
 ### This takes care of the netsful and ajax requests
 ### Returns json dictionary
 post '/nodes_edges/' do
+  colors=false
   graph=Graph.new
+  puts params
   nodes=JSON.parse params[:nodes]
   edges=JSON.parse params[:edges]
+  colors=JSON.parse params[:colors] if params.has_key?("colors")
   puts " NODES " + nodes.to_s
   puts "EDGES " + edges.to_s
-  graph.add_nodes(nodes)
+  if colors
+    puts "GETTING COLORS #{colors}"
+    graph.add_nodes(nodes, colors)
+  else
+    graph.add_nodes(nodes)
+  end
   graph.add_edges(edges)
   @result=graph.get_svg
   @result_pdf=graph.get_pdf
@@ -284,6 +342,7 @@ end
 
 
 
+# just to check that the service is alive
 get '/data_list' do
   #data passed as csv eg 1,2,3,4,5,6,7
   data_list=(params[:data_list])
