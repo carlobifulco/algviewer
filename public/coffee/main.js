@@ -1,7 +1,5 @@
 (function() {
-  var __bind = function(func, context) {
-    return function(){ return func.apply(context, arguments); };
-  };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   $(document).ready(__bind(function() {
     var check_auth, check_autocomplete, check_entry, confirm_link, delete_dialog, no_entry_open_accordion;
     $("#view_view").click(function() {
@@ -29,7 +27,7 @@
           {
             text: "Confirm",
             "click": function() {
-              return (window.location.href = target_url);
+              return window.location.href = target_url;
             }
           }, {
             text: "Cancel",
@@ -85,22 +83,22 @@
       user = $("#user")[0].value;
       pw = $("#password")[0].value;
       params = {
-        'user': ("" + (user)),
-        'password': ("" + (pw))
+        'user': "" + user,
+        'password': "" + pw
       };
       r = $.post('/check_user', params, update, "json");
-      return (window.r = r);
+      return window.r = r;
     };
     $("#accordion").accordion();
     _.each($(".small_acc"), function(e) {
-      return (e.style.height = "40px");
+      return e.style.height = "40px";
     });
     _.each($(".int_acc"), function(e) {
-      return (e.style.height = "80px");
+      return e.style.height = "80px";
     });
     check_entry = function(r) {
       var s, v;
-      s = ("#entry" + (r));
+      s = "#entry" + r;
       v = $(s)[0].value;
       if (v === "") {
         alert("no entry");
@@ -136,9 +134,9 @@
       $("#delete").dialog({
         buttons: [
           {
-            text: ("Confirm Delete " + (filename)),
+            text: "Confirm Delete " + filename,
             "click": function() {
-              return (window.location.href = url);
+              return window.location.href = url;
             }
           }, {
             text: "Cancel",
@@ -152,40 +150,40 @@
     };
     $("#text_edit_button").click(function(e) {
       if (check_entry(1)) {
-        return (window.location.href = ("/edit_text/" + ($("#entry1")[0].value)));
+        return window.location.href = "/edit_text/" + ($("#entry1")[0].value);
       }
     });
     $("#graph_edit_button").click(function(e) {
       if (check_entry(2)) {
-        return (window.location.href = ("/graphic_edit/" + ($("#entry2")[0].value)));
+        return window.location.href = "/graphic_edit/" + ($("#entry2")[0].value);
       }
     });
     $("#text_edit_button2").click(function(e) {
       var entry;
       entry = no_entry_open_accordion(2);
       if (entry) {
-        return (window.location.href = ("/edit_text/" + (entry)));
+        return window.location.href = "/edit_text/" + entry;
       }
     });
     $("#graph_edit_button2").click(function(e) {
       var entry;
       entry = no_entry_open_accordion(3);
       if (entry) {
-        return (window.location.href = ("/graphic_edit/" + (entry)));
+        return window.location.href = "/graphic_edit/" + entry;
       }
     });
     $("#delete_button2").click(function(e) {
       var entry;
       entry = no_entry_open_accordion(4);
       if (entry) {
-        return delete_dialog("/delete/" + (entry), entry);
+        return delete_dialog("/delete/" + entry, entry);
       }
     });
     $("#view_button_2").click(function(e) {
       var entry;
       entry = no_entry_open_accordion(1);
       if (entry) {
-        return (window.location.href = ("/view/" + (entry)));
+        return window.location.href = "/view/" + entry;
       }
     });
     $("#button").button();

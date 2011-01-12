@@ -1,7 +1,5 @@
 (function() {
-  var __bind = function(func, context) {
-    return function(){ return func.apply(context, arguments); };
-  };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   $(document).ready(__bind(function() {
     var alg_name;
     $("#accordion").accordion();
@@ -23,13 +21,13 @@
         }
       }
       $($("img")[0]).show();
-      return ($(".ui-accordion-content")[0].style.height = ("" + ($('img')[0].height) + "px"));
+      return $(".ui-accordion-content")[0].style.height = "" + ($('img')[0].height) + "px";
     });
     alg_name = _.last(window.location.pathname.split("/"));
     $("#title").html(alg_name);
     $($("img")[0]).hide();
     return _.each($(".small_acc"), function(e) {
-      return (e.style.height = "40px");
+      return e.style.height = "40px";
     });
   }, this));
 }).call(this);

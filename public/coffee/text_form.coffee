@@ -45,12 +45,13 @@ $(document).ready =>
 	update_graph()
 		
 	# error visualization
+	# replaces img entry with img 
 	show_mistake=(error_obj)->
 		window.error_obj=error_obj
 		if window.debug
-			$('#inline_graph').html(error_obj.responseText)
+			$('#text_graph').html(error_obj.responseText)
 		else
-			$('#inline_graph').html("<h3>ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!</h3")
+			$('#text_graph').html("<h3>ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!</h3")
 			
 
 		
@@ -63,8 +64,11 @@ $(document).ready =>
 	# 	
 		
 	
-	$('#inline_graph').ajaxError((o,e)->show_mistake(e))
+	$('#text_graph').ajaxError((o,e)->show_mistake(e))
+	
+	#update graph button
+	$('#update_graph_button').button().click( (evt)->update_graph(); false)
 			
 	# binds return to graph update		
-	$(document).bind('keydown', 'Return', (evt)->update_graph())
+	# $(document).bind('keydown', 'Return', (evt)->update_graph())
 	window.update_graph=update_graph

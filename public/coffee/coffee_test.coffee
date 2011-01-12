@@ -117,7 +117,8 @@ $(document).ready =>
 				text+="\n"
 			#if (text_position[0].search(":")!=-1)
 			#	alert("Error, please do not use : or ' or \"; they all need to be escaped (i.e. preceeded by \\)")
-			text+=(offset+"- "+ text_position[0].trim() +"\n")
+			text_to_be_added=text_position[0].trim()
+			text+= offset+"- "+ text_to_be_added + "\n"
 			old_offset=offset
 		text
 	

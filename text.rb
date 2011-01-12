@@ -12,7 +12,7 @@ require "haml"
 
 #SVG SERVER SETUP
 #----------------
-
+$HOST="184.73.233.199" 
 # location of svg REST service. localhost if test 
 if ARGV.length !=0
   test=true if ARGV[0]=="test"
@@ -44,7 +44,6 @@ require "tree_struct"
 
 
 # AWS Redis and Svg generator server home
-$HOST="184.73.233.199" 
 $Redis4=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379,:host=>$HOST)
 #where the text forms reside
 TextDb=4 

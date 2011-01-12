@@ -32,9 +32,13 @@
     %a.header{:href=>"#"}
       EDIT
   %div
+    
 
     %form{:action=>"/upload_text",:method=>"post"}
       #text_graph
+      #error_message
+      %button#update_graph_button
+        Update Graph
       %textarea#edit{:class=>"autoindent",:name=>"form_content",:rows=>"40",:cols=>"80",:lang=>"en", :style=>"direction: ltr;",:wrap=>"SOFT"}=@text
       %input{:type=>"hidden",:name=>"form_name",:value=>@form_name}
    

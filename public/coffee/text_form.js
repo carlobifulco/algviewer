@@ -1,7 +1,5 @@
 (function() {
-  var __bind = function(func, context) {
-    return function(){ return func.apply(context, arguments); };
-  };
+  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   $(document).ready(__bind(function() {
     var render_inline, resize, show_mistake, update_graph;
     window.debug = false;
@@ -19,17 +17,17 @@
       if (!window.graph_large) {
         $("#text_graph_image").removeClass("text_graph_image_small");
         $("#text_graph_image").addClass("text_graph_image_large");
-        return (window.graph_large = true);
+        return window.graph_large = true;
       } else {
         $("#text_graph_image").removeClass("text_graph_image_large");
         $("#text_graph_image").addClass("text_graph_image_small");
-        return (window.graph_large = false);
+        return window.graph_large = false;
       }
     };
     render_inline = function(data) {
       var anchor;
       anchor = $("#text_graph");
-      anchor.html("<img id=text_graph_image class=text_graph_image_small src=" + (data.png) + " style='opacity:0.9;z-index:10000'></img>");
+      anchor.html("<img id=text_graph_image class=text_graph_image_small src=" + data.png + " style='opacity:0.9;z-index:10000'></img>");
       $("#text_graph").show();
       return $("#text_graph").click(resize);
     };
@@ -47,15 +45,20 @@
     update_graph();
     show_mistake = function(error_obj) {
       window.error_obj = error_obj;
-      return window.debug ? $('#inline_graph').html(error_obj.responseText) : $('#inline_graph').html("<h3>ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!</h3");
+      if (window.debug) {
+        return $('#text_graph').html(error_obj.responseText);
+      } else {
+        return $('#text_graph').html("<h3>ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!</h3");
+      }
     };
     window.show_mistake = show_mistake;
-    $('#inline_graph').ajaxError(function(o, e) {
+    $('#text_graph').ajaxError(function(o, e) {
       return show_mistake(e);
     });
-    $(document).bind('keydown', 'Return', function(evt) {
-      return update_graph();
+    $('#update_graph_button').button().click(function(evt) {
+      update_graph();
+      return false;
     });
-    return (window.update_graph = update_graph);
+    return window.update_graph = update_graph;
   }, this));
 }).call(this);

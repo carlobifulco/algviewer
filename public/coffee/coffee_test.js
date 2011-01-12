@@ -1,7 +1,4 @@
 (function() {
-  var __bind = function(func, context) {
-    return function(){ return func.apply(context, arguments); };
-  };
   function concat_object(obj) {
   str='';
   for(prop in obj)
@@ -9,7 +6,7 @@
     str+=prop + " value :"+ obj[prop]+"\n";
   }
   return(str);
-};
+};  var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   window.concat_object = concat_object;
   window.pos = {};
   window.counter = 0;
@@ -29,7 +26,7 @@
     window.rgb2hex = rgb2hex;
     new_box = function(x, y, text, counter_id) {
       var text_box;
-      text_box = $("<div id='" + (counter_id) + "' class='ui-widget-content ui-corner text_box' style='position: absolute; left: " + (x) + "px; top: " + (y) + "px'>" + (text) + "</div>");
+      text_box = $("<div id='" + counter_id + "' class='ui-widget-content ui-corner text_box' style='position: absolute; left: " + x + "px; top: " + y + "px'>" + text + "</div>");
       text_box.draggable({
         "grid": [grid, grid],
         "opacity": 0.35,
@@ -57,7 +54,7 @@
       b = $("#containment-wrapper");
       text = String(document.text_form.text_content.value);
       document.text_form.text_content.value = "";
-      if (!(text)) {
+      if (!text) {
         text = "New box; enter new text in the entry form, select me and press Edit Box to change me";
       }
       new_box(x_start, y_start - grid * 2, text, window.counter);
@@ -77,12 +74,11 @@
       return $("#text_entry").focus();
     };
     alg_text = function(text_positions) {
-      var _i, _len, _ref, baseline, indent_level, offset, old_offset, text, text_position;
+      var baseline, indent_level, offset, old_offset, text, text_position, text_to_be_added, _i, _len;
       text = "\n";
       baseline = text_positions[0][1];
-      _ref = text_positions;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        text_position = _ref[_i];
+      for (_i = 0, _len = text_positions.length; _i < _len; _i++) {
+        text_position = text_positions[_i];
         indent_level = Math.round((text_position[1] - baseline) / grid);
         offset = text_multiply("  ", indent_level);
         if (offset > old_offset) {
@@ -91,7 +87,8 @@
         if (text_position[1] === baseline) {
           text += "\n";
         }
-        text += (offset + "- " + text_position[0].trim() + "\n");
+        text_to_be_added = text_position[0].trim();
+        text += offset + "- " + text_to_be_added + "\n";
         old_offset = offset;
       }
       return text;
@@ -106,17 +103,18 @@
     };
     window.text_multiply = text_multiply;
     sort_rect = function() {
-      var _i, _len, _ref, _result, sorted_box, sorted_boxes, text_boxes, text_positions;
+      var sorted_box, sorted_boxes, text_boxes, text_positions;
       text_boxes = $(".text_box");
       sorted_boxes = _.sortBy(text_boxes, get_pos);
       window.sorted_boxes = sorted_boxes;
       text_positions = (function() {
-        _result = []; _ref = sorted_boxes;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          sorted_box = _ref[_i];
-          _result.push(make_text_position(sorted_box));
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = sorted_boxes.length; _i < _len; _i++) {
+          sorted_box = sorted_boxes[_i];
+          _results.push(make_text_position(sorted_box));
         }
-        return _result;
+        return _results;
       })();
       window.text_positions = text_positions;
       return text_positions;
@@ -166,18 +164,19 @@
       }
       $(dragged).removeClass("ui-selected").css("color", "black");
       render_alg();
-      return (window.u = dragged);
+      return window.u = dragged;
     };
     get_selected = function() {
-      var _i, _len, _ref, _result, data, i, s;
+      var data, i, s;
       s = _.sortBy($(".ui-selected"), get_pos);
       data = (function() {
-        _result = []; _ref = s;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          i = _ref[_i];
-          _result.push(get_draggable_data(i));
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = s.length; _i < _len; _i++) {
+          i = s[_i];
+          _results.push(get_draggable_data(i));
         }
-        return _result;
+        return _results;
       })();
       window.pos[_.size(window.pos)] = data;
       if (s.length === 1) {
@@ -207,7 +206,7 @@
     window.get_draggable_data = get_draggable_data;
     make_draggable = function(id, text, x, y) {
       var text_box;
-      text_box = $("<div id='" + (id) + "' class='ui-widget-content selectable text_box' style='position: absolute; left: " + (x) + "px; top: " + (y) + "px'>" + (text) + "</div>");
+      text_box = $("<div id='" + id + "' class='ui-widget-content selectable text_box' style='position: absolute; left: " + x + "px; top: " + y + "px'>" + text + "</div>");
       text_box.draggable({
         "grid": [grid, grid],
         "opacity": 0.35,
@@ -221,41 +220,34 @@
     };
     window.make_draggable = make_draggable;
     cut = function(id) {
-      var _i, _len, _ref, _result, data, i, s;
+      var data, i, s, _i, _len;
       s = get_selected();
       s = _.reject(s, function(i) {
         return i.id === id;
       });
       data = (function() {
-        _result = []; _ref = s;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          i = _ref[_i];
-          _result.push(get_draggable_data(i));
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = s.length; _i < _len; _i++) {
+          i = s[_i];
+          _results.push(get_draggable_data(i));
         }
-        return _result;
+        return _results;
       })();
-      (function() {
-        _result = []; _ref = s;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          i = _ref[_i];
-          _result.push($(i).remove());
-        }
-        return _result;
-      })();
+      for (_i = 0, _len = s.length; _i < _len; _i++) {
+        i = s[_i];
+        $(i).remove();
+      }
       return data;
     };
     window.cut = cut;
     move = function(id, x_delta, y_delta) {
-      var _i, _len, _ref, _result, all, i;
+      var all, i, _i, _len;
       all = cut(id);
-      (function() {
-        _result = []; _ref = all;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          i = _ref[_i];
-          _result.push(make_draggable(i.id, i.text, i.x + x_delta, i.y + y_delta));
-        }
-        return _result;
-      })();
+      for (_i = 0, _len = all.length; _i < _len; _i++) {
+        i = all[_i];
+        make_draggable(i.id, i.text, i.x + x_delta, i.y + y_delta);
+      }
       return set_boxes_colors();
     };
     window.move = move;
@@ -283,14 +275,14 @@
       }
       window.image_h = image.height();
       window.image_w = image.width();
-      return (window.image_top = image.css("top"));
+      return window.image_top = image.css("top");
     };
     window.resize_graph = resize_graph;
     render_inline = function(data) {
       var anchor, image;
       anchor = $("#inline_graph");
       window.z = data;
-      anchor.html("<img class=inline_graph id=graph_preview src=" + (data.png) + "></img>");
+      anchor.html("<img class=inline_graph id=graph_preview src=" + data.png + "></img>");
       image = $("#graph_preview");
       image.hide();
       image.click(function() {
@@ -307,8 +299,8 @@
       if (!window.image_is_large) {
         im.addClass("image_full");
         im.css("opacity", "1");
-        h = ($(window).height() - 100);
-        w = ($(window).width() - 50);
+        h = $(window).height() - 100;
+        w = $(window).width() - 50;
         if (window.image_h > window.image_w) {
           im.height(h);
           im.width("");
@@ -370,7 +362,7 @@
       yaml = boxes_to_yaml();
       alg_name = _.last(window.location.pathname.split("/"));
       window.alg_name = alg_name;
-      return (window.yaml = yaml);
+      return window.yaml = yaml;
     };
     window.save_alg = save_alg;
     window.alg_text = alg_text;
@@ -381,13 +373,13 @@
     $("#tabs").tabs();
     get_alg_name = function() {
       var alg_name;
-      return (alg_name = _.last(window.location.pathname.split("/")));
+      return alg_name = _.last(window.location.pathname.split("/"));
     };
     alg_text_edit = function() {
-      return (window.location.href = ("/edit_text/" + (get_alg_name())));
+      return window.location.href = "/edit_text/" + (get_alg_name());
     };
     alg_view = function() {
-      return (window.location.href = ("/view/" + (get_alg_name())));
+      return window.location.href = "/view/" + (get_alg_name());
     };
     enter = function(e) {
       var selected;
@@ -406,14 +398,14 @@
     };
     $(document).keyup(function(e) {
       if (e.keyCode === 17) {
-        return (window.is_ctrl = false);
+        return window.is_ctrl = false;
       }
     });
     $("#text_entry").keydown(function(e) {
       return enter(e);
     });
     $("#home").bind('click', function() {
-      return (window.location.pathname = "/");
+      return window.location.pathname = "/";
     });
     $("#new_entry").bind('click', make_rect);
     $("#del_entry").bind('click', del_entry);
@@ -434,52 +426,56 @@
     get_boxes = function() {
       var sorted_boxes, text_boxes;
       text_boxes = $(".text_box");
-      return (sorted_boxes = _.sortBy(text_boxes, get_pos));
+      return sorted_boxes = _.sortBy(text_boxes, get_pos);
     };
     window.get_boxes = get_boxes;
     boxes_text = function() {
-      var _i, _len, _ref, _result, i;
-      _result = []; _ref = get_boxes();
+      var i, _i, _len, _ref, _results;
+      _ref = get_boxes();
+      _results = [];
       for (_i = 0, _len = _ref.length; _i < _len; _i++) {
         i = _ref[_i];
-        _result.push($(i).text().trim());
+        _results.push($(i).text().trim());
       }
-      return _result;
+      return _results;
     };
     window.boxes_text = boxes_text;
     get_nodes_colors = function() {
       var nodes_colors, selected;
       selected = [];
-      return (nodes_colors = _.zip(boxes_text(), sorted_colors()));
+      return nodes_colors = _.zip(boxes_text(), sorted_colors());
     };
     window.get_nodes_colors = get_nodes_colors;
     sorted_colors = function() {
-      var _i, _len, _ref, _result, colors, i, sorted_boxes;
+      var colors, i, sorted_boxes;
       sorted_boxes = get_boxes();
-      return (colors = (function() {
-        _result = []; _ref = get_boxes();
+      return colors = (function() {
+        var _i, _len, _ref, _results;
+        _ref = get_boxes();
+        _results = [];
         for (_i = 0, _len = _ref.length; _i < _len; _i++) {
           i = _ref[_i];
-          _result.push($(i).css("background-color"));
+          _results.push($(i).css("background-color"));
         }
-        return _result;
-      })());
+        return _results;
+      })();
     };
     window.sorted_colors = sorted_colors;
     store_boxes_colors = function() {
-      var _i, _len, _ref, _result, bc, color_key, colors, i, sorted_boxes;
+      var bc, color_key, colors, i, sorted_boxes;
       bc = {};
       sorted_boxes = get_boxes();
       if (sorted_boxes) {
         colors = (function() {
-          _result = []; _ref = sorted_boxes;
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            i = _ref[_i];
-            _result.push($(i).css("background-color"));
+          var _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = sorted_boxes.length; _i < _len; _i++) {
+            i = sorted_boxes[_i];
+            _results.push($(i).css("background-color"));
           }
-          return _result;
+          return _results;
         })();
-        color_key = ("" + (get_alg_name()) + "_colors");
+        color_key = "" + (get_alg_name()) + "_colors";
         return localStorage.setItem(color_key, JSON.stringify(colors));
       }
     };
@@ -489,56 +485,58 @@
       return store_boxes_colors();
     };
     set_boxes_colors = function() {
-      var _i, _len, _ref, _result, boxes, color_key, colors_list, pos_col, position_colors;
-      color_key = ("" + (get_alg_name()) + "_colors");
+      var boxes, color_key, colors_list, pos_col, position_colors, _i, _j, _len, _ref, _results, _results2;
+      color_key = "" + (get_alg_name()) + "_colors";
       colors_list = JSON.parse(localStorage.getItem(color_key));
       boxes = get_boxes();
       if (colors_list) {
         position_colors = _.zip((function() {
-          _result = []; _ref = colors_list.length;
-          for (var _i = 0; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i += 1 : _i -= 1){ _result.push(_i); }
-          return _result;
+          _results = [];
+          for (var _i = 0, _ref = colors_list.length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i += 1 : _i -= 1){ _results.push(_i); }
+          return _results;
         }).call(this), colors_list);
         window.position_colors = position_colors;
-        _result = []; _ref = position_colors;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          pos_col = _ref[_i];
-          _result.push($(boxes[pos_col[0]]).css("background-color", pos_col[1]));
+        _results2 = [];
+        for (_j = 0, _len = position_colors.length; _j < _len; _j++) {
+          pos_col = position_colors[_j];
+          _results2.push($(boxes[pos_col[0]]).css("background-color", pos_col[1]));
         }
-        return _result;
+        return _results2;
       }
     };
     window.set_boxes_colors = set_boxes_colors;
     unique_colors = function() {
-      var _i, _len, _ref, _result, all_boxes, all_colors, i, unique_boxes, unique_pos;
+      var all_boxes, all_colors, i, unique_boxes, unique_pos, _i, _len, _results;
       all_colors = sorted_colors();
       all_boxes = boxes_text();
       unique_boxes = _.uniq(boxes_text());
       unique_pos = (function() {
-        _result = []; _ref = unique_boxes;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          i = _ref[_i];
-          _result.push(all_boxes.indexOf(i));
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = unique_boxes.length; _i < _len; _i++) {
+          i = unique_boxes[_i];
+          _results.push(all_boxes.indexOf(i));
         }
-        return _result;
+        return _results;
       })();
-      _result = []; _ref = unique_pos;
-      for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-        i = _ref[_i];
-        _result.push(all_colors[i]);
+      _results = [];
+      for (_i = 0, _len = unique_pos.length; _i < _len; _i++) {
+        i = unique_pos[_i];
+        _results.push(all_colors[i]);
       }
-      return _result;
+      return _results;
     };
     window.unique_colors = unique_colors;
     colors_to_hex = function(colors_array) {
-      var _i, _len, _ref, _result, i;
+      var i;
       return JSON.stringify((function() {
-        _result = []; _ref = colors_array;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          i = _ref[_i];
-          _result.push(rgb2hex(i));
+        var _i, _len, _results;
+        _results = [];
+        for (_i = 0, _len = colors_array.length; _i < _len; _i++) {
+          i = colors_array[_i];
+          _results.push(rgb2hex(i));
         }
-        return _result;
+        return _results;
       })());
     };
     window.colors_to_hex = colors_to_hex;
@@ -554,11 +552,11 @@
       set_boxes_colors();
       render_alg();
       $.farbtastic("#colorpicker").setColor("#f896c2");
-      return (window.counter = 0);
+      return window.counter = 0;
     };
     $(".hide").hide();
     alg_name = _.last(window.location.pathname.split("/"));
-    z = $.get("/ajax_text_indent/" + (alg_name), function(text_indent) {
+    z = $.get("/ajax_text_indent/" + alg_name, function(text_indent) {
       return initial_layout(text_indent);
     });
     $("#colorpicker").farbtastic(choose_color);
