@@ -2,6 +2,68 @@
 $(document).ready =>
 
 
+
+
+
+#Auth Business
+#---------------
+
+	
+	#check if user in local storage. if not present, open dialog
+	# if present, check credentials. if mismatch, open dialog vial check_local_storage
+	who_are_you=()->
+		if not localStorage.getItem("user")
+			check_user_dialog()
+		else
+			user=localStorage.user
+			pw=localStorage.password
+			params={'user':"#{user}",'password':"#{pw}"}
+			r=$.post('/check_user',params,check_local_storage,"json")
+
+
+
+	#open modal dialog and bind to check_auth
+	check_user_dialog=()->
+		$( "#dialog-form" ).dialog({"autoOpen": false,"height": 300,"width": 350, "modal": true})
+		$("#create-user").button()
+		$("#dialog-form").dialog("open")
+		$("#dialog-form").dialog({"closeOnEscape":false,close:()->$("#dialog-form").dialog("open")})
+		$("#create-user").click((e)->check_auth(); return false)
+		
+	#takes server reply to dialog entries or to local storage items
+	check_local_storage=(r)->
+		if r=="OK"
+			$("#dialog-form").hide()
+		else
+			check_user_dialog()
+
+		
+# check auth
+	check_auth=()-> 
+		update=(r)->
+			user=$("#user")[0].value
+			pw=$("#password")[0].value
+			if r=="OK"
+				localStorage.user=user
+				localStorage.password=pw
+				window.location.url="/"
+				$("#dialog-form").dialog("destroy")
+			else
+				alert("Incorrect User or Password")
+				window.location.url="/"
+				return false
+		user=$("#user")[0].value
+		pw=$("#password")[0].value
+		params={'user':"#{user}",'password':"#{pw}"}
+		#call check_user
+		r=$.post('/check_user',params,update,"json")
+		window.r=r
+		
+
+#GUI
+#---		
+
+
 ## MENU STAFF HERE show and hide
 	$("#view_view").click(()->$("#hide_view").toggle())
 	$("#hide_edit").hide()
@@ -24,41 +86,7 @@ $(document).ready =>
 	$("#delete").dialog({"autoOpen":"false","modal":"true"})
 	$("#delete").dialog("close")
 	$(".confirmLink").bind("click",(e)=>confirm_link(e))
-	
-	
-## user dialog find out if already in the system
-	#$("#dialog-form").dialog("open")
-	$( "#dialog-form" ).dialog({"autoOpen": false,"height": 300,"width": 350, "modal": true})
-	$("#create-user").button()
-	
-	if not localStorage.getItem("user")
-		$("#dialog-form").dialog("open")
-		$("#dialog-form").dialog({"closeOnEscape":false,close:()->$("#dialog-form").dialog("open")})
-		$("#create-user").click((e)->check_auth(); return false)
-		
-# check auth
-	check_auth=()-> 
-		update=(r)->
-			if r=="OK"
-				localStorage.setItem("user", user)
-				window.location.url="/"
-				$("#dialog-form").dialog("destroy")
-			
-			else
-				alert("Incorrect User or Password")
-				window.location.url="/"
-				return false
-		user=$("#user")[0].value
-		pw=$("#password")[0].value
-		params={'user':"#{user}",'password':"#{pw}"}
-		r=$.post('/check_user',params,update,"json")
-		window.r=r
 
-
-		
-		
-
-		
 	
 ## Accordion
 	$( "#accordion" ).accordion()
@@ -101,7 +129,10 @@ $(document).ready =>
 	delete_dialog=(url,filename)->
 		$("#delete").dialog({buttons :[{text:"Confirm Delete #{filename}","click":()->window.location.href=url},{text:"Cancel","click":()->$("#delete").dialog("close")}]})
 		$("#delete").dialog("open")
-			
+	
+	
+	#GUI bindings
+	#-------------		
 	$("#text_edit_button").click((e)->window.location.href="/edit_text/#{$("#entry1")[0].value}" if check_entry(1))
 	$("#graph_edit_button").click((e)->window.location.href="/graphic_edit/#{$("#entry2")[0].value}" if check_entry(2))
 	$("#text_edit_button2").click((e)->entry=no_entry_open_accordion(2); window.location.href="/edit_text/#{entry}" if entry)
@@ -115,10 +146,16 @@ $(document).ready =>
 	$("#button2").button()
 	$(".button").button()
 
-##
 	$("#all_algs_names").hide()
 	window.alg_names=eval($("#all_algs_names").text())
 	$( "#autocomplete" ).autocomplete({"source": window.alg_names})
+	
+	# RUN the Auth stuff
+	#--------------------
+	who_are_you()
+	
+	
+	
 	
 	
 		
