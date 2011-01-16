@@ -147,10 +147,11 @@ $(document).ready =>
 		
 	# transform the boxes in a yaml alg
 	boxes_to_yaml=()->
-		result=alg_text(sort_rect())
+		if sort_rect!=[]
+			result=alg_text(sort_rect()) 
 		# for debugging
-		window.yaml=result
-		return result
+			window.yaml=result
+			return result
 	window.boxes_to_yaml=boxes_to_yaml
 
 
@@ -575,6 +576,9 @@ $(document).ready =>
 	#$.farbtastic("#colorpicker").setColor("#f896c2")
 	$("#colorpicker").farbtastic(choose_color)
 	$("#colorpicker").draggable()
+	
+	# text entry focus
+	$("#text_entry").focus()
 	
 	
 	
