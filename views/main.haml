@@ -29,7 +29,7 @@
     %p
       %label{:for=>'autocomplete'}  
         Search:
-      %input#autocomplete{"require"=>"require"}
+      %input#autocomplete{"require"=>"require", :type=>"search",:placeholder=>"Search for name of graph or enter new graph name", :name=>"form_name",:size=>"60"}
       #view_button_2.button.span-4
         VIEW
       #text_edit_button2.button.span-4
@@ -62,7 +62,7 @@
         .button#text_edit_button.span-4.ui-widget-content.ui-state-default
           NEW TEXT EDIT
         .span.3
-          %input#entry1{:type=>"text",:name=>"form_name",:cols=>"30",:required=>"required"}
+          %input#entry1{:type=>"text",:name=>"form_name",:size=>"40",:required=>"required", :placeholder=>"Enter name of new graph"}
       .span-24.last
         %p
       
@@ -78,7 +78,7 @@
           %a{:href=>"/graphic_edit/#{x}"}=x
     .span-24.last
       %form{:action=>"/edit_edit",:method=>"get"}    
-      %input#entry2{:type=>"text",:name=>"form_name",:cols=>"30"}
+      %input#entry2{:type=>"text",:placeholder=>"Enter name of new graph", :name=>"form_name",:size=>"40"}
       .button#graph_edit_button.span-4.last
         NEW GRAPHIC EDIT
     .span-24.last
