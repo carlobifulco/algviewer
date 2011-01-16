@@ -127,13 +127,18 @@ post '/check_user' do
   puts params
   user=params["user"]
   password=params["password"]
-  users=["guest","carlobifulco", "nicole"]
-  passwords=["guest","bifulcocarlo", "nicole"]
+  users=["guest","carlobifulco", "nicole", "tester", "master"]
+  passwords=["guest","bifulcocarlo", "nicole", "tester", "master"]
   if (users.include?(user) and passwords.include?(password))
     session["user"]=user
     puts session["user"]
     #rebinds redis to an user specific namespace
-    $r= Redis::Namespace.new(session["user"], :redis =>$Redis4)
+    if session["user"] !="master"
+      $r= Redis::Namespace.new(session["user"], :redis =>$Redis4) 
+    else
+      $r=$Redis4 
+    end
+    
     #$Redis4=Redis::Namespace.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379,:host=>$HOST,:ns=>user) 
     return "OK".to_json
 
@@ -148,8 +153,11 @@ get "/" do
   # This checks auth and stores username in session
   username=session["user"]
   puts env["HTTP_HOST"]
-  @all_forms=$r.keys.sort! if $r
-  @all_forms=$Redis4.keys.sort! if not $r
+  if $r
+    @all_forms=$r.keys.sort!
+  else
+    @all_forms=$Redis4.keys.sort!
+  end
   haml :main
 end
 
@@ -301,6 +309,25 @@ post '/graphic_edit_view' do
   end
 end
 
+# Colors
+#--------
+
+post '/store_graph_colors' do
+  colors=JSON.parse(params[:colors])
+  graph_name=params[:graph_name]
+  colors_hash_name="#{session['user']}___colors"
+  $r.hset colors_hash_name, graph_name, colors.to_json
+  puts "COLORS: #{colors} GRAPH NAME: #{graph_name} "
+end
+
+
+post '/get_graph_colors' do
+  graph_name=params[:graph_name]
+  colors_hash_name="#{session['user']}___colors"
+  colors=$r.hget colors_hash_name, graph_name
+  puts "REQUESTD FOR COLORS #{colors}"
+  return colors
+end
 
 
 

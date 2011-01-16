@@ -138,6 +138,7 @@ $(document).ready =>
 		text_positions=(make_text_position(sorted_box) for sorted_box in sorted_boxes)
 		window.text_positions=text_positions
 		text_positions
+
 	
 	# get postions from a box
 	make_text_position=(text_box)->
@@ -459,6 +460,48 @@ $(document).ready =>
 	#these are the reimplemented on each reload of the alg
 	#the use of local storage makes this for now local browser specific 
 	
+	
+	
+	# Apply color to all boxes
+	# gets colors from redis
+	set_boxes_colors=()->
+		#request colors from redis
+		graph_name=get_alg_name()
+		#paint_boxes callback does the job of painting
+		redis_colors=$.post("/get_graph_colors",{"graph_name":alg_name,"type":"ajax"},(colors)->paint_boxes(JSON.parse(colors)))
+	window.set_boxes_colors=set_boxes_colors
+	
+	
+	#callback for AJAX redis colors
+	paint_boxes=(colors_list)->
+		#alert(colors_list)
+		boxes=get_boxes()
+		#zip index and col and then apply them to each box		
+		position_colors=_.zip([0...colors_list.length],colors_list)
+		window.position_colors=position_colors
+		($(boxes[pos_col[0]]).css("background-color",pos_col[1]) for pos_col in position_colors)
+		# this needs to be called AFTER the colors are painted otherwise fires to early before rendering
+		$.farbtastic("#colorpicker").setColor("#f896c2")
+		
+
+	# Get colors from boxes
+	# loops over all boxes and gets their color
+	# stores theyr value in redis via ajax to store_graph_colors
+	store_boxes_colors=()->
+		bc={}
+		#boxes in vertical order
+		sorted_boxes=get_boxes()
+		if sorted_boxes
+			colors=($(i).css("background-color") for i in sorted_boxes)
+			# store colors on redis
+			alg_name=get_alg_name()
+			colors=JSON.stringify(colors)
+			# colors are stored in redis 
+			$.post("/store_graph_colors",{"colors":colors,"graph_name":alg_name,"type":"ajax"})
+	window.store_boxes_colors=store_boxes_colors
+		
+	
+	
 	#get boxes in vertical order
 	get_boxes=()->
 		text_boxes= $(".text_box")
@@ -486,22 +529,7 @@ $(document).ready =>
 	window.sorted_colors=sorted_colors
 	
 
-		
-	# Get colors from boxes
-	# loops over all boxes and gets their color
-	# stores theyr value in localStorage 
-	store_boxes_colors=()->
-		bc={}
-		#boxes is verical order
-		sorted_boxes=get_boxes()
-		if sorted_boxes
-			colors=($(i).css("background-color") for i in sorted_boxes)
-			#store this in localStorage variable composed of alg name and _colors
-			color_key="#{get_alg_name()}_colors"
-			localStorage.setItem(color_key,JSON.stringify(colors))
-		
-	window.store_boxes_colors=store_boxes_colors
-	
+
 	
 	#Color wheel called function
 	#Applies color to all selected items
@@ -510,20 +538,8 @@ $(document).ready =>
 		#alert(color)
 		$(get_selected()).css("background",color)
 		store_boxes_colors()
-	
-	# Apply color to all boxes
-	# gets colors from localStorage
-	set_boxes_colors=()->
-		color_key="#{get_alg_name()}_colors"
-		colors_list=JSON.parse(localStorage.getItem(color_key))
-		#alert(colors_list)
-		boxes=get_boxes()
-		#zip index and col and then apply them to each box
-		if colors_list
-			position_colors=_.zip([0...colors_list.length],colors_list)
-			window.position_colors=position_colors
-			($(boxes[pos_col[0]]).css("background-color",pos_col[1]) for pos_col in position_colors)
-	window.set_boxes_colors=set_boxes_colors
+
+
 	
 	#Rendering of colored graphs
 	#---------------------------
@@ -551,8 +567,6 @@ $(document).ready =>
 	initial_layout=(text_indent)->
 		# not sure while I need ot parse this twice
 		boxes_struct=JSON.parse(JSON.parse(text_indent))
-		window.boxes_struct=boxes_struct
-		#make boxes
 		if boxes_struct
 			_.each(boxes_struct, (i)->make_layout(i))
 
@@ -561,7 +575,7 @@ $(document).ready =>
 			#render alg
 			render_alg()
 		# set default value for color picker --after the boxes are painted, which I am not sure why seems necessary
-		$.farbtastic("#colorpicker").setColor("#f896c2")
+
 		# zero counter for next run
 		window.counter=0
 		
