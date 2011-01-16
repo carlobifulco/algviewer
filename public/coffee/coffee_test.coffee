@@ -556,10 +556,9 @@ $(document).ready =>
 		if boxes_struct
 			_.each(boxes_struct, (i)->make_layout(i))
 
-		# color boxes
-		set_boxes_colors()
-		#render alg
-		render_alg()
+			set_boxes_colors()
+			#render alg
+			render_alg()
 		# set default value for color picker --after the boxes are painted, which I am not sure why seems necessary
 		$.farbtastic("#colorpicker").setColor("#f896c2")
 		# zero counter for next run
