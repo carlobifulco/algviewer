@@ -8,6 +8,7 @@ require "yaml"
 require "rack"
 require 'coffee-script'
 require "haml"
+require "redis-namespace"
 
 
 #SVG SERVER SETUP
@@ -48,6 +49,7 @@ $Redis4=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379,:
 #where the text forms reside
 TextDb=4 
 $Redis4.select TextDb
+$r=false
 
 $HOME="http://algviewer.heroku.com" #$HOME="http://0.0.0.0:4567"
 IMAGE_CONTAINER="./image_container"
@@ -64,7 +66,8 @@ puts ENV["URL"]
 #edit text form , both as a url and as a get? request
 get "/edit_text/:form_name" do
   @form_name=params[:form_name]
-  @text=($Redis4.get @form_name).to_s
+  
+  @text=($r.get @form_name).to_s
   haml :text_form
 end
 
@@ -79,7 +82,7 @@ end
 #delete text form
 get "/delete/:form_name" do
   @form_name=params[:form_name]
-  $Redis4.del @form_name
+  $r.del @form_name
   redirect "/"
 end
 
@@ -96,8 +99,8 @@ end
 get '/export_all' do
   yaml_doc=[]
   content_type 'text/x-yaml', :charset => 'utf-8'
-  $Redis4.keys.each do |x|
-    yaml_doc<< ($Redis4.get x)
+  $r.keys.each do |x|
+    yaml_doc<< ($r.get x)
     yaml_doc<<"---"
   end
   yaml_doc.join "\n"
@@ -109,7 +112,7 @@ end
 post '/upload_text' do
  form_text=params["form_content"]
  form_name=params["form_name"]
- $Redis4.set form_name,form_text
+ $r.set form_name,form_text
  return true if params.has_key? "type"
  redirect "/" 
 end
@@ -117,16 +120,23 @@ end
 
 #Password Login
 #---------------
+
+# ajax called. receives username and password and checks the on code
+# also sets user specific namespace for redis connection!!!
 post '/check_user' do
   puts params
   user=params["user"]
   password=params["password"]
-  users=["guest","carlobifulco"]
-  passwords=["guest","bifulcocarlo"]
+  users=["guest","carlobifulco", "nicole"]
+  passwords=["guest","bifulcocarlo", "nicole"]
   if (users.include?(user) and passwords.include?(password))
     session["user"]=user
     puts session["user"]
+    #rebinds redis to an user specific namespace
+    $r= Redis::Namespace.new(session["user"], :redis =>$Redis4)
+    #$Redis4=Redis::Namespace.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379,:host=>$HOST,:ns=>user) 
     return "OK".to_json
+
   else
     return false.to_json
   end
@@ -138,9 +148,9 @@ get "/" do
   # This checks auth and stores username in session
   username=session["user"]
   puts env["HTTP_HOST"]
-  @all_forms=$Redis4.keys.sort!
+  @all_forms=$r.keys.sort! if $r
+  @all_forms=$Redis4.keys.sort! if not $r
   haml :main
-
 end
 
 
@@ -153,7 +163,7 @@ end
 # this is then used by coffee to create the boxes and to appropriately
 # indent them
 def text_indent(form_name)
-  text=($Redis4.get form_name).to_s
+  text=($r.get form_name).to_s
   if text==""
     return false
   else
@@ -253,7 +263,7 @@ end
 # called 
 get '/view/:form_name' do
   form_name=params[:form_name]
-  text=($Redis4.get form_name).to_s
+  text=($r.get form_name).to_s
   # eliminate colomns in the rendering
   text=text_cleanup(text)
   y=yaml_load(text)

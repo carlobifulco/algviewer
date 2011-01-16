@@ -59,6 +59,12 @@ $(document).ready =>
 		r=$.post('/check_user',params,update,"json")
 		window.r=r
 		
+ #Logout user
+	logout=()->
+		localStorage.user=false
+		localStorage.password=false
+		window.location.reload()
+		
 
 #GUI
 #---		
@@ -109,7 +115,7 @@ $(document).ready =>
 		s="#autocomplete"
 		v=$(s)[0].value
 		if v == ""
-			alert("no entry; please enter a new name or select an old alg")
+			alert("No entry; please enter a new name or select or select an existing graph")
 			return false
 		else
 			return v
@@ -139,7 +145,7 @@ $(document).ready =>
 	$("#graph_edit_button2").click((e)->entry=no_entry_open_accordion(3); window.location.href="/graphic_edit/#{entry}" if entry)
 	$("#delete_button2").click((e)->entry=no_entry_open_accordion(4); delete_dialog("/delete/#{entry}",entry)  if entry)
 	$("#view_button_2").click((e)->entry=no_entry_open_accordion(1); window.location.href="/view/#{entry}" if entry)
-		
+	$("#logout").click(logout)
 		
 
 	$("#button").button()

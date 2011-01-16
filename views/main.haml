@@ -107,6 +107,12 @@
     %form{:action=>"/upload",:method=>"post",:enctype=>"multipart/form-data"}
       %input.button{:type=>"file",:name=>"file"}
       %input.button{:type=>"submit",:value=>"Upload"}
+      
+  %h3
+    %a.header{:href=>"#"}    
+      LOG OUT
+  %div.small_acc
+    %a#logout.button{:href => '/'} Log Out User
 
       
 %span#all_algs_names

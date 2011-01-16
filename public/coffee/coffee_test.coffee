@@ -556,6 +556,7 @@ $(document).ready =>
 		if boxes_struct
 			_.each(boxes_struct, (i)->make_layout(i))
 
+			# color boxes
 			set_boxes_colors()
 			#render alg
 			render_alg()
