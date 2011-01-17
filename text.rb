@@ -209,6 +209,7 @@ end
 
 #Call to dot engine at SVG_URL default
 #yaml load and rest call; returns dictionary response
+#colors are shipped along, if they are there
 def rest_call(y,colors=false)
   n=NodesEdges.new y
   nodes=n.get_nodes.to_json
@@ -309,7 +310,7 @@ post '/graphic_edit_view' do
   end
 end
 
-# Colors
+# Colors For Boxes Painting
 #--------
 
 post '/store_graph_colors' do

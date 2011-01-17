@@ -344,67 +344,7 @@ $(document).ready =>
 	
 
 
-	#Rendering and Saving
-	#--------------------
 
-		
-	# ajax call to /view_text 
-	# and when results come back calls rendering_ok for showing the 
-	# results
-	render_alg=()->
-		$("#progressbar" ).progressbar("value":25)
-		yaml_structure=boxes_to_yaml()
-		colors=colors_to_hex(unique_colors())
-		#show on tab inline rendering
-		z=$.post("/graphic_edit_view",{"text":yaml_structure,"hex":colors, "dataType":"json"},(data)->render_inline(JSON.parse(data)))
-		# and save
-		save(yaml_structure)
-		$("#text_entry").focus()
-		
-	save=(yaml_structure)->
-		# get algname
-		alg_name=_.last(window.location.pathname.split("/"))
-		# acutal save
-		$.post("/upload_text",{"form_content":yaml_structure,"form_name":alg_name,"type":"ajax"},(data)->success())
-
-	success=()->
-		$("#progressbar" ).progressbar("value":100)
-
-	#saving
-	save_alg=()->
-		yaml=boxes_to_yaml()
-		alg_name=_.last(window.location.pathname.split("/"))
-		window.alg_name=alg_name
-		window.yaml=yaml
-		#$.post("/upload_text",{"form_content":yaml,"form_name":alg_name,"type":"ajax"},(data)->success())
-	window.save_alg=save_alg
-		
-
-	#debug
-	window.alg_text=alg_text
-	window.sort_rect=sort_rect
-	
-
-			
-
-	# $(document).bind('keydown', 'Return', (evt)->make_rect(evt))
-	# $(document).bind('keydown', 'Ctrl+e', enter_text)
-	# $(document).bind('keydown', 'Ctrl+a', alert)
-	
-	# bar and tabs
-	$("#progressbar").progressbar("value":0)
-	$("#tabs").tabs()
-	
-	
-	get_alg_name=()->
-		alg_name=_.last(window.location.pathname.split("/"))	
-	
-	alg_text_edit=()->	
-		window.location.href="/edit_text/#{get_alg_name()}"
-	
-	alg_view=()->
-		window.location.href="/view/#{get_alg_name()}"
-	
 		
 
 	#Bindings
@@ -543,21 +483,101 @@ $(document).ready =>
 	#Rendering of colored graphs
 	#---------------------------
 	
-	#unique colors
+	# returns hash {text:hex_of_color}
 	unique_colors=()->
+		counter=0
 		all_colors=sorted_colors()
 		all_boxes=boxes_text()
-		unique_boxes=_.uniq(boxes_text())
-		unique_pos=( all_boxes.indexOf(i) for i in unique_boxes)
-		(all_colors[i] for i in unique_pos)
+		# make pairs with (pos,box_text)
+		positions_boxes_pairs=_.zip([1..all_boxes.length],all_boxes)
+		#more pairing, now (col,(pos,text))
+		boxes_colors_pairs=_.zip(all_colors,positions_boxes_pairs)
+		window.boxes_colors_pairs=boxes_colors_pairs
+		box_color_hash={}
+		# make {} -> {text:col}
+		(hash_maker(box_color_hash,i) for i in boxes_colors_pairs)
+		box_color_hash
 	window.unique_colors=unique_colors
 	
 	#utility for possible colored graphs; returns JSON
 	# Usage: update of the graph calls colors_to_hex(unique_colors())
+	# useless in the current implementation
 	colors_to_hex=(colors_array)->
 		JSON.stringify((rgb2hex(i) for i in colors_array))
 	window.colors_to_hex=colors_to_hex
 	
+	#hash {text:matching_color}
+	hash_maker=(hash,value_pair)->
+		#(col,(pos,text))
+		text=value_pair[1][1]
+		pos=value_pair[1][0]
+		color=value_pair[0]
+		if not hash[text]
+			hash[text]=rgb2hex(color)
+
+
+	#Rendering and Saving
+	#--------------------
+
+
+	# ajax call to /view_text 
+	# and when results come back calls rendering_ok for showing the 
+	# results
+	render_alg=()->
+		$("#progressbar" ).progressbar("value":25)
+		yaml_structure=boxes_to_yaml()
+		colors=unique_colors()
+		#show on tab inline rendering
+		z=$.post("/graphic_edit_view",{"text":yaml_structure,"hex":colors, "dataType":"json"},(data)->render_inline(JSON.parse(data)))
+		# and save
+		save(yaml_structure)
+		$("#text_entry").focus()
+
+	save=(yaml_structure)->
+		# get algname
+		alg_name=_.last(window.location.pathname.split("/"))
+		# acutal save
+		$.post("/upload_text",{"form_content":yaml_structure,"form_name":alg_name,"type":"ajax"},(data)->success())
+
+	success=()->
+		$("#progressbar" ).progressbar("value":100)
+
+	#saving
+	save_alg=()->
+		yaml=boxes_to_yaml()
+		alg_name=_.last(window.location.pathname.split("/"))
+		window.alg_name=alg_name
+		window.yaml=yaml
+		#$.post("/upload_text",{"form_content":yaml,"form_name":alg_name,"type":"ajax"},(data)->success())
+	window.save_alg=save_alg
+
+
+	#debug
+	window.alg_text=alg_text
+	window.sort_rect=sort_rect
+
+
+
+
+	# $(document).bind('keydown', 'Return', (evt)->make_rect(evt))
+	# $(document).bind('keydown', 'Ctrl+e', enter_text)
+	# $(document).bind('keydown', 'Ctrl+a', alert)
+
+	# bar and tabs
+	$("#progressbar").progressbar("value":0)
+	$("#tabs").tabs()
+
+
+	get_alg_name=()->
+		alg_name=_.last(window.location.pathname.split("/"))	
+
+	alg_text_edit=()->	
+		window.location.href="/edit_text/#{get_alg_name()}"
+
+	alg_view=()->
+		window.location.href="/view/#{get_alg_name()}"
+
+
 	
 	#Initial Rendering on load of the graph
 	#--------------------------------------

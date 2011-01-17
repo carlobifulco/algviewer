@@ -23,14 +23,23 @@ require "pathname"
 # %w(stock).each {|feature| load "#{feature}.rb"}
 
 
-#Redis connection
-#-----------------
+#Redis connection and host location
+#-------------------------------------
+
+puts ARGV
 
 # location of REDIS service. localhost if not test; oterwise redirects to EC2 
-if ARGV.length !=0
+#location $HOME host; localhost if test, otherwise AWS service
+# ruby svg_generator.rb - p 8080 test
+# test is argv[2] in the line above
+if ARGV.length >2
   $test=true if ARGV[2]=="test"
+  $HOME="http://0.0.0.0:8080" if ARGV[2]=="test"
+  puts "running in local mode"
 else
   $test=false
+  $HOME="http://184.73.233.199:8080"
+  puts "running in AWS mode"
 end
 
 puts ARGV[2]
@@ -42,7 +51,7 @@ $redis=Redis.new(:host => "184.73.233.199", :password=>"redisreallysucks",:threa
 puts $redis.to_enum
 
 
-$HOME="http://184.73.233.199:8080"
+
 
 set :haml, {:format => :html5 }
 
@@ -156,18 +165,12 @@ class Graph
     @redis=Redis.new(:host => "184.73.233.199", :password=>"redisreallysucks",:thread_safe=>true,:port=>6379) if $test
     
   end
-  
+
+  # add node an if also provided with a color hash sets color[node]  
   def add_nodes(nodes,colors=false)
-    if not colors
-      nodes.each do |node|
-         add_node(node)
-       end
-    else
-      nodes_colors=nodes.zip(colors)
-      nodes_colors.each do |node_color|
-        add_node_color(node_color[0],node_color[1])
-        puts "COLORS"
-      end
+    nodes.each do |node|
+      add_node(node) if not colors
+      add_node_color(node,colors[node]) if colors
     end
   end
   
@@ -195,7 +198,7 @@ class Graph
    # text='<<TABLE BORDER="0" CELLBORDER="0" CELLSPACING="0" CELLPADDING="0"><TR><TD FIXEDSIZE="TRUE" WIDTH="300"  ALIGN="CENTER" HEIGHT="60">'+node+'</TD></TR></TABLE>>'
     new_node[:label]=para node
     new_node[:fillcolor]=color
-    puts "node added #{node}"
+    puts "colored node added #{node} #{color}"
     rescue
    "failed"
     end
@@ -323,7 +326,7 @@ post '/nodes_edges/' do
   puts params
   nodes=JSON.parse params[:nodes]
   edges=JSON.parse params[:edges]
-  colors=JSON.parse params[:colors] if params.has_key?("colors")
+  colors=params[:colors] if params.has_key?("colors")
   puts " NODES " + nodes.to_s
   puts "EDGES " + edges.to_s
   if colors
@@ -337,7 +340,9 @@ post '/nodes_edges/' do
   @result_pdf=graph.get_pdf
   @result_png=graph.get_png
   @result_dot=graph.get_dot
-  {:svg=>@result,:pdf=>@result_pdf,:png=>@result_png,:dot=>@result_dot}.to_json
+  r={:svg=>@result,:pdf=>@result_pdf,:png=>@result_png,:dot=>@result_dot}.to_json
+  puts r
+  return r
 end
 
 
