@@ -172,6 +172,7 @@ $(document).ready =>
 		$(".ui-selected").remove()
 		yaml_structure=boxes_to_yaml()
 		render_alg()
+		$("#text_entry").focus()
 
 
 
@@ -350,6 +351,16 @@ $(document).ready =>
 	#Bindings
 	#--------
 	
+	# funtions for key bindings
+	get_alg_name=()->
+		alg_name=_.last(window.location.pathname.split("/"))	
+
+	alg_text_edit=()->	
+		window.location.href="/edit_text/#{get_alg_name()}"
+
+	alg_view=()->
+		window.location.href="/view/#{get_alg_name()}"
+	
 	#####keys bindings
 	
 	#enter text or edit box
@@ -422,6 +433,7 @@ $(document).ready =>
 		($(boxes[pos_col[0]]).css("background-color",pos_col[1]) for pos_col in position_colors)
 		# this needs to be called AFTER the colors are painted otherwise fires to early before rendering
 		$.farbtastic("#colorpicker").setColor("#f896c2")
+		render_alg()
 
 	# Get colors from boxes
 	# loops over all boxes and gets their color
@@ -568,14 +580,6 @@ $(document).ready =>
 	$("#tabs").tabs()
 
 
-	get_alg_name=()->
-		alg_name=_.last(window.location.pathname.split("/"))	
-
-	alg_text_edit=()->	
-		window.location.href="/edit_text/#{get_alg_name()}"
-
-	alg_view=()->
-		window.location.href="/view/#{get_alg_name()}"
 
 
 	
@@ -588,12 +592,11 @@ $(document).ready =>
 		boxes_struct=JSON.parse(JSON.parse(text_indent))
 		if boxes_struct
 			_.each(boxes_struct, (i)->make_layout(i))
-
 			# color boxes
 			set_boxes_colors()
 			#render alg
 			render_alg()
-		# set default value for color picker --after the boxes are painted, which I am not sure why seems necessary
+
 
 		# zero counter for next run
 		window.counter=0

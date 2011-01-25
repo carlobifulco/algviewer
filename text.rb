@@ -21,6 +21,12 @@ else
   test=false
 end
 
+#REDIS RESERVED KEYS
+#--------------------
+
+$redis_reserved={:colors=>"^___colors",:hash_color=>"^___hashcolors"}
+
+
 # choosing local server if test parameter, otherwise go to ec2
 if not test
   SVG_URL="http://#{$HOST}:8080"
@@ -155,6 +161,16 @@ get "/" do
   puts env["HTTP_HOST"]
   if $r
     @all_forms=$r.keys.sort!
+    final_forms=[]
+    @all_forms.each do |x|
+      puts  "^#{x.split('^')[1]}"
+      if $redis_reserved.values.include? "^#{x.split('^')[1]}"
+        next
+      else
+        final_forms<<x
+      end 
+    end
+    @all_forms=final_forms
   else
     @all_forms=$Redis4.keys.sort!
   end
@@ -272,12 +288,13 @@ end
 # called 
 get '/view/:form_name' do
   form_name=params[:form_name]
+  #yaml
   text=($r.get form_name).to_s
   # eliminate colomns in the rendering
   text=text_cleanup(text)
   y=yaml_load(text)
   begin
-    r=rest_call y
+    r=rest_call y,colors
     @svg=r["svg"]
     @png=r["png"]
     @pdf=r["pdf"]
@@ -311,20 +328,24 @@ post '/graphic_edit_view' do
 end
 
 # Colors For Boxes Painting
-#--------
+#---------------------------
+# for boxes painting and NOT for node rendering
+# data structure is just a list of rgb values
 
 post '/store_graph_colors' do
   colors=JSON.parse(params[:colors])
   graph_name=params[:graph_name]
-  colors_hash_name="#{session['user']}___colors"
+  colors_hash_name="#{session['user']}#{$redis_reserved[:colors]}"
   $r.hset colors_hash_name, graph_name, colors.to_json
   puts "COLORS: #{colors} GRAPH NAME: #{graph_name} "
 end
 
 
+
+#colors stored in redis in a {user___colors{graphname:xxx}} structure
 post '/get_graph_colors' do
   graph_name=params[:graph_name]
-  colors_hash_name="#{session['user']}___colors"
+  colors_hash_name="#{session['user']}#{$redis_reserved[:colors]}"
   colors=$r.hget colors_hash_name, graph_name
   puts "REQUESTD FOR COLORS #{colors}"
   return colors
