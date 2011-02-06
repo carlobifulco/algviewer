@@ -12,7 +12,7 @@
   window.counter = 0;
   window.image_is_large = false;
   $(document).ready(__bind(function() {
-    var alg_name, alg_text, alg_text_edit, alg_view, boxes_text, boxes_to_yaml, choose_color, chosen, colors_to_hex, cut, del_entry, edit_text, enter, expand_graph, get_alg_name, get_boxes, get_draggable_data, get_nodes_colors, get_pos, get_selected, grid, initial_layout, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, render_alg, render_inline, resize_graph, rgb2hex, save, save_alg, set_boxes_colors, sort_rect, sorted_colors, store_boxes_colors, success, text_multiply, unique_colors, unselected, x_start, y_start, z;
+    var alg_name, alg_text, alg_text_edit, alg_view, boxes_text, boxes_to_yaml, choose_color, chosen, colors_to_hex, cut, del_entry, edit_text, enter, expand_graph, get_alg_name, get_boxes, get_draggable_data, get_nodes_colors, get_pos, get_selected, grid, hash_maker, initial_layout, make_draggable, make_layout, make_rect, make_text_position, move, new_box, offset, paint_boxes, render_alg, render_inline, resize_graph, rgb2hex, save, save_alg, set_boxes_colors, sort_rect, sorted_colors, store_boxes_colors, success, text_multiply, unique_colors, unselected, x_start, y_start, z;
     grid = 48;
     x_start = grid * 2;
     y_start = (grid * 4) + $(".new_box").position().top;
@@ -127,9 +127,11 @@
     };
     boxes_to_yaml = function() {
       var result;
-      result = alg_text(sort_rect());
-      window.yaml = result;
-      return result;
+      if (sort_rect !== []) {
+        result = alg_text(sort_rect());
+        window.yaml = result;
+        return result;
+      }
     };
     window.boxes_to_yaml = boxes_to_yaml;
     chosen = function() {
@@ -141,7 +143,8 @@
       var yaml_structure;
       $(".ui-selected").remove();
       yaml_structure = boxes_to_yaml();
-      return render_alg();
+      render_alg();
+      return $("#text_entry").focus();
     };
     offset = function(e, u) {
       var dragged, id, new_data, old_data, x, x_delta, y, y_delta;
@@ -324,53 +327,6 @@
         return $("#text_entry").focus();
       }
     };
-    render_alg = function() {
-      var colors, yaml_structure, z;
-      $("#progressbar").progressbar({
-        "value": 25
-      });
-      yaml_structure = boxes_to_yaml();
-      colors = colors_to_hex(unique_colors());
-      z = $.post("/graphic_edit_view", {
-        "text": yaml_structure,
-        "hex": colors,
-        "dataType": "json"
-      }, function(data) {
-        return render_inline(JSON.parse(data));
-      });
-      save(yaml_structure);
-      return $("#text_entry").focus();
-    };
-    save = function(yaml_structure) {
-      var alg_name;
-      alg_name = _.last(window.location.pathname.split("/"));
-      return $.post("/upload_text", {
-        "form_content": yaml_structure,
-        "form_name": alg_name,
-        "type": "ajax"
-      }, function(data) {
-        return success();
-      });
-    };
-    success = function() {
-      return $("#progressbar").progressbar({
-        "value": 100
-      });
-    };
-    save_alg = function() {
-      var alg_name, yaml;
-      yaml = boxes_to_yaml();
-      alg_name = _.last(window.location.pathname.split("/"));
-      window.alg_name = alg_name;
-      return window.yaml = yaml;
-    };
-    window.save_alg = save_alg;
-    window.alg_text = alg_text;
-    window.sort_rect = sort_rect;
-    $("#progressbar").progressbar({
-      "value": 0
-    });
-    $("#tabs").tabs();
     get_alg_name = function() {
       var alg_name;
       return alg_name = _.last(window.location.pathname.split("/"));
@@ -423,6 +379,57 @@
     $('#error_log').ajaxError(__bind(function() {
       return alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!");
     }, this));
+    set_boxes_colors = function() {
+      var graph_name, redis_colors;
+      graph_name = get_alg_name();
+      return redis_colors = $.post("/get_graph_colors", {
+        "graph_name": alg_name,
+        "type": "ajax"
+      }, function(colors) {
+        return paint_boxes(JSON.parse(colors));
+      });
+    };
+    window.set_boxes_colors = set_boxes_colors;
+    paint_boxes = function(colors_list) {
+      var boxes, pos_col, position_colors, _i, _j, _len, _ref, _results;
+      boxes = get_boxes();
+      position_colors = _.zip((function() {
+        _results = [];
+        for (var _i = 0, _ref = colors_list.length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i += 1 : _i -= 1){ _results.push(_i); }
+        return _results;
+      }).call(this), colors_list);
+      window.position_colors = position_colors;
+      for (_j = 0, _len = position_colors.length; _j < _len; _j++) {
+        pos_col = position_colors[_j];
+        $(boxes[pos_col[0]]).css("background-color", pos_col[1]);
+      }
+      $.farbtastic("#colorpicker").setColor("#f896c2");
+      return render_alg();
+    };
+    store_boxes_colors = function() {
+      var alg_name, bc, colors, i, sorted_boxes;
+      bc = {};
+      sorted_boxes = get_boxes();
+      if (sorted_boxes) {
+        colors = (function() {
+          var _i, _len, _results;
+          _results = [];
+          for (_i = 0, _len = sorted_boxes.length; _i < _len; _i++) {
+            i = sorted_boxes[_i];
+            _results.push($(i).css("background-color"));
+          }
+          return _results;
+        })();
+        alg_name = get_alg_name();
+        colors = JSON.stringify(colors);
+        return $.post("/store_graph_colors", {
+          "colors": colors,
+          "graph_name": alg_name,
+          "type": "ajax"
+        });
+      }
+    };
+    window.store_boxes_colors = store_boxes_colors;
     get_boxes = function() {
       var sorted_boxes, text_boxes;
       text_boxes = $(".text_box");
@@ -461,70 +468,34 @@
       })();
     };
     window.sorted_colors = sorted_colors;
-    store_boxes_colors = function() {
-      var bc, color_key, colors, i, sorted_boxes;
-      bc = {};
-      sorted_boxes = get_boxes();
-      if (sorted_boxes) {
-        colors = (function() {
-          var _i, _len, _results;
-          _results = [];
-          for (_i = 0, _len = sorted_boxes.length; _i < _len; _i++) {
-            i = sorted_boxes[_i];
-            _results.push($(i).css("background-color"));
-          }
-          return _results;
-        })();
-        color_key = "" + (get_alg_name()) + "_colors";
-        return localStorage.setItem(color_key, JSON.stringify(colors));
-      }
-    };
-    window.store_boxes_colors = store_boxes_colors;
     choose_color = function(color) {
       $(get_selected()).css("background", color);
       return store_boxes_colors();
     };
-    set_boxes_colors = function() {
-      var boxes, color_key, colors_list, pos_col, position_colors, _i, _j, _len, _ref, _results, _results2;
-      color_key = "" + (get_alg_name()) + "_colors";
-      colors_list = JSON.parse(localStorage.getItem(color_key));
-      boxes = get_boxes();
-      if (colors_list) {
-        position_colors = _.zip((function() {
-          _results = [];
-          for (var _i = 0, _ref = colors_list.length; 0 <= _ref ? _i < _ref : _i > _ref; 0 <= _ref ? _i += 1 : _i -= 1){ _results.push(_i); }
-          return _results;
-        }).call(this), colors_list);
-        window.position_colors = position_colors;
-        _results2 = [];
-        for (_j = 0, _len = position_colors.length; _j < _len; _j++) {
-          pos_col = position_colors[_j];
-          _results2.push($(boxes[pos_col[0]]).css("background-color", pos_col[1]));
-        }
-        return _results2;
-      }
-    };
-    window.set_boxes_colors = set_boxes_colors;
     unique_colors = function() {
-      var all_boxes, all_colors, i, unique_boxes, unique_pos, _i, _len, _results;
+      var alg_name, all_boxes, all_colors, box_color_hash, boxes_colors_pairs, counter, i, positions_boxes_pairs, _i, _j, _len, _ref, _results;
+      counter = 0;
       all_colors = sorted_colors();
       all_boxes = boxes_text();
-      unique_boxes = _.uniq(boxes_text());
-      unique_pos = (function() {
-        var _i, _len, _results;
+      positions_boxes_pairs = _.zip((function() {
         _results = [];
-        for (_i = 0, _len = unique_boxes.length; _i < _len; _i++) {
-          i = unique_boxes[_i];
-          _results.push(all_boxes.indexOf(i));
-        }
+        for (var _i = 1, _ref = all_boxes.length; 1 <= _ref ? _i <= _ref : _i >= _ref; 1 <= _ref ? _i += 1 : _i -= 1){ _results.push(_i); }
         return _results;
-      })();
-      _results = [];
-      for (_i = 0, _len = unique_pos.length; _i < _len; _i++) {
-        i = unique_pos[_i];
-        _results.push(all_colors[i]);
+      }).call(this), all_boxes);
+      boxes_colors_pairs = _.zip(all_colors, positions_boxes_pairs);
+      window.boxes_colors_pairs = boxes_colors_pairs;
+      box_color_hash = {};
+      for (_j = 0, _len = boxes_colors_pairs.length; _j < _len; _j++) {
+        i = boxes_colors_pairs[_j];
+        hash_maker(box_color_hash, i);
       }
-      return _results;
+      alg_name = get_alg_name();
+      $.post("/nodes_colors/" + alg_name, {
+        "colors": JSON.stringify(box_color_hash),
+        "user_name": localStorage.user,
+        type: "ajax"
+      });
+      return box_color_hash;
     };
     window.unique_colors = unique_colors;
     colors_to_hex = function(colors_array) {
@@ -540,18 +511,72 @@
       })());
     };
     window.colors_to_hex = colors_to_hex;
+    hash_maker = function(hash, value_pair) {
+      var color, pos, text;
+      text = value_pair[1][1];
+      pos = value_pair[1][0];
+      color = value_pair[0];
+      if (!hash[text]) {
+        return hash[text] = rgb2hex(color);
+      }
+    };
+    render_alg = function() {
+      var colors, yaml_structure, z;
+      $("#progressbar").progressbar({
+        "value": 25
+      });
+      yaml_structure = boxes_to_yaml();
+      colors = unique_colors();
+      z = $.post("/graphic_edit_view", {
+        "text": yaml_structure,
+        "hex": colors,
+        "dataType": "json"
+      }, function(data) {
+        return render_inline(JSON.parse(data));
+      });
+      save(yaml_structure);
+      return $("#text_entry").focus();
+    };
+    save = function(yaml_structure) {
+      var alg_name;
+      alg_name = _.last(window.location.pathname.split("/"));
+      return $.post("/upload_text", {
+        "form_content": yaml_structure,
+        "form_name": alg_name,
+        "type": "ajax"
+      }, function(data) {
+        return success();
+      });
+    };
+    success = function() {
+      return $("#progressbar").progressbar({
+        "value": 100
+      });
+    };
+    save_alg = function() {
+      var alg_name, yaml;
+      yaml = boxes_to_yaml();
+      alg_name = _.last(window.location.pathname.split("/"));
+      window.alg_name = alg_name;
+      return window.yaml = yaml;
+    };
+    window.save_alg = save_alg;
+    window.alg_text = alg_text;
+    window.sort_rect = sort_rect;
+    $("#progressbar").progressbar({
+      "value": 0
+    });
+    $("#tabs").tabs();
     initial_layout = function(text_indent) {
       var boxes_struct;
       boxes_struct = JSON.parse(JSON.parse(text_indent));
-      window.boxes_struct = boxes_struct;
       if (boxes_struct) {
         _.each(boxes_struct, function(i) {
           return make_layout(i);
         });
+        set_boxes_colors();
+        render_alg();
       }
-      set_boxes_colors();
-      render_alg();
-      $.farbtastic("#colorpicker").setColor("#f896c2");
       return window.counter = 0;
     };
     $(".hide").hide();
@@ -560,6 +585,7 @@
       return initial_layout(text_indent);
     });
     $("#colorpicker").farbtastic(choose_color);
-    return $("#colorpicker").draggable();
+    $("#colorpicker").draggable();
+    return $("#text_entry").focus();
   }, this));
 }).call(this);

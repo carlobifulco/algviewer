@@ -1,13 +1,12 @@
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   $(document).ready(__bind(function() {
-    var render_inline, resize, show_mistake, update_graph;
+    var get_text, render_inline, resize, set_text, show_mistake, update_graph;
     window.debug = false;
     window.graph_large = false;
     $("#accordion").accordion();
     $(".ui-accordion-content")[0].style.height = "40px";
     $(".ui-accordion-content")[1].style.height = "320px";
-    $(".ui-accordion-content")[3].style.height = "40px";
     $("#submit").button();
     $("#submit").click(function() {
       return $("form").submit();
@@ -27,22 +26,10 @@
     render_inline = function(data) {
       var anchor;
       anchor = $("#text_graph");
-      anchor.html("<img id=text_graph_image class=text_graph_image_small src=" + data.png + " style='opacity:0.9;z-index:10000'></img>");
+      anchor.html("<img id=text_graph_image class=text_graph_image_small src='http://" + data + "' style='opacity:0.9;z-index:10000'></img>");
       $("#text_graph").show();
       return $("#text_graph").click(resize);
     };
-    update_graph = function() {
-      var result, z;
-      result = $("#edit").val();
-      z = $.post("/graphic_edit_view", {
-        "text": result,
-        "dataType": "json"
-      }, function(data) {
-        return render_inline(JSON.parse(data));
-      });
-      return z;
-    };
-    update_graph();
     show_mistake = function(error_obj) {
       window.error_obj = error_obj;
       if (window.debug) {
@@ -55,10 +42,39 @@
     $('#text_graph').ajaxError(function(o, e) {
       return show_mistake(e);
     });
+    update_graph = function() {
+      return set_text();
+    };
     $('#update_graph_button').button().click(function(evt) {
       update_graph();
       return false;
     });
-    return window.update_graph = update_graph;
+    set_text = function() {
+      var alg_name, text, url, user;
+      alg_name = _.last(window.location.pathname.split("/"));
+      text = $("#edit").val();
+      user = localStorage.user;
+      url = "/text/" + alg_name;
+      return $.post(url, {
+        "user_name": user,
+        "content": text
+      }).success(function(e) {
+        return render_inline(e.png);
+      });
+    };
+    get_text = function() {
+      var alg_name, url, user;
+      user = localStorage.user;
+      alg_name = _.last(window.location.pathname.split("/"));
+      url = "/text/" + alg_name;
+      return $.get(url, {
+        "user_name": user
+      }).success(function(e) {
+        return $("#edit").val(e);
+      });
+    };
+    get_text();
+    window.get_text = get_text;
+    return window.set_text = set_text;
   }, this));
 }).call(this);

@@ -1,24 +1,11 @@
 
-%script{:type=>"application/x-javascript",:src=>"/coffee/main.js"}
+%script{:type=>"application/x-javascript",:src=>"/views/main.js"}
+%script{:type=>"application/x-javascript",:src=>"/jquery_template.min.js"}
 
-/ DIALOGS
-
-%div{:id=>"delete", :title=>"Confirmation Required"}
-  Are you sure you want to delete this graph?
-  
-%div{:id=>"dialog-form", :title=>"Please enter username and password"}
-  %form{:action=>"/"}
-    %fieldset
-      %label{:for=>'user'}
-        User Id
-      %input{:type=>"text", :name=>"user", :id=>"user", :class=>"text ui-widget-content ui-corner-all"}
-      %label{:for=>'password'}
-        Password
-        %input{:type=>"text", :name=>"password", :id=>"password", :class=>"text ui-widget-content ui-corner-all"}
-    %button#create-user
-      Check Authorization
 
 / MAIN PAGE
+
+#login
 
 %div#accordion.span-24
 
@@ -44,18 +31,20 @@
     %a.header{:href=>"#"}
       VIEW
   %div
-    %p
-      -@all_forms.each  do |x|
+    #view
+      %script{:id=>"view_template", :type=>"text/x-jquery-tmpl"}
         %li
-          %a{:href=>"/view/#{x}"}=x
+          %a{:href=>"/view/${graph_name}"}
+            ${graph_name}
   %h3
     %a.header{:href=>"#"}
       TEXT EDIT
   %div
-    %p
-      -@all_forms.each  do |x|
-        %li
-          %a{:href=>"/edit_text/#{x}"}=x
+    #text_edit
+    %script{:id=>"edit_text_template", :type=>"text/x-jquery-tmpl"}
+      %li
+        %a{:href=>"/edit_text/${graph_name}"}
+          ${graph_name}
     .span-24.last
       %form{:action=>"/edit_text",:method=>"get"}
         %label{:for=>"entry1"}
@@ -73,9 +62,12 @@
       GRAPHIC EDIT
   %div
     %p
-      -@all_forms.each  do |x|
+      #graphic_edit
+      %script{:id=>"graphic_edit_template", :type=>"text/x-jquery-tmpl"}
         %li
-          %a{:href=>"/graphic_edit/#{x}"}=x
+          %a{:href=>"/graphic_edit/${graph_name}"}
+            ${graph_name}
+      /  %a{:href=>"/graphic_edit/#{x}"}=x
     .span-24.last
       %form{:action=>"/edit_edit",:method=>"get"}    
       %input#entry2{:type=>"text",:placeholder=>"Enter name of new graph", :name=>"form_name",:size=>"40"}
@@ -89,9 +81,12 @@
       DELETE
   %div
     %p
-    -@all_forms.each  do |x|
-      %li
-        %a.confirmLink{:href=>"/delete/#{x}"}=x
+      #delete
+      %script{:id=>"delete_template", :type=>"text/x-jquery-tmpl"}
+        %li
+          %a{:href=>"/delete/${graph_name}" , :class=>"confirmLink"}
+            ${graph_name}
+      / %a.confirmLink{:href=>"/delete/#{x}"}=x
     
 
   %h3
@@ -115,8 +110,6 @@
     %a#logout.button{:href => '/'} Log Out User
 
       
-%span#all_algs_names
-  =@all_forms.to_json
 
 
 

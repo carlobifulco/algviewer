@@ -168,6 +168,8 @@ class Graph
 
   # add node an if also provided with a color hash sets color[node]  
   def add_nodes(nodes,colors=false)
+    url='/nodes_colors'
+    #r=Nestful.get url
     nodes.each do |node|
       add_node(node) if not colors
       add_node_color(node,colors[node]) if colors

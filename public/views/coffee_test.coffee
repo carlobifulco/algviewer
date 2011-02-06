@@ -508,7 +508,13 @@ $(document).ready =>
 		box_color_hash={}
 		# make {} -> {text:col}
 		(hash_maker(box_color_hash,i) for i in boxes_colors_pairs)
+		#storing boxes colors in redis
+		alg_name=get_alg_name()
+		#post '/nodes_colors/:graph_name' do graph_name=params[:graph_name] colors=params[:colors] user_name=params[:user_name]
+		$.post("/nodes_colors/#{alg_name}",{"colors":JSON.stringify(box_color_hash), "user_name":localStorage.user, type:"ajax"})
+		# returning boxes colors
 		box_color_hash
+		
 	window.unique_colors=unique_colors
 	
 	#utility for possible colored graphs; returns JSON

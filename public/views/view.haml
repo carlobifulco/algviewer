@@ -1,5 +1,5 @@
 
-%script{:type=>"application/x-javascript",:src=>"/coffee/view.js"}
+%script{:type=>"application/x-javascript",:src=>"/views/view.js"}
 
 
 %div#accordion.span-24
@@ -10,8 +10,8 @@
     .span-6
       #title
     .span-16.last
-      %a{:href=>@pdf}
-        %img{:src=>@png}
+      %a.pdf
+        %img
     
   %h3
     %a.header{:href=>"#"}
@@ -19,16 +19,16 @@
   %div.small_acc
     %p
       .span-2
-        %a.links.left{:href=>@pdf}
+        %a.links.left.pdf
           pdf
       .span-2
-        %a.links.left{:href=>@svg}
+        %a.links.left.svg
           svg
       .span-2.last
-        %a.links.left{:href=>@png}
+        %a.links.left.png
           png
       .span-2.last
-        %a.links.left{:href=>@dot}
+        %a.links.left.dot
           dot
 
       

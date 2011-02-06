@@ -79,19 +79,10 @@ $(document).ready =>
 	$("#hide_graphic_edit").hide()
 	$("#view_graphic_edit").click(()->$("#hide_graphic_edit").toggle())
 	
-## sets dialog buttons and action
-	confirm_link=(e)=>
-		window.e=e
-		e.preventDefault()
-		target_url=e.srcElement.href
-		$("#delete").dialog({buttons :[{text:"Confirm","click":()->window.location.href=target_url},{text:"Cancel","click":()->$("#delete").dialog("close")}]})
-		$("#delete").dialog("open")
+
 		
 		
-## Delete confirm alert
-	$("#delete").dialog({"autoOpen":"false","modal":"true"})
-	$("#delete").dialog("close")
-	$(".confirmLink").bind("click",(e)=>confirm_link(e))
+
 
 	
 ## Accordion
@@ -135,7 +126,33 @@ $(document).ready =>
 	delete_dialog=(url,filename)->
 		$("#delete").dialog({buttons :[{text:"Confirm Delete #{filename}","click":()->window.location.href=url},{text:"Cancel","click":()->$("#delete").dialog("close")}]})
 		$("#delete").dialog("open")
-	
+		
+		
+	# 	/ DIALOGS
+	# 
+	# login_dialog=()->
+	# 	$('#login').dialog()
+	# 	%div{:id=>"dialog-form", :title=>"Please enter username and password"}
+	# 	  %form{:action=>"/"}
+	# 	    %fieldset
+	# 	      %label{:for=>'user'}
+	# 	        User Id
+	# 	      %input{:type=>"text", :name=>"user", :id=>"user", :class=>"text ui-widget-content ui-corner-all"}
+	# 	      %label{:for=>'password'}
+	# 	        Password
+	# 	        %input{:type=>"text", :name=>"password", :id=>"password", :class=>"text ui-widget-content ui-corner-all"}
+	# 	    %button#create-user
+	# 	      Check Authorization
+		
+		
+	## sets dialog buttons and action
+	confirm_link=(e)=>
+		window.e=e
+		e.preventDefault()
+		target_url=e.srcElement.href
+		$("#delete").dialog({buttons :[{text:"Confirm","click":()->window.location.href=target_url},{text:"Cancel","click":()->$("#delete").dialog("close")}]})
+		$("#delete").dialog("open")
+
 	
 	#GUI bindings
 	#-------------		
@@ -156,10 +173,46 @@ $(document).ready =>
 	window.alg_names=eval($("#all_algs_names").text())
 	$( "#autocomplete" ).autocomplete({"source": window.alg_names})
 	
+	
+	
+	
+	
 	# RUN the Auth stuff
 	#--------------------
 	who_are_you()
 	
+	#Template main page
+	#-------------------
+	
+	
+	
+	template_alg_names=(graph_names_list)->
+	  markdown_list=[]
+	  _.each(graph_names_list,(graph_name)->markdown_list.push({"graph_name":graph_name}))
+	  return markdown_list
+	  
+	insert_template=(template)->
+	  $("#text_edit").append($("#edit_text_template").tmpl(template))
+	  $("#view").append($("#view_template").tmpl(template))
+	  $("#graphic_edit").append($("#graphic_edit_template").tmpl(template))
+	  $("#delete").append($("#delete_template").tmpl(template))
+	
+	#get graph names
+	$.get("/alg_names/#{localStorage.user}",(r)->insert_template(template_alg_names(JSON.parse(r))))
+	
+	
+	
+	#BINDINGS
+	window.template_alg_names=template_alg_names
+	window.insert_template=insert_template
+	
+	
+	## Delete confirm alert
+	$(".confirmLink").bind("click",(e)=>confirm_link(e))
+	
+	# %a{:href=>"/view/#{x}"}=x
+	# %a{:href=>"/edit_text/#{x}"}=x
+	# %a{:href=>"/graphic_edit/#{x}"}=x
 	
 	
 	

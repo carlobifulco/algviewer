@@ -1,6 +1,6 @@
 %script{:type=>"application/x-javascript",:src=>"/jquery-fieldselection.js"}
 %script{:type=>"application/x-javascript",:src=>"/code-edit.js"}
-%script{:type=>"application/x-javascript",:src=>"/coffee/text_form.js"}
+%script{:type=>"application/x-javascript",:src=>"/views/text_form.js"}
 
 
 %div#accordion.span-24
@@ -8,7 +8,7 @@
     %a.header{:href=>"#"}
       FORM NAME    
   %div
-    %p=@form_name
+    #form_name
         
   %h3
     %a.header{:href=>"#"}
@@ -18,7 +18,7 @@
       The tree structure is based on text indentation. All entries need to be preceded by a "-" 
       All indented braches need to preceded by a line with a lone "-" at the previous indentation level. For example:
     %xmp.left
-      \- Felines
+      \- Mammals
       \- 
       \  - Cats
       \  -
@@ -39,16 +39,9 @@
       #error_message
       %button#update_graph_button
         Update Graph
-      %textarea#edit{:class=>"autoindent",:name=>"form_content",:rows=>"40",:cols=>"80",:lang=>"en", :style=>"direction: ltr;",:wrap=>"SOFT"}=@text
+      %textarea#edit{:class=>"autoindent",:name=>"form_content",:rows=>"40",:cols=>"80",:lang=>"en", :style=>"direction: ltr;",:wrap=>"SOFT"}
       %input{:type=>"hidden",:name=>"form_name",:value=>@form_name}
-   
-  %h3
-    %a.header{:href=>"#"}
-      SAVE
-  %div
-    %span#submit
-      SAVE
-      
+
 
       
 

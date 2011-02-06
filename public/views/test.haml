@@ -1,0 +1,59 @@
+%script{:type=>"application/x-javascript",:src=>"/arbor.js"}
+
+%script{:type=>"application/x-javascript",:src=>"/arbor-tween.js"}
+%script{:type=>"application/x-javascript",:src=>"/renderer.js"}
+%script{:type=>"application/x-javascript",:src=>"/views/test.js"}
+
+%h1
+  test playground
+  
+%img.image_half.right#image{:src=>"http://184.73.233.199:8080/graph_png/942e5a5c6043c013f9208ca00c95396e"}
+  
+%p.left
+  :maruku
+    This is a **bold game** [GOD]
+    Don't use this stuff
+    ### Not all we try is usefull
+    ##### How to screw
+    > And now some beautiful code
+    > Marked down as much as I could
+    >> ANd now my code is indented
+    
+    * finalli
+    * at the 
+    * a lit
+    
+    This is code in markuA
+    ***
+    `THIS IS TE CODE`
+    And [this](/)  is a link
+    
+    ` A Lot of code is hiding here in the web
+    architecture`
+    
+%p.absolute
+  :maruku
+    I am an an absolute ***nerd*** dfgd dfg dfg dfg kldfgkld fglkjdflgdflkglgjk dflkgj dlfkjg ldfkjg lkdfjg lkdfjg ldkfjglkdfjglkdfjglkdfjglkdfjglkdjf glkdfjgjkl d
+    
+    
+%canvas#viewport{:width=>500,:height=>400}
+    
+    
+  
+  
+%div#drop_zone
+
+:css
+  .image_half { border: 2px #bbbbbb solid; width: 30%; } .image_full { border: 2px #bbbbbb solid; width: 70%; } .absolute { position: absolute; top: 3.5%; left: 50%; }
+:sass
+  .image_half
+    border: 2px #bbb solid
+    width: 50%
+  .image_full
+    border: 2px #bbb solid
+    width: 100%
+  .absolute
+    position: absolute
+    top: 1%
+    left: 1%
+

@@ -8,7 +8,7 @@ $(document).ready =>
 	$("#accordion").accordion()
 	$(".ui-accordion-content")[0].style.height="40px"
 	$(".ui-accordion-content")[1].style.height="320px"
-	$(".ui-accordion-content")[3].style.height="40px"
+
 	
 	$("#submit").button()
 	$("#submit").click(()->$("form").submit())
@@ -30,20 +30,13 @@ $(document).ready =>
 	#rendering of the png files
 	render_inline=(data)->
 		anchor=$("#text_graph")
-		anchor.html("<img id=text_graph_image class=text_graph_image_small src=#{data.png} style='opacity:0.9;z-index:10000'></img>")
+		anchor.html("<img id=text_graph_image class=text_graph_image_small src='http://#{data}' style='opacity:0.9;z-index:10000'></img>")
 		$("#text_graph").show()
 		$("#text_graph").click(resize)
 		
 	
-	# update call; ajax pist; then rendered inline above
-	update_graph=()->
-		result=$("#edit").val()
-		z=$.post("/graphic_edit_view",{"text":result,"dataType":"json"},(data)->render_inline(JSON.parse(data)))
-		return z
+
 	
-	#show graph on window load	
-	update_graph()
-		
 	# error visualization
 	# replaces img entry with img 
 	show_mistake=(error_obj)->
@@ -66,9 +59,38 @@ $(document).ready =>
 	
 	$('#text_graph').ajaxError((o,e)->show_mistake(e))
 	
+	# update call; set text; then rendered inline
+	update_graph=()->
+		set_text()
+	
 	#update graph button
 	$('#update_graph_button').button().click( (evt)->update_graph(); false)
 			
-	# binds return to graph update		
-	# $(document).bind('keydown', 'Return', (evt)->update_graph())
-	window.update_graph=update_graph
+
+	
+	set_text=()->
+		#post '/yaml/:form_name' do
+		#user_name=params[:user_name]
+	  #content=params[:content]
+		alg_name=_.last(window.location.pathname.split("/"))
+		text=$("#edit").val()
+		user=localStorage.user
+		url="/text/#{alg_name}"
+		$.post(url,{"user_name":user,"content":text}).success((e)->render_inline(e.png))
+		
+	get_text=()->
+		#get '/yaml/:form_name' do
+	  #form_name=params[:form_name]
+	  #user_name=params[:user_name]
+		user=localStorage.user
+		alg_name=_.last(window.location.pathname.split("/"))
+		url="/text/#{alg_name}"
+		$.get(url,{"user_name":user}).success((e)->$("#edit").val(e))
+		
+
+	get_text()
+		
+		
+	window.get_text=get_text
+	window.set_text=set_text
+	
