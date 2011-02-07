@@ -5,8 +5,12 @@
     window.debug = false;
     window.graph_large = false;
     $("#accordion").accordion();
-    $(".ui-accordion-content")[0].style.height = "40px";
+    $(".ui-accordion-content")[0].style.height = "30px";
     $(".ui-accordion-content")[1].style.height = "320px";
+    $(".button").button();
+    $("#go_home").click(function() {
+      return window.location.href = "/";
+    });
     $("#submit").button();
     $("#submit").click(function() {
       return $("form").submit();
@@ -22,13 +26,6 @@
         $("#text_graph_image").addClass("text_graph_image_small");
         return window.graph_large = false;
       }
-    };
-    render_inline = function(data) {
-      var anchor;
-      anchor = $("#text_graph");
-      anchor.html("<img id=text_graph_image class=text_graph_image_small src='http://" + data + "' style='opacity:0.9;z-index:10000'></img>");
-      $("#text_graph").show();
-      return $("#text_graph").click(resize);
     };
     show_mistake = function(error_obj) {
       window.error_obj = error_obj;
@@ -49,6 +46,13 @@
       update_graph();
       return false;
     });
+    render_inline = function(data) {
+      var anchor;
+      anchor = $("#text_graph");
+      anchor.html("<img id=text_graph_image class=text_graph_image_small src='http://" + data + "' style='opacity:0.9;z-index:10000'></img>");
+      $("#text_graph").show();
+      return $("#text_graph").click(resize);
+    };
     set_text = function() {
       var alg_name, text, url, user;
       alg_name = _.last(window.location.pathname.split("/"));

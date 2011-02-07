@@ -64,26 +64,11 @@ $(document).ready =>
 			$(".svg").attr("href","http://#{urls.svg}")
 			$("src").attr("src","http://#{urls.png}")
 		
-	# 
-	# get_graph=(alg_name)->
-	# 	g=new GraphUrls(alg_name)
-	# 	$.when(g.colors(),g.yaml()).then(()->graph())
-		
-		
-		
-		
-		
-	# window.colors=colors
-	# window.yaml=yaml
-	# window.graph=graph
-	# window.get_graph_urls=get_graph_urls
+
 	window.GraphUrls=GraphUrls
 	g=new GraphUrls(alg_name)
 	g.get_graph()
-	#window.get_graph=get_graph
-	
-	# loads urls of graphs
-	# get_graph_urls(alg_name)
+
 
 	
 	

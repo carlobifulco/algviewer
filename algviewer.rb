@@ -1,3 +1,9 @@
+#libs for the generation of the DOT Files
+
+my_directory=File.dirname(File.expand_path(__FILE__))
+$LOAD_PATH << File.join(my_directory,'/lib')
+$LOAD_PATH << my_directory
+
 require "nestful"
 require "sinatra"
 require "tempfile"
@@ -8,14 +14,14 @@ require "yaml"
 require "rack"
 require "haml"
 require "redis-namespace"
+# in lib
+require "tree_struct"
+require "dot_generator"
 
 
-#HAML Setup
-#-----------
-set :haml, {:format => :html5 }
 
 
-#SVG SERVER SETUP
+#SERVER and REDIS SETUP
 #----------------
 # redis server
 
@@ -26,25 +32,19 @@ puts "SETTINGS port #{settings.port}"
 if ARGV.length !=0 and  ARGV[0]=="test"
   # choosing local server if test parameter, otherwise go to ec2
   $HOST="0.0.0.0"
-  puts "connecting to test svg server at http://#{$HOST}:#{settings.port}"
+  puts "sinatra  running locally at  at http://#{$HOST}:#{settings.port}; redis also on same #{$HOST}"
 else
   $HOST="184.73.233.199" 
-  puts "connecting to EC2 server at http://#{$HOST}:#{settings.port}"
+  puts "running at EC2 at http://#{$HOST}:#{settings.port}; redis also on same #{$HOST}"
 end
 
-SVG_URL="http://#{$HOST}:#{settings.port}"
-
-# libs for the generation of the DOT Files
-my_directory=File.dirname(File.expand_path(__FILE__))
-$LOAD_PATH << File.join(my_directory,'/lib')
-$LOAD_PATH <<my_directory
-require "tree_struct"
-require "dot_generator"
+# SVG_URL="http://#{$HOST}:#{settings.port}"
 
 
 #REDIS RESERVED KEYS
 #--------------------
 # these keys will be removed from a keys_all redis command
+# used to keep colors out of all algs lists
 $redis_reserved={:colors=>"^___colors",:node_color=>"^___nodecolors"}
 
 #SINATRA SETUPS
@@ -60,7 +60,8 @@ enable :sessions
 
 # REDIS 4 contains all text of algs; stored with user namespace
 #---------------------------------------------------------------
-
+#form names and colors are stored in  database 4
+#the graphs are generated as temporary items and served from redis default 0; see also dot_generator
 
 # AWS Redis and Svg generator server home
 $Redis4=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379,:host=>$HOST)
@@ -111,67 +112,38 @@ get '/export_all' do
 end
 
 
-# uploading a textform; back to main page unless request via ajax in which case it will return true
- #{}"content=#{params["form_content"]} and form name=#{params["form_name"]}"
-post '/upload_text' do
- form_text=params["form_content"]
- form_name=params["form_name"]
- $r.set form_name,form_text
- return true if params.has_key? "type"
- redirect "/" 
-end
 
 
 #Password Login
 #---------------
 
-# ajax called. receives username and password and checks the on code
-# also sets user specific namespace for redis connection!!!
-post '/check_user' do
-  puts params
-  user=params["user"]
-  password=params["password"]
-  users=["guest","carlobifulco", "nicole", "tester", "master"]
-  passwords=["guest","bifulcocarlo", "nicole", "tester", "master"]
-  if (users.include?(user) and passwords.include?(password))
-    session["user"]=user
-    puts session["user"]
-    #rebinds redis to an user specific namespace
-    if session["user"] !="master"
-      $r= Redis::Namespace.new(session["user"], :redis =>$Redis4) 
-    else
-      # user master has no namespace restrictions
-      $r=$Redis4 
-    end
-    
-    #$Redis4=Redis::Namespace.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379,:host=>$HOST,:ns=>user) 
-    return "OK".to_json
 
+post '/user/:username' do
+  content_type :json
+  users_pass={
+    "guest"=>"guest",
+    "carlobifulco"=>"carlobifulco",
+    "tester"=>"tester",
+    "master"=>"master"
+  }
+  user=params["username"]
+  password=params["password"]
+  if users_pass.has_key? user and users_pass[user]==password
+    return {:ok=>true}.to_json
   else
-    return false.to_json
+   return {:ok=>false}.to_json
   end
 end
 
 
+get '/login' do
+  haml :login
+end
 
+
+
+#mainpage
 get "/" do
-  # This checks auth and stores username in session
-  username=session["user"]
-  if $r
-    @all_forms=$r.keys.sort!
-    final_forms=[]
-    @all_forms.each do |x|
-      puts  "^#{x.split('^')[1]}"
-      if $redis_reserved.values.include? "^#{x.split('^')[1]}"
-        next
-      else
-        final_forms<<x
-      end 
-    end
-    @all_forms=final_forms
-  else
-    @all_forms=$Redis4.keys.sort!
-  end
   haml :main
 end
 
@@ -184,8 +156,9 @@ end
 # Text2Box created tuple list with text at 0 and indent at 1
 # this is then used by coffee to create the boxes and to appropriately
 # indent them
-def text_indent(form_name)
-  text=($r.get form_name).to_s
+def text_indent(form_name,user_name)
+  r= Redis::Namespace.new(params["user_name"], :redis =>$Redis4) 
+  text=(r.get form_name).to_s
   if text==""
     return false
   else
@@ -199,7 +172,7 @@ end
 
 # just serving the page
 get "/graphic_edit/:form_name" do
-  haml :coffee_test
+  haml :graphic_edit
 end
 
 
@@ -208,37 +181,43 @@ end
 # This in then rendered by coffee into boxes
 get '/ajax_text_indent/:form_name' do
   form_name=params[:form_name]
-  text_indent=text_indent(form_name)
+  user_name=params[:user_name]
+  text_indent=text_indent(form_name,user_name)
   return text_indent.to_json
 end
 
 
-get '/test' do
-  haml :test
+# Colors For Boxes Paintingnest
+#---------------------------
+# for boxes painting and NOT for node rendering
+# data structure is just a list of rgb values
+
+post '/store_graph_colors' do
+  colors=JSON.parse(params[:colors])
+  graph_name=params[:graph_name]
+  user_name=params[:user_name]
+  r= Redis::Namespace.new(params["user_name"], :redis =>$Redis4) 
+  colors_hash_name="#{user_name}#{$redis_reserved[:colors]}"
+  r.hset colors_hash_name, graph_name, colors.to_json
+  puts "COLORS: #{colors} GRAPH NAME: #{graph_name} "
 end
 
 
-#DOT ENGINE
-#-----------
 
-#Call to dot engine at SVG_URL default
-#yaml load and rest call; returns dictionary response
-#colors are shipped along, if they are there
-def rest_call(y,colors=false)
-  n=NodesEdges.new y
-  nodes=n.get_nodes.to_json
-  edges=n.get_edges.to_json
-  #calls nodes_edges on svg_genrator
-  url="#{SVG_URL}/nodes_edges/"
-  puts url 
-  if not colors
-    r=JSON.parse(Nestful.post url, :params=>{:edges=>edges,:nodes=>nodes})
-  else
-    r=JSON.parse(Nestful.post url, :params=>{:edges=>edges,:nodes=>nodes,:colors=>colors})
-  end
-  puts r
-  r
+#colors stored in redis in a {user___colors{graphname:xxx}} structure
+post '/get_graph_colors' do
+  graph_name=params[:graph_name]
+  user_name=params[:user_name]
+  r= Redis::Namespace.new(params["user_name"], :redis =>$Redis4) 
+  colors_hash_name="#{user_name}#{$redis_reserved[:colors]}"
+  colors=r.hget colors_hash_name, graph_name
+  puts "REQUESTD FOR COLORS #{colors}"
+  return colors
 end
+
+
+
+
 
 # cleanup of text before yaml load
 def text_cleanup(text)
@@ -315,31 +294,6 @@ post '/graphic_edit_view' do
   end
 end
 
-# Colors For Boxes Paintingnest
-#---------------------------
-# for boxes painting and NOT for node rendering
-# data structure is just a list of rgb values
-
-post '/store_graph_colors' do
-  colors=JSON.parse(params[:colors])
-  graph_name=params[:graph_name]
-  colors_hash_name="#{session['user']}#{$redis_reserved[:colors]}"
-  $r.hset colors_hash_name, graph_name, colors.to_json
-  puts "COLORS: #{colors} GRAPH NAME: #{graph_name} "
-end
-
-
-
-#colors stored in redis in a {user___colors{graphname:xxx}} structure
-post '/get_graph_colors' do
-  graph_name=params[:graph_name]
-  colors_hash_name="#{session['user']}#{$redis_reserved[:colors]}"
-  colors=$r.hget colors_hash_name, graph_name
-  puts "REQUESTD FOR COLORS #{colors}"
-  return colors
-end
-
-
 
 
 # REST form content interface
@@ -398,7 +352,9 @@ get '/text/:form_name' do
 end
 
 #save test only if loadable, else error
-#also, returns urls
+#also, returns urls since the only way
+# to figure out if there are errors is to
+# run the who graph creation
 post '/text/:form_name' do
   content_type :json
   form_name=params[:form_name]
@@ -413,8 +369,11 @@ post '/text/:form_name' do
   end
   r.set form_name,content
   colors=get_color user_name, form_name
+  puts "HERE ARE THE COLORS: #{colors}"
   get_urls(yaml,colors)
 end
+
+
 
 #Colors for Nodes
 #----------------
@@ -438,8 +397,10 @@ def get_color user_name, graph_name
   end
 end
 
+#Interface to the Graph obj in dot_generator module
 def get_urls yaml,colors
   graph=Graph.new
+  #interface to the nodesedges obj in tree_struct
   nodes_edges=NodesEdges.new yaml
   graph.add_nodes(nodes_edges.get_nodes(),colors)
   graph.add_edges(nodes_edges.get_edges())
@@ -447,6 +408,7 @@ def get_urls yaml,colors
 end
 
 
+#store nodes colors
 post '/nodes_colors/:graph_name' do
   content_type :json
   graph_name=params[:graph_name]
@@ -461,6 +423,7 @@ post '/nodes_colors/:graph_name' do
   return true.to_json
 end
 
+#get_nodes_colors
 get '/nodes_colors/:graph_name' do
   content_type :json
   graph_name=params[:graph_name]
@@ -470,14 +433,6 @@ get '/nodes_colors/:graph_name' do
 end
 
 
-get '/show_graph/:graph_name' do
-  content_type :json
-  graph_name=params["graph_name"]
-  user_name=params["user_name"]
-  yaml=get_yaml(user_name,graph_name)
-  colors=get_color user_name, graph_name
-  get_urls(yaml,colors)
-end
 
 
 # get all URLS; needs colors_hash and yaml_text as params
@@ -488,7 +443,7 @@ get '/graph' do
   get_urls(yaml_text,colors_hash)
 end
 
-
+#get all algs for a user
 get '/alg_names/:user_name' do
   r= Redis::Namespace.new(params["user_name"], :redis =>$Redis4) 
   all_forms=r.keys.sort!
@@ -506,17 +461,12 @@ end
 
 
 
-## REST Text Edit
+## Text Edit
 #------------
 
 #edit text form , both as a url and as a get? request
 get "/edit_text/:form_name" do
   haml :text_form
-end
-
-get "/edit_text" do
-  x=params[:form_name]
-  redirect "/edit_text/#{x}"
 end
 
   
