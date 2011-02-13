@@ -26,7 +26,6 @@ $(document).ready =>
 	# size small accordions entries
 	_.each($(".small_acc"),(e)-> e.style.height="100px")
 	
-	
 	# get colors
 	colors=JSON.parse(localStorage.getItem(alg_name))
 	
@@ -64,8 +63,7 @@ $(document).ready =>
 			$(".png").attr("href","http://#{urls.png}")
 			$(".dot").attr("href","http://#{urls.dot}")
 			$(".svg").attr("href","http://#{urls.svg}")
-			$("src").attr("src","http://#{urls.png}")
-			return ""
+			$("#preview").attr("src","http://#{urls.png}")
 		update_mono:(urls)=>
 			$(".mono-pdf").attr("href","http://#{urls.pdf}")
 			$(".mono-png").attr("href","http://#{urls.png}")
