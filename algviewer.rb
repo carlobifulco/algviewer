@@ -88,7 +88,9 @@ Dir.mkdir IMAGE_CONTAINER unless Dir.exists? IMAGE_CONTAINER
 #delete text form
 get "/delete/:form_name" do
   @form_name=params[:form_name]
-  $r.del @form_name
+  user=params[:user]
+  r= Redis::Namespace.new(user, :redis =>$Redis4) 
+  r.del @form_name
   redirect "/"
 end
 
@@ -144,6 +146,13 @@ post '/user/:username' do
 end
 
 
+
+#random string for cache avoiding redirect
+def random_string(size = 8)
+  chars = (('a'..'z').to_a + ('0'..'9').to_a) - %w(i o 0 1 l 0)
+  (1..size).collect{|a| chars[rand(chars.size)] }.join
+end
+
 #Web Pages
 #-----
 # all is handled by json calls from JS
@@ -153,10 +162,16 @@ get '/login' do
   haml :login
 end
 
-
-#mainpage
-get "/" do
+# redirected main page
+get "/main/:random_string" do
   haml :main
+end
+
+
+#mainpage redirection for cache reasons
+get "/" do
+  rs=random_string()
+  redirect "/main/#{rs}"
 end
 
 #text edu
@@ -426,7 +441,7 @@ get '/graph' do
   yaml_text=JSON.parse(params["yaml_text"]) if params["yaml_text"]
   options=JSON.parse(params["options"]) if params["options"]
   options=false if not params["options"]
-  get_urls(yaml_text,colors_hash,options) 
+  return get_urls(yaml_text,colors_hash,options) 
 end
 
 
