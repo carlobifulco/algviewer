@@ -24,7 +24,7 @@ $(document).ready =>
 	$($("img")[0]).hide()
 	
 	# size small accordions entries
-	_.each($(".small_acc"),(e)-> e.style.height="40px")
+	_.each($(".small_acc"),(e)-> e.style.height="100px")
 	
 	
 	# get colors
@@ -53,6 +53,8 @@ $(document).ready =>
 			return dfd.promise()
 		graph:()=>
 			$.get("/graph",{"colors_hash":@color_hash,"yaml_text":@yaml_text, type:"ajax"},(e)=>@urls=JSON.parse(e);@update_urls(@urls))
+			$.get("/graph",{"yaml_text":@yaml_text, type:"ajax"},(e)=>@mono_urls=JSON.parse(e);@update_mono(@mono_urls))
+			$.get("/graph",{"options":JSON.stringify({"circle":"1"}),"yaml_text":@yaml_text, type:"ajax"},(e)=>@mono_urls=JSON.parse(e);@update_circle(@mono_urls))
 		get_graph:()=>
 			$.when(@yaml(),@colors()).done(@graph)	
 		show:(urls)=>
@@ -63,6 +65,20 @@ $(document).ready =>
 			$(".dot").attr("href","http://#{urls.dot}")
 			$(".svg").attr("href","http://#{urls.svg}")
 			$("src").attr("src","http://#{urls.png}")
+			return ""
+		update_mono:(urls)=>
+			$(".mono-pdf").attr("href","http://#{urls.pdf}")
+			$(".mono-png").attr("href","http://#{urls.png}")
+			$(".mono-dot").attr("href","http://#{urls.dot}")
+			$(".mono-svg").attr("href","http://#{urls.svg}")
+		update_circle:(urls)=>
+			$(".circle-pdf").attr("href","http://#{urls.pdf}")
+			$(".circle-png").attr("href","http://#{urls.png}")
+			$(".circle-dot").attr("href","http://#{urls.dot}")
+			$(".circle-svg").attr("href","http://#{urls.svg}")
+
+		  	
+		
 		
 
 	window.GraphUrls=GraphUrls

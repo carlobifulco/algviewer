@@ -237,6 +237,7 @@
     $.get("/alg_names/" + localStorage.user, function(r) {
       return insert_template(template_alg_names(JSON.parse(r)));
     });
+    $("#button2").attr("href", "/export_all/" + (localStorage.getItem("user")));
     window.template_alg_names = template_alg_names;
     window.insert_template = insert_template;
     return $(".confirmLink").bind("click", __bind(function(e) {

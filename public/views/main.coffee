@@ -200,6 +200,9 @@ $(document).ready =>
 	#get graph names
 	$.get("/alg_names/#{localStorage.user}",(r)->insert_template(template_alg_names(JSON.parse(r))))
 	
+	#fix export to specific user
+	$("#button2").attr("href","/export_all/#{localStorage.getItem("user")}")
+	
 	
 	
 	#BINDINGS

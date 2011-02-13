@@ -28,11 +28,13 @@
     $("#title").html(alg_name);
     $($("img")[0]).hide();
     _.each($(".small_acc"), function(e) {
-      return e.style.height = "40px";
+      return e.style.height = "100px";
     });
     colors = JSON.parse(localStorage.getItem(alg_name));
     GraphUrls = (function() {
       function GraphUrls(graph_name) {
+        this.update_circle = __bind(this.update_circle, this);;
+        this.update_mono = __bind(this.update_mono, this);;
         this.update_urls = __bind(this.update_urls, this);;
         this.show = __bind(this.show, this);;
         this.get_graph = __bind(this.get_graph, this);;
@@ -68,13 +70,30 @@
         return dfd.promise();
       };
       GraphUrls.prototype.graph = function() {
-        return $.get("/graph", {
+        $.get("/graph", {
           "colors_hash": this.color_hash,
           "yaml_text": this.yaml_text,
           type: "ajax"
         }, __bind(function(e) {
           this.urls = JSON.parse(e);
           return this.update_urls(this.urls);
+        }, this));
+        $.get("/graph", {
+          "yaml_text": this.yaml_text,
+          type: "ajax"
+        }, __bind(function(e) {
+          this.mono_urls = JSON.parse(e);
+          return this.update_mono(this.mono_urls);
+        }, this));
+        return $.get("/graph", {
+          "options": JSON.stringify({
+            "circle": "1"
+          }),
+          "yaml_text": this.yaml_text,
+          type: "ajax"
+        }, __bind(function(e) {
+          this.mono_urls = JSON.parse(e);
+          return this.update_circle(this.mono_urls);
         }, this));
       };
       GraphUrls.prototype.get_graph = function() {
@@ -88,7 +107,20 @@
         $(".png").attr("href", "http://" + urls.png);
         $(".dot").attr("href", "http://" + urls.dot);
         $(".svg").attr("href", "http://" + urls.svg);
-        return $("src").attr("src", "http://" + urls.png);
+        $("src").attr("src", "http://" + urls.png);
+        return "";
+      };
+      GraphUrls.prototype.update_mono = function(urls) {
+        $(".mono-pdf").attr("href", "http://" + urls.pdf);
+        $(".mono-png").attr("href", "http://" + urls.png);
+        $(".mono-dot").attr("href", "http://" + urls.dot);
+        return $(".mono-svg").attr("href", "http://" + urls.svg);
+      };
+      GraphUrls.prototype.update_circle = function(urls) {
+        $(".circle-pdf").attr("href", "http://" + urls.pdf);
+        $(".circle-png").attr("href", "http://" + urls.png);
+        $(".circle-dot").attr("href", "http://" + urls.dot);
+        return $(".circle-svg").attr("href", "http://" + urls.svg);
       };
       return GraphUrls;
     })();

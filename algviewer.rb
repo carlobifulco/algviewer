@@ -84,6 +84,7 @@ Dir.mkdir IMAGE_CONTAINER unless Dir.exists? IMAGE_CONTAINER
 #Delete
 #-------
 
+#XXX needs to be fixed to be user specific
 #delete text form
 get "/delete/:form_name" do
   @form_name=params[:form_name]
@@ -101,11 +102,15 @@ end
 
 
 # exports all docs as a big Yaml text file
-get '/export_all' do
+get '/export_all/:user' do
+  content_type 'text/yaml', :charset => 'utf-8'
+  user=params["user"]
   yaml_doc=[]
-  content_type 'text/x-yaml', :charset => 'utf-8'
-  $r.keys.each do |x|
-    yaml_doc<< ($r.get x)
+  r= Redis::Namespace.new(user, :redis =>$Redis4) 
+  all_alg_names=clean_reserved_keys r
+  all_alg_names.each do |x|
+    puts x
+    yaml_doc<< (r.get x)
     yaml_doc<<"---"
   end
   yaml_doc.join "\n"
@@ -116,13 +121,16 @@ end
 
 #Password Login
 #---------------
-
+#user and pass are in localStorage
+#they get checked for each page by 
+# a call to /user/:username run from
+#layout.coffee
 
 post '/user/:username' do
   content_type :json
   users_pass={
     "guest"=>"guest",
-    "carlobifulco"=>"carlobifulco",
+    "carlobifulco"=>"bifulcocarlo",
     "tester"=>"tester",
     "master"=>"master"
   }
@@ -136,10 +144,14 @@ post '/user/:username' do
 end
 
 
+#Web Pages
+#-----
+# all is handled by json calls from JS
+
+#login page
 get '/login' do
   haml :login
 end
-
 
 
 #mainpage
@@ -147,14 +159,27 @@ get "/" do
   haml :main
 end
 
+#text edu
+get "/edit_text/:form_name" do
+  haml :text_form
+end
 
+# jgraphic edit
+get "/graphic_edit/:form_name" do
+  haml :graphic_edit
+end
+
+# view
+get '/view/:form_name' do
+  form_name=params[:form_name]
+  haml :view
+end
 
 # Graphic rendering of the boxes
 #-------------------------------
-
+# only initial layout
 
 # Text2Box created tuple list with text at 0 and indent at 1
-# this is then used by coffee to create the boxes and to appropriately
 # indent them
 def text_indent(form_name,user_name)
   r= Redis::Namespace.new(params["user_name"], :redis =>$Redis4) 
@@ -169,16 +194,10 @@ end
 
 
 
-
-# just serving the page
-get "/graphic_edit/:form_name" do
-  haml :graphic_edit
-end
-
-
 # for ajax called for rendering of the boxes
 #create array of tuples with e.g. [[" Colon Ca", 0], [" Kras Codons 12 and 13 exon 2 (40% of cases)", 1], ...
 # This in then rendered by coffee into boxes
+#called for initial layout of graphic edit
 get '/ajax_text_indent/:form_name' do
   form_name=params[:form_name]
   user_name=params[:user_name]
@@ -187,10 +206,11 @@ get '/ajax_text_indent/:form_name' do
 end
 
 
-# Colors For Boxes Paintingnest
+# Colors For Boxes Paintings
 #---------------------------
-# for boxes painting and NOT for node rendering
+# for boxes painting in graph_edit mode and NOT for node rendering
 # data structure is just a list of rgb values
+# only initial layout
 
 post '/store_graph_colors' do
   colors=JSON.parse(params[:colors])
@@ -217,7 +237,8 @@ end
 
 
 
-
+# YAML text conversion
+#-----------------------
 
 # cleanup of text before yaml load
 def text_cleanup(text)
@@ -242,6 +263,7 @@ def text_cleanup(text)
       new_text<<x
     end
   end
+  #text='"'+text+'"'
   text=new_text.join("\n")
   puts "TEXT:#{text}"
   puts "----------"
@@ -261,50 +283,9 @@ def yaml_load(text)
 end
 
 
-# all is handled by json calls from JS
-# when page is loaded JS finds out who the user is and the algname 
-# and calls  
-get '/view/:form_name' do
-  form_name=params[:form_name]
-  haml :view
-end
 
-
-
-# Graphic edit
-#---------------
-
-
-# text directly
-# used by graphic edit
-# also by all AJAX calls
-# Also getting colors. Still need to send them to svg_generator...
-post '/graphic_edit_view' do
-  text=params[:text]
-  colors=params[:hex]
-  puts "colorts #{colors}"
-  text=text_cleanup(text)
-  y=yaml_load(text)
-  begin
-    r=rest_call(y,colors)
-    return r.to_json
-  rescue ":Error"
-    puts "EEEEERRRRRROOOOORRRRR"
-    return $stderr.puts $!.inspect
-  end
-end
-
-
-
-# REST form content interface
-#----------------------------
-#doctest: yaml rest
-#=> "a"
-#>> Nestful.post("http://0.0.0.0:4567/yaml/test",:params=>{:user_name=>"carlo", :content=>text})
-#=> "true"
-#>> Nestful.get("http://0.0.0.0:4567/yaml/test",:params=>{:user_name=>"carlo"})
-#=> "\"a\""
- 
+#YAML Rest
+#------------
  
 def get_yaml  user_name,form_name
   r= Redis::Namespace.new(user_name, :redis =>$Redis4) 
@@ -342,6 +323,11 @@ post '/yaml/:form_name' do
   return true.to_json
 end
 
+#TEXT Rest
+#------------
+# posting returns URLS, since validation of text 
+# implies actual running of whole alg generation
+
 get '/text/:form_name' do
   content_type :json
   form_name=params[:form_name]
@@ -370,18 +356,13 @@ post '/text/:form_name' do
   r.set form_name,content
   colors=get_color user_name, form_name
   puts "HERE ARE THE COLORS: #{colors}"
-  get_urls(yaml,colors)
+  get_urls(yaml,colors,false)
 end
 
 
 
 #Colors for Nodes
 #----------------
-#doctest: colors rest
-#>> Nestful.post("http://0.0.0.0:4567/nodes_colors/test",:params=>{:user_name=>"carlo", :colors=>{2=>2}})
-#=> "true"
-#>> ;
-#=> "\"{\\\"2\\\"=>\\\"2\\\"}\""
 
 
 def get_color user_name, graph_name
@@ -395,16 +376,6 @@ def get_color user_name, graph_name
   else
     return {}.to_json
   end
-end
-
-#Interface to the Graph obj in dot_generator module
-def get_urls yaml,colors
-  graph=Graph.new
-  #interface to the nodesedges obj in tree_struct
-  nodes_edges=NodesEdges.new yaml
-  graph.add_nodes(nodes_edges.get_nodes(),colors)
-  graph.add_edges(nodes_edges.get_edges())
-  {:svg=>graph.get_svg(),:pdf=>graph.get_pdf(),:png=>graph.get_png(),:dot=>graph.get_dot()}.to_json
 end
 
 
@@ -433,41 +404,63 @@ get '/nodes_colors/:graph_name' do
 end
 
 
+#Graph Access
+#--------------
+
+#Interface to the Graph obj in dot_generator module
+def get_urls yaml,colors,options=false
+  graph=Graph.new
+  #interface to the nodesedges obj in tree_struct
+  nodes_edges=NodesEdges.new yaml
+  graph.add_nodes(nodes_edges.get_nodes(),colors,options)
+  graph.add_edges(nodes_edges.get_edges())
+  {:svg=>graph.get_svg(),:pdf=>graph.get_pdf(),:png=>graph.get_png(),:dot=>graph.get_dot()}.to_json
+end
 
 
 # get all URLS; needs colors_hash and yaml_text as params
 get '/graph' do
   #	$.get("/graph",{"colors_hash":window.colors_hash,"yaml_text":window.yaml_text, type:"ajax"},(graph_urls)->alert(graph_urls))
-  colors_hash=JSON.parse(params["colors_hash"]) 
-  yaml_text=JSON.parse(params["yaml_text"])
-  get_urls(yaml_text,colors_hash)
+  colors_hash=JSON.parse(params["colors_hash"]) if params["colors_hash"]
+  colors_hash=false if not params["colors_hash"]
+  yaml_text=JSON.parse(params["yaml_text"]) if params["yaml_text"]
+  options=JSON.parse(params["options"]) if params["options"]
+  options=false if not params["options"]
+  get_urls(yaml_text,colors_hash,options) 
+end
+
+
+
+
+
+#Algs List
+#----------
+
+#takes a user specific redis connetion and returns list of alg keys after sorting out reserved names
+def clean_reserved_keys r
+  all_forms=r.keys.sort!
+   final_forms=[]
+   all_forms.each do |x|
+     puts  "^#{x.split('^')[1]}"
+     if $redis_reserved.values.include? "^#{x.split('^')[1]}"
+       next
+     else
+       final_forms<<x
+     end
+   end
+   return final_forms
 end
 
 #get all algs for a user
 get '/alg_names/:user_name' do
   r= Redis::Namespace.new(params["user_name"], :redis =>$Redis4) 
-  all_forms=r.keys.sort!
-  final_forms=[]
-  all_forms.each do |x|
-    puts  "^#{x.split('^')[1]}"
-    if $redis_reserved.values.include? "^#{x.split('^')[1]}"
-      next
-    else
-      final_forms<<x
-    end 
-  end
+  final_forms=clean_reserved_keys r
   final_forms.to_json
 end
 
 
 
-## Text Edit
-#------------
 
-#edit text form , both as a url and as a get? request
-get "/edit_text/:form_name" do
-  haml :text_form
-end
 
   
 
