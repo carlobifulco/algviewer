@@ -9,16 +9,16 @@ $(document).ready =>
 #---------------
 
 	
-	#check if user in local storage. if not present, open dialog
-	# if present, check credentials. if mismatch, open dialog vial check_local_storage
-	who_are_you=()->
-		if not localStorage.getItem("user")
-			check_user_dialog()
-		else
-			user=localStorage.user
-			pw=localStorage.password
-			params={'user':"#{user}",'password':"#{pw}"}
-			r=$.post('/check_user',params,check_local_storage,"json")
+	# #check if user in local storage. if not present, open dialog
+	# # if present, check credentials. if mismatch, open dialog vial check_local_storage
+	# who_are_you=()->
+	# 	if not localStorage.getItem("user")
+	# 		check_user_dialog()
+	# 	else
+	# 		user=localStorage.user
+	# 		pw=localStorage.password
+	# 		params={'user':"#{user}",'password':"#{pw}"}
+	# 		r=$.post('/check_user',params,check_local_storage,"json")
 
 
 
@@ -86,10 +86,10 @@ $(document).ready =>
 
 	
 ## Accordion
-	$( "#accordion" ).accordion()
+	$( "#accordion" ).accordion({"autoHeight":true,})
 	# size small accordions entries
-	_.each($(".small_acc"),(e)-> e.style.height="40px")
-	_.each($(".int_acc"),(e)-> e.style.height="80px")
+	#_.each($(".small_acc"),(e)-> e.style.height="40px")
+	#_.each($(".int_acc"),(e)-> e.style.height="80px")
 
 ## Button
 	check_entry=(r)->
@@ -155,7 +155,7 @@ $(document).ready =>
 
 	
 	#GUI bindings
-	#-------------		
+	#-------------		text_edit_button
 	$("#text_edit_button").click((e)->window.location.href="/edit_text/#{$("#entry1")[0].value}" if check_entry(1))
 	$("#graph_edit_button").click((e)->window.location.href="/graphic_edit/#{$("#entry2")[0].value}" if check_entry(2))
 	$("#text_edit_button2").click((e)->entry=no_entry_open_accordion(2); window.location.href="/edit_text/#{entry}" if entry)
@@ -179,17 +179,36 @@ $(document).ready =>
 	
 	# RUN the Auth stuff
 	#--------------------
-	who_are_you()
+	# who_are_you()
 	
 	#Template main page
 	#-------------------
 	
+	#fix delete to specific user; works on the generated templates
+	fix_link=(link)->
+		console.log(link)
+		old_link=$(link).attr("href")
+		new_link=old_link+"?user=#{localStorage.user}"
+		new_link=encodeURI(new_link)
+		$(link).attr("href",new_link)
+	
+	#fix delete likns to include user
+	del_update=()->	
+		#console.log("GETTING CALLED")
+		#console.log($(".delete_links"))
+		_.each($(".delete_links"),(link)->fix_link(link))
+	
+
+		
+	# generate templates
 	
 	
 	template_alg_names=(graph_names_list)->
-	  markdown_list=[]
-	  _.each(graph_names_list,(graph_name)->markdown_list.push({"graph_name":graph_name}))
-	  return markdown_list
+		markdown_list=[]
+		_.each(graph_names_list,(graph_name)->markdown_list.push({"graph_name":graph_name}))
+		#global graph list
+		window.graph_list=graph_names_list
+		return markdown_list
 	  
 	insert_template=(template)->
 	  $("#text_edit").append($("#edit_text_template").tmpl(template))
@@ -197,17 +216,23 @@ $(document).ready =>
 	  $("#graphic_edit").append($("#graphic_edit_template").tmpl(template))
 	  $("#delete").append($("#delete_template").tmpl(template))
 	
+	
 	#get graph names
-	$.get("/alg_names/#{localStorage.user}",(r)->insert_template(template_alg_names(JSON.parse(r))))
+	$.get("/alg_names/#{localStorage.user}",(r)->window.alg_names=r; insert_template(template_alg_names(JSON.parse(r))); del_update(); 	$( "#accordion" ).accordion("resize"))
 	
 	#fix export to specific user
 	$("#button2").attr("href","/export_all/#{localStorage.getItem("user")}")
 	
+
 	
 	
 	#BINDINGS
 	window.template_alg_names=template_alg_names
 	window.insert_template=insert_template
+	window.fix_link=fix_link
+	window.del_update=del_update
+	
+	
 	
 	
 	## Delete confirm alert

@@ -31,50 +31,50 @@
     %a.header{:href=>"#"}
       VIEW
   %div
-    #view
+    #view.int_acc
       %script{:id=>"view_template", :type=>"text/x-jquery-tmpl"}
         %li
           %a{:href=>"/view/${graph_name}"}
             ${graph_name}
-  %h3
+  %h3.int_acc
     %a.header{:href=>"#"}
       TEXT EDIT
   %div
-    #text_edit
-    %script{:id=>"edit_text_template", :type=>"text/x-jquery-tmpl"}
-      %li
-        %a{:href=>"/edit_text/${graph_name}"}
-          ${graph_name}
-    .span-24.last
-      %form{:action=>"/edit_text",:method=>"get"}
-        %label{:for=>"entry1"}
+    
+    #text_edit.span-24.last
+      %script.left{:id=>"edit_text_template", :type=>"text/x-jquery-tmpl"}
+        %li
+          %a{:href=>"/edit_text/${graph_name}"}
+            ${graph_name}
+      .right
+        %label.pull-3{:for=>"entry1"}
         .button#text_edit_button.span-4.ui-widget-content.ui-state-default
           NEW TEXT EDIT
-        .span.3
+        .span-3
           %input#entry1{:type=>"text",:name=>"form_name",:size=>"40",:required=>"required", :placeholder=>"Enter name of new graph"}
-      .span-24.last
-        %p
+    .span-24.last
       
       
       
-  %h3
+  %h3.int_acc
     %a.header{:href=>"#"}    
       GRAPHIC EDIT
   %div
-    %p
-      #graphic_edit
-      %script{:id=>"graphic_edit_template", :type=>"text/x-jquery-tmpl"}
+    #graphic_edit
+      %script.left{:id=>"graphic_edit_template", :type=>"text/x-jquery-tmpl"}
         %li
           %a{:href=>"/graphic_edit/${graph_name}"}
             ${graph_name}
       /  %a{:href=>"/graphic_edit/#{x}"}=x
+      .right.pull-5
+        %label.pull-5{:for=>"entry2"}
+        .button#graph_edit_button.span-4.ui-widget-content.ui-state-default
+          NEW GRAPHIC EDIT
+        .span-3
+          %input#entry2{:type=>"text",:placeholder=>"Enter name of new graph", :name=>"form_name",:size=>"40"}
     .span-24.last
-      %form{:action=>"/edit_edit",:method=>"get"}    
-      %input#entry2{:type=>"text",:placeholder=>"Enter name of new graph", :name=>"form_name",:size=>"40"}
-      .button#graph_edit_button.span-4.last
-        NEW GRAPHIC EDIT
-    .span-24.last
-      %p
+ 
+        
     
   %h3
     %a.header{:href=>"#"}
@@ -84,7 +84,7 @@
       #delete
       %script{:id=>"delete_template", :type=>"text/x-jquery-tmpl"}
         %li
-          %a{:href=>"/delete/${graph_name}" , :class=>"confirmLink"}
+          %a.delete_links{:href=>"/delete/${graph_name}" , :class=>"confirmLink"}
             ${graph_name}
       / %a.confirmLink{:href=>"/delete/#{x}"}=x
     
@@ -95,13 +95,13 @@
   %div.small_acc
     %a#button2{:href => '/export_all'} export all
 
-  %h3
-    %a.header{:href=>"#"}    
-      IMPORT
-  %div.small_acc
-    %form{:action=>"/upload",:method=>"post",:enctype=>"multipart/form-data"}
-      %input.button{:type=>"file",:name=>"file"}
-      %input.button{:type=>"submit",:value=>"Upload"}
+  / %h3
+  /   %a.header{:href=>"#"}    
+  /     IMPORT
+  / %div.small_acc
+  /   %form{:action=>"/upload",:method=>"post",:enctype=>"multipart/form-data"}
+  /     %input.button{:type=>"file",:name=>"file"}
+  /     %input.button{:type=>"submit",:value=>"Upload"}
       
   %h3
     %a.header{:href=>"#"}    

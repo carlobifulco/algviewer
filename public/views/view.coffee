@@ -63,6 +63,7 @@ $(document).ready =>
 			$(".png").attr("href","http://#{urls.png}")
 			$(".dot").attr("href","http://#{urls.dot}")
 			$(".svg").attr("href","http://#{urls.svg}")
+			#preview
 			$("#preview").attr("src","http://#{urls.png}")
 		update_mono:(urls)=>
 			$(".mono-pdf").attr("href","http://#{urls.pdf}")
@@ -75,10 +76,7 @@ $(document).ready =>
 			$(".circle-dot").attr("href","http://#{urls.dot}")
 			$(".circle-svg").attr("href","http://#{urls.svg}")
 
-		  	
-		
-		
-
+	
 	window.GraphUrls=GraphUrls
 	g=new GraphUrls(alg_name)
 	g.get_graph()

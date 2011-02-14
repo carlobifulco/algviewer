@@ -46,6 +46,7 @@ end
 # these keys will be removed from a keys_all redis command
 # used to keep colors out of all algs lists
 $redis_reserved={:colors=>"^___colors",:node_color=>"^___nodecolors"}
+$user_name_name_space="user_name_name_space"
 
 #SINATRA SETUPS
 #----------------
@@ -69,6 +70,25 @@ $Redis4=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379,:
 TextDb=4 
 $Redis4.select TextDb
 $r=false
+#make sure default users and passwords are setup
+
+
+#called at startup to make sure that at least these users exist in redis
+def set_default_users
+  users_pass={
+    "guest"=>"guest",
+    "carlobifulco"=>"bifulcocarlo",
+    "tester"=>"tester",
+    "master"=>"master"
+  }
+  r= Redis::Namespace.new($user_name_name_space, :redis =>$Redis4) 
+  users_pass.keys.each do |id|
+    r.set id,users_pass[id] if not r.get id
+  end
+end
+
+#execute
+set_default_users()
 
 
 
@@ -128,17 +148,16 @@ end
 # a call to /user/:username run from
 #layout.coffee
 
+
+
+
 post '/user/:username' do
   content_type :json
-  users_pass={
-    "guest"=>"guest",
-    "carlobifulco"=>"bifulcocarlo",
-    "tester"=>"tester",
-    "master"=>"master"
-  }
+  r= Redis::Namespace.new($user_name_name_space, :redis =>$Redis4)   
   user=params["username"]
   password=params["password"]
-  if users_pass.has_key? user and users_pass[user]==password
+  stored_pass=r.get user
+  if stored_pass and user and stored_pass==password
     return {:ok=>true}.to_json
   else
    return {:ok=>false}.to_json
@@ -160,6 +179,21 @@ end
 #login page
 get '/login' do
   haml :login
+end
+
+
+post '/create_user/:user'  do
+  r= Redis::Namespace.new($user_name_name_space, :redis =>$Redis4)  
+  user=params[:user]
+  password=params["password"]
+  puts "USER #{user}"
+  puts "PASS #{password}"
+  if r.get user
+    raise "Error --existing user"
+  else
+    r.set user,password
+    return {:ok=>"1"}.to_json
+  end
 end
 
 # redirected main page
