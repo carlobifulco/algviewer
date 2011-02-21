@@ -32,9 +32,13 @@ $(document).ready =>
 			$("#text_graph_image").addClass("text_graph_image_small")
 			window.graph_large=false
 	
-
-		
-	
+	#text area resizing
+	text_resize=()->
+		lines_number=$("#edit").val().split("\n").length
+		if lines_number<40 then lines_number=40
+		$("#edit").attr("rows", lines_number+10)
+		$("#accordion").accordion("resize")
+	window.text_resize=text_resize
 
 	
 	# AJAX error visualization
@@ -91,7 +95,7 @@ $(document).ready =>
 		text=$("#edit").val()
 		user=localStorage.user
 		url="/text/#{alg_name}"
-		$.post(url,{"user_name":user,"content":text}).success((e)->render_inline(e.png))
+		$.post(url,{"user_name":user,"content":text}).success((e)->render_inline(e.png); text_resize(); $("#accordion").accordion("resize"))
 	
 	#enter textform text
 	get_text=()->
@@ -101,12 +105,13 @@ $(document).ready =>
 		user=localStorage.user
 		alg_name=_.last(window.location.pathname.split("/"))
 		url="/text/#{alg_name}"
-		$.get(url,{"user_name":user}).success((e)->$("#edit").val(e))
+		$.get(url,{"user_name":user}).success((e)->$("#edit").val(e);text_resize(); $("#accordion").accordion("resize"))
 	
 	#Initiate
 	#--------	
 
 	get_text()
+	text_resize()
 		
 		
 	window.get_text=get_text

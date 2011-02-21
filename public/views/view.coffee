@@ -51,9 +51,11 @@ $(document).ready =>
 			$.get(graph_name,{"user_name":@user_name, type:"ajax"},(e)=>@yaml_text=JSON.stringify(e);dfd.resolve())
 			return dfd.promise()
 		graph:()=>
-			$.get("/graph",{"colors_hash":@color_hash,"yaml_text":@yaml_text, type:"ajax"},(e)=>@urls=JSON.parse(e);@update_urls(@urls))
+			$.get("/graph",{"colors_hash":@color_hash,"yaml_text":@yaml_text, type:"ajax"},(e)=>@urls=JSON.parse(e);@update_urls(@urls); $("#temp").hide())
 			$.get("/graph",{"yaml_text":@yaml_text, type:"ajax"},(e)=>@mono_urls=JSON.parse(e);@update_mono(@mono_urls))
-			$.get("/graph",{"options":JSON.stringify({"circle":"1"}),"yaml_text":@yaml_text, type:"ajax"},(e)=>@mono_urls=JSON.parse(e);@update_circle(@mono_urls))
+			$.get("/graph",{"colors_hash":@color_hash, "options":JSON.stringify({"circle":"1"}),"yaml_text":@yaml_text, type:"ajax"},(e)=>@mono_urls=JSON.parse(e);@update_circle(@mono_urls))
+			#the last laso updates size of accordion
+			$.get("/graph",{"colors_hash":@color_hash, "options":JSON.stringify({"ellipse":"1"}),"yaml_text":@yaml_text, type:"ajax"},(e)=>@mono_urls=JSON.parse(e);@update_ellipse(@mono_urls); $("#accordion").accordion("resize"))
 		get_graph:()=>
 			$.when(@yaml(),@colors()).done(@graph)	
 		show:(urls)=>
@@ -75,6 +77,11 @@ $(document).ready =>
 			$(".circle-png").attr("href","http://#{urls.png}")
 			$(".circle-dot").attr("href","http://#{urls.dot}")
 			$(".circle-svg").attr("href","http://#{urls.svg}")
+		update_ellipse:(urls)=>
+			$(".ellipse-pdf").attr("href","http://#{urls.pdf}")
+			$(".ellipse-png").attr("href","http://#{urls.png}")
+			$(".ellipse-dot").attr("href","http://#{urls.dot}")
+			$(".ellipse-svg").attr("href","http://#{urls.svg}")
 
 	
 	window.GraphUrls=GraphUrls

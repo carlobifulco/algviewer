@@ -31,7 +31,7 @@
     %a.header{:href=>"#"}
       VIEW
   %div
-    #view.int_acc
+    #view
       %script{:id=>"view_template", :type=>"text/x-jquery-tmpl"}
         %li
           %a{:href=>"/view/${graph_name}"}
@@ -42,16 +42,15 @@
   %div
     
     #text_edit.span-24.last
-      %script.left{:id=>"edit_text_template", :type=>"text/x-jquery-tmpl"}
+      %script{:id=>"edit_text_template", :type=>"text/x-jquery-tmpl"}
         %li
           %a{:href=>"/edit_text/${graph_name}"}
             ${graph_name}
-      .right
-        %label.pull-3{:for=>"entry1"}
-        .button#text_edit_button.span-4.ui-widget-content.ui-state-default
+      #text_button
+        %label{:for=>"entry1"}
+        .button#text_edit_button.ui-widget-content.ui-state-default
           NEW TEXT EDIT
-        .span-3
-          %input#entry1{:type=>"text",:name=>"form_name",:size=>"40",:required=>"required", :placeholder=>"Enter name of new graph"}
+        %input#entry1{:type=>"text",:name=>"form_name",:size=>"40",:required=>"required", :placeholder=>"Enter name of new graph"}
     .span-24.last
       
       
@@ -66,12 +65,12 @@
           %a{:href=>"/graphic_edit/${graph_name}"}
             ${graph_name}
       /  %a{:href=>"/graphic_edit/#{x}"}=x
-      .right.pull-5
-        %label.pull-5{:for=>"entry2"}
-        .button#graph_edit_button.span-4.ui-widget-content.ui-state-default
+      #graph_button
+        %label{:for=>"entry2"}
+        .button#graph_edit_button.ui-widget-content.ui-state-default
           NEW GRAPHIC EDIT
-        .span-3
-          %input#entry2{:type=>"text",:placeholder=>"Enter name of new graph", :name=>"form_name",:size=>"40"}
+      
+        %input#entry2{:type=>"text",:placeholder=>"Enter name of new graph", :name=>"form_name",:size=>"40"}
     .span-24.last
  
         
