@@ -205,7 +205,7 @@ $(document).ready =>
 	
 	template_alg_names=(graph_names_list)->
 		markdown_list=[]
-		_.each(graph_names_list,(graph_name)->markdown_list.push({"graph_name":graph_name}))
+		_.each(graph_names_list,(graph_name)->markdown_list.push({"graph_name":graph_name,"user_name":localStorage.user}))
 		#global graph list
 		window.graph_list=graph_names_list
 		return markdown_list
@@ -215,6 +215,7 @@ $(document).ready =>
 	  $("#view").append($("#view_template").tmpl(template))
 	  $("#graphic_edit").append($("#graphic_edit_template").tmpl(template))
 	  $("#delete").append($("#delete_template").tmpl(template))
+	  $("#arbor").append($("#arbor_template").tmpl(template))
 	
 	
 	#get graph names

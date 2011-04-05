@@ -36,6 +36,16 @@
         %li
           %a{:href=>"/view/${graph_name}"}
             ${graph_name}
+            
+  %h3
+    %a.header{:href=>"#"}
+      ARBOR 
+  %div
+    #arbor
+      %script{:id=>"arbor_template", :type=>"text/x-jquery-tmpl"}
+        %li
+          %a{:href=>"/arbor/${user_name}/${graph_name}"}
+            ${graph_name}
   %h3.int_acc
     %a.header{:href=>"#"}
       TEXT EDIT

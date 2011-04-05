@@ -77,7 +77,7 @@ $(document).ready =>
 	#rendering of the png files
 	render_inline=(data)->
 		anchor=$("#text_graph")
-		anchor.html("<img id=text_graph_image class=text_graph_image_small src='http://#{data}' style='opacity:0.9;z-index:10000'></img>")
+		anchor.html("<img id=text_graph_image class=text_graph_image_small src='#{data}' style='opacity:0.9;z-index:10000'></img>")
 		$("#text_graph").show()
 		$("#text_graph").click(resize)
 			

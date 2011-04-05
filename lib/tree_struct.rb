@@ -87,6 +87,7 @@ class Text2Box
   end
   
   def get_text_indent
+    puts "IN TEXT INDENT"
     text=@text.split("\n")
     # get rid of empty lines that do not add to the YAML structure
     text.select!{|x| x if x.strip() !=""}
@@ -108,9 +109,13 @@ class Text2Box
     #puts text
     boxes_indent=text.collect {|x| (x.index("-")/offset)}
     text.collect! {|x| x.delete "-"}
-    #puts boxes_indent
-    puts boxes_indent.to_json
-    text_indent=(text.zip boxes_indent).to_json
+    puts "HERE #{boxes_indent} #{boxes_indent.class}"
+    
+    
+    #puts boxes_indent.to_json
+    text_indent=text.zip boxes_indent
+    puts "#{text_indent}, #{text_indent.class}"
+    
     return text_indent
   end
 end

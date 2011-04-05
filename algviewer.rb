@@ -1,5 +1,5 @@
 #libs for the generation of the DOT Files
-
+#add the current dir  and lib to the load path
 my_directory=File.dirname(File.expand_path(__FILE__))
 $LOAD_PATH << File.join(my_directory,'/lib')
 $LOAD_PATH << my_directory
@@ -17,6 +17,17 @@ require "redis-namespace"
 # in lib
 require "tree_struct"
 require "dot_generator"
+# in home dir
+require 'image'
+
+
+#fixes a bag in the JSON parsing
+# may be ruby version dependent
+class Fixnum
+  def to_json(options = nil)
+    to_s
+  end
+end
 
 
 
@@ -24,7 +35,7 @@ require "dot_generator"
 #SERVER and REDIS SETUP
 #----------------
 # redis server
-
+puts "ALGVIEWER CBB INC."
 puts ARGV
 puts "SETTINGS port #{settings.port}" 
 
@@ -70,9 +81,32 @@ $Redis4=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379,:
 TextDb=4 
 $Redis4.select TextDb
 $r=false
+
+
+# to create named instances
+def redis_name_spaced name_space
+  Redis::Namespace.new(name_space, :redis =>$Redis4) 
+end
+
+
+#checking if redis is setup
+def check_redis
+  r=redis_name_spaced("test")
+  begin
+    r.set("test",232323)
+    r.del("test")
+  rescue Exception => e  
+    puts e.message  
+    puts e.backtrace.inspect
+    puts "REDIS NOT FOUND or UNABLE to CONNECT to IT"
+    puts "stopping now"
+    raise "Error, no redis"
+  end
+end
+check_redis()
+
+
 #make sure default users and passwords are setup
-
-
 #called at startup to make sure that at least these users exist in redis
 def set_default_users
   users_pass={
@@ -96,8 +130,6 @@ set_default_users()
 #-------
 IMAGE_CONTAINER="./image_container"
 Dir.mkdir IMAGE_CONTAINER unless Dir.exists? IMAGE_CONTAINER
-
-
 
 
 
@@ -224,6 +256,19 @@ get '/view/:form_name' do
   haml :view
 end
 
+#arbor testing
+get '/arbor/*/*' do
+  haml :arbor
+end
+
+get '/drag_drop' do
+  haml :drag_drop
+end
+
+get '/proc' do
+  haml :proc
+end
+
 # Graphic rendering of the boxes
 #-------------------------------
 # only initial layout
@@ -250,8 +295,10 @@ end
 get '/ajax_text_indent/:form_name' do
   form_name=params[:form_name]
   user_name=params[:user_name]
+  puts "#{form_name}, #{user_name} collapse"
   text_indent=text_indent(form_name,user_name)
-  return text_indent.to_json
+  puts "#{text_indent}, #{text_indent.class}"
+  return JSON.dump(text_indent)
 end
 
 
@@ -452,6 +499,26 @@ get '/nodes_colors/:graph_name' do
   #name_space storage
 end
 
+# Nodes and Edges Access
+#-----------------------
+
+get '/nodes_and_edges/*/*' do
+  content_type :json
+  user_name=params["splat"][0]
+  form_name=params["splat"][1]
+  yaml=get_yaml(user_name,form_name)
+  if yaml
+    graph=Graph.new
+    #interface to the nodesedges obj in tree_struct
+    nodes_edges=NodesEdges.new yaml
+    return [nodes_edges.get_nodes(), nodes_edges.get_edges()].to_json()
+  else
+    return {}.to_json()
+  end
+end
+
+
+
 
 #Graph Access
 #--------------
@@ -467,7 +534,7 @@ def get_urls yaml,colors,options=false
 end
 
 
-# get all URLS; needs colors_hash and yaml_text as params
+# get all URLS of rendered graphs; needs colors_hash and yaml_text as params
 get '/graph' do
   #	$.get("/graph",{"colors_hash":window.colors_hash,"yaml_text":window.yaml_text, type:"ajax"},(graph_urls)->alert(graph_urls))
   colors_hash=JSON.parse(params["colors_hash"]) if params["colors_hash"]

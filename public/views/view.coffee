@@ -46,6 +46,7 @@ $(document).ready =>
 			$.get(@colors_url,{"user_name":@user_name, type:"ajax"},(e)=>@color_hash=e;dfd.resolve())
 			return dfd.promise()
 		yaml:()=>
+			#called first; execution is hold till @yaml_text is assigned
 			dfd = $.Deferred()
 			graph_name="/yaml/#{@graph_name}"
 			$.get(graph_name,{"user_name":@user_name, type:"ajax"},(e)=>@yaml_text=JSON.stringify(e);dfd.resolve())
@@ -57,31 +58,32 @@ $(document).ready =>
 			#the last laso updates size of accordion
 			$.get("/graph",{"colors_hash":@color_hash, "options":JSON.stringify({"ellipse":"1"}),"yaml_text":@yaml_text, type:"ajax"},(e)=>@mono_urls=JSON.parse(e);@update_ellipse(@mono_urls); $("#accordion").accordion("resize"))
 		get_graph:()=>
+			#when yaml and colors are taken care it will execute graph
 			$.when(@yaml(),@colors()).done(@graph)	
 		show:(urls)=>
 			alert(urls.pdf)
 		update_urls:(urls)=>
-			$(".pdf").attr("href","http://#{urls.pdf}")
-			$(".png").attr("href","http://#{urls.png}")
-			$(".dot").attr("href","http://#{urls.dot}")
-			$(".svg").attr("href","http://#{urls.svg}")
+			$(".pdf").attr("href","#{urls.pdf}")
+			$(".png").attr("href","#{urls.png}")
+			$(".dot").attr("href","#{urls.dot}")
+			$(".svg").attr("href","#{urls.svg}")
 			#preview
-			$("#preview").attr("src","http://#{urls.png}")
+			$("#preview").attr("src","#{urls.png}")
 		update_mono:(urls)=>
-			$(".mono-pdf").attr("href","http://#{urls.pdf}")
-			$(".mono-png").attr("href","http://#{urls.png}")
-			$(".mono-dot").attr("href","http://#{urls.dot}")
-			$(".mono-svg").attr("href","http://#{urls.svg}")
+			$(".mono-pdf").attr("href","#{urls.pdf}")
+			$(".mono-png").attr("href","#{urls.png}")
+			$(".mono-dot").attr("href","#{urls.dot}")
+			$(".mono-svg").attr("href","#{urls.svg}")
 		update_circle:(urls)=>
-			$(".circle-pdf").attr("href","http://#{urls.pdf}")
-			$(".circle-png").attr("href","http://#{urls.png}")
-			$(".circle-dot").attr("href","http://#{urls.dot}")
-			$(".circle-svg").attr("href","http://#{urls.svg}")
+			$(".circle-pdf").attr("href","#{urls.pdf}")
+			$(".circle-png").attr("href","#{urls.png}")
+			$(".circle-dot").attr("href","#{urls.dot}")
+			$(".circle-svg").attr("href","#{urls.svg}")
 		update_ellipse:(urls)=>
-			$(".ellipse-pdf").attr("href","http://#{urls.pdf}")
-			$(".ellipse-png").attr("href","http://#{urls.png}")
-			$(".ellipse-dot").attr("href","http://#{urls.dot}")
-			$(".ellipse-svg").attr("href","http://#{urls.svg}")
+			$(".ellipse-pdf").attr("href","#{urls.pdf}")
+			$(".ellipse-png").attr("href","#{urls.png}")
+			$(".ellipse-dot").attr("href","#{urls.dot}")
+			$(".ellipse-svg").attr("href","#{urls.svg}")
 
 	
 	window.GraphUrls=GraphUrls
