@@ -52,11 +52,12 @@ $(document).ready =>
 			$.get(graph_name,{"user_name":@user_name, type:"ajax"},(e)=>@yaml_text=JSON.stringify(e);dfd.resolve())
 			return dfd.promise()
 		graph:()=>
-			$.get("/graph",{"colors_hash":@color_hash,"yaml_text":@yaml_text, type:"ajax"},(e)=>@urls=JSON.parse(e);@update_urls(@urls); $("#temp").hide())
-			$.get("/graph",{"yaml_text":@yaml_text, type:"ajax"},(e)=>@mono_urls=JSON.parse(e);@update_mono(@mono_urls))
-			$.get("/graph",{"colors_hash":@color_hash, "options":JSON.stringify({"circle":"1"}),"yaml_text":@yaml_text, type:"ajax"},(e)=>@mono_urls=JSON.parse(e);@update_circle(@mono_urls))
+		  # had to change to psot because of ?firewall issues
+			$.post("/graph",{"colors_hash":@color_hash,"yaml_text":@yaml_text, type:"ajax"},(e)=>@urls=JSON.parse(e);@update_urls(@urls); $("#temp").hide())
+			$.post("/graph",{"yaml_text":@yaml_text, type:"ajax"},(e)=>@mono_urls=JSON.parse(e);@update_mono(@mono_urls))
+			$.post("/graph",{"colors_hash":@color_hash, "options":JSON.stringify({"circle":"1"}),"yaml_text":@yaml_text, type:"ajax"},(e)=>@mono_urls=JSON.parse(e);@update_circle(@mono_urls))
 			#the last laso updates size of accordion
-			$.get("/graph",{"colors_hash":@color_hash, "options":JSON.stringify({"ellipse":"1"}),"yaml_text":@yaml_text, type:"ajax"},(e)=>@mono_urls=JSON.parse(e);@update_ellipse(@mono_urls); $("#accordion").accordion("resize"))
+			$.post("/graph",{"colors_hash":@color_hash, "options":JSON.stringify({"ellipse":"1"}),"yaml_text":@yaml_text, type:"ajax"},(e)=>@mono_urls=JSON.parse(e);@update_ellipse(@mono_urls); $("#accordion").accordion("resize"))
 		get_graph:()=>
 			#when yaml and colors are taken care it will execute graph
 			$.when(@yaml(),@colors()).done(@graph)	

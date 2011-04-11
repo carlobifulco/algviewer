@@ -17,8 +17,9 @@ require "redis-namespace"
 # in lib
 require "tree_struct"
 require "dot_generator"
+require 'pic_drop'
 # in home dir
-require 'image'
+
 
 
 #fixes a bag in the JSON parsing
@@ -123,14 +124,6 @@ end
 
 #execute
 set_default_users()
-
-
-
-#IMAGES
-#-------
-IMAGE_CONTAINER="./image_container"
-Dir.mkdir IMAGE_CONTAINER unless Dir.exists? IMAGE_CONTAINER
-
 
 
 #Delete
@@ -536,6 +529,18 @@ end
 
 # get all URLS of rendered graphs; needs colors_hash and yaml_text as params
 get '/graph' do
+  #	$.get("/graph",{"colors_hash":window.colors_hash,"yaml_text":window.yaml_text, type:"ajax"},(graph_urls)->alert(graph_urls))
+  colors_hash=JSON.parse(params["colors_hash"]) if params["colors_hash"]
+  colors_hash=false if not params["colors_hash"]
+  yaml_text=JSON.parse(params["yaml_text"]) if params["yaml_text"]
+  options=JSON.parse(params["options"]) if params["options"]
+  options=false if not params["options"]
+  return get_urls(yaml_text,colors_hash,options) 
+end
+
+# get all URLS of rendered graphs; needs colors_hash and yaml_text as params
+#post probably because ngnix issues with large get request...
+post '/graph' do
   #	$.get("/graph",{"colors_hash":window.colors_hash,"yaml_text":window.yaml_text, type:"ajax"},(graph_urls)->alert(graph_urls))
   colors_hash=JSON.parse(params["colors_hash"]) if params["colors_hash"]
   colors_hash=false if not params["colors_hash"]

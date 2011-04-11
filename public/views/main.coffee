@@ -5,66 +5,66 @@ $(document).ready =>
 
 
 
-#Auth Business
-#---------------
-
-	
-	# #check if user in local storage. if not present, open dialog
-	# # if present, check credentials. if mismatch, open dialog vial check_local_storage
-	# who_are_you=()->
-	# 	if not localStorage.getItem("user")
-	# 		check_user_dialog()
-	# 	else
-	# 		user=localStorage.user
-	# 		pw=localStorage.password
-	# 		params={'user':"#{user}",'password':"#{pw}"}
-	# 		r=$.post('/check_user',params,check_local_storage,"json")
-
-
-
-	#open modal dialog and bind to check_auth
-	check_user_dialog=()->
-		$( "#dialog-form" ).dialog({"autoOpen": false,"height": 300,"width": 350, "modal": true})
-		$("#create-user").button()
-		$("#dialog-form").dialog("open")
-		$("#dialog-form").dialog({"closeOnEscape":false,close:()->$("#dialog-form").dialog("open")})
-		$("#create-user").click((e)->check_auth(); return false)
-		
-	#takes server reply to dialog entries or to local storage items
-	check_local_storage=(r)->
-		if r=="OK"
-			$("#dialog-form").hide()
-		else
-			check_user_dialog()
-
-		
-# check auth
-	check_auth=()-> 
-		update=(r)->
-			user=$("#user")[0].value
-			pw=$("#password")[0].value
-			if r=="OK"
-				localStorage.user=user
-				localStorage.password=pw
-				window.location.url="/"
-				$("#dialog-form").dialog("destroy")
-			else
-				alert("Incorrect User or Password")
-				window.location.url="/"
-				return false
-		user=$("#user")[0].value
-		pw=$("#password")[0].value
-		params={'user':"#{user}",'password':"#{pw}"}
-		#call check_user
-		r=$.post('/check_user',params,update,"json")
-		window.r=r
-		
- #Logout user
-	logout=()->
-		localStorage.user=false
-		localStorage.password=false
-		window.location.reload()
-		
+# #Auth Business
+# #---------------
+# 
+#   
+#   # #check if user in local storage. if not present, open dialog
+#   # # if present, check credentials. if mismatch, open dialog vial check_local_storage
+#   # who_are_you=()->
+#   #   if not localStorage.getItem("user")
+#   #     check_user_dialog()
+#   #   else
+#   #     user=localStorage.user
+#   #     pw=localStorage.password
+#   #     params={'user':"#{user}",'password':"#{pw}"}
+#   #     r=$.post('/check_user',params,check_local_storage,"json")
+# 
+# 
+# 
+#   #open modal dialog and bind to check_auth
+#   check_user_dialog=()->
+#     $( "#dialog-form" ).dialog({"autoOpen": false,"height": 300,"width": 350, "modal": true})
+#     $("#create-user").button()
+#     $("#dialog-form").dialog("open")
+#     $("#dialog-form").dialog({"closeOnEscape":false,close:()->$("#dialog-form").dialog("open")})
+#     $("#create-user").click((e)->check_auth(); return false)
+#     
+#   #takes server reply to dialog entries or to local storage items
+#   check_local_storage=(r)->
+#     if r=="OK"
+#       $("#dialog-form").hide()
+#     else
+#       check_user_dialog()
+# 
+#     
+# # check auth
+#   check_auth=()-> 
+#     update=(r)->
+#       user=$("#user")[0].value
+#       pw=$("#password")[0].value
+#       if r=="OK"
+#         localStorage.user=user
+#         localStorage.password=pw
+#         window.location.url="/"
+#         $("#dialog-form").dialog("destroy")
+#       else
+#         alert("Incorrect User or Password")
+#         window.location.url="/"
+#         return false
+#     user=$("#user")[0].value
+#     pw=$("#password")[0].value
+#     params={'user':"#{user}",'password':"#{pw}"}
+#     #call check_user
+#     r=$.post('/check_user',params,update,"json")
+#     window.r=r
+#     
+#  #Logout user
+#   logout=()->
+#     localStorage.user=false
+#     localStorage.password=false
+#     window.location.reload()
+#     
 
 #GUI
 #---		
