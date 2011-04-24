@@ -18,6 +18,8 @@ require "redis-namespace"
 require "tree_struct"
 require "dot_generator"
 require 'pic_drop'
+require 'digest/md5'
+
 # in home dir
 
 
@@ -517,8 +519,9 @@ end
 #--------------
 
 #Interface to the Graph obj in dot_generator module
-def get_urls yaml,colors,options=false
-  graph=Graph.new
+def get_urls yaml,colors,options=false,algname=false
+  graph=Graph.new unless algname
+  graph=Graph.new algname if algname
   #interface to the nodesedges obj in tree_struct
   nodes_edges=NodesEdges.new yaml
   graph.add_nodes(nodes_edges.get_nodes(),colors,options)
@@ -547,7 +550,9 @@ post '/graph' do
   yaml_text=JSON.parse(params["yaml_text"]) if params["yaml_text"]
   options=JSON.parse(params["options"]) if params["options"]
   options=false if not params["options"]
-  return get_urls(yaml_text,colors_hash,options) 
+  algname=params["algname"] if params["algname"]
+  algname=false if not params["algname"]
+  return get_urls(yaml_text,colors_hash,options,algname) 
 end
 
 

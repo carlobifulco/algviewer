@@ -9,6 +9,7 @@ $(document).ready ->
       url="/images/#{localStorage.user}/#{algname}"
     console.log url
     console.log nodeid
+    #display async
     $.get(url,(e)->display(e))
   
 
@@ -40,6 +41,3 @@ $(document).ready ->
     algname=url[2]
   show_images(algname,nodeid)
 
-  
-
-  window.menu=menu

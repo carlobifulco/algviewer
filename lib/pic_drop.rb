@@ -126,7 +126,10 @@ def write_file filename, fileIO
 end
 
 
-
+def make_thumb filename
+  command="mogrify -format gif -thumbnail 150x150 #{filename}"
+  spawn(command)
+end
 
 
 
@@ -149,10 +152,12 @@ post '/upload/:username/:algname/:nodeid' do
   fileIO=request.env["rack.input"]
   old_filename=request.env["HTTP_UP_FILENAME"].gsub(" ","_")
   pp request.env
-  #get filename
+  #get filename and creates appropriate directories
   filename=unique_file_name(username,algname,nodeid,old_filename) 
   #writes file 
   write_file filename, fileIO
+  #make a thumb
+  make_thumb filename
   r= Redis::Namespace.new(username, :redis =>$REDIS) 
   #one node in an alg can have many images
   file_key=username+"_"+algname+"_"+nodeid
@@ -164,6 +169,32 @@ post '/upload/:username/:algname/:nodeid' do
   puts (r.smembers file_key).class
 end
 
+# returns images from a directoru
+def images_from_dir dirname
+  query="#{dirname}/**/*"  
+  r=Dir.glob query
+  # removes directories and thumbnails ".gif"
+  r.select! {|e| not (File.directory?(e) or File.extname(e)==".gif")}
+  #makes an usable url
+  r.collect! {|e| e.gsub "./public", ""}
+  puts query
+  puts r
+  r.to_json
+end
+
+
+# returns thumbs from directoru
+def thumbs_from_dir dirname
+  query="#{dirname}/**/*"  
+  r=Dir.glob query
+  # removes directories and thumbnails ".gif"
+  r.select! {|e| File.extname(e)==".gif"}
+  #makes an usable url
+  r.collect! {|e| e.gsub "./public", ""}
+  puts query
+  puts r
+  r.to_json
+end
 
 #get images for node
 get '/images/:username/:algname/:nodeid' do
@@ -173,14 +204,31 @@ get '/images/:username/:algname/:nodeid' do
   basepath=File.join(IMAGE_CONTAINER,username)
   algdir=File.join(basepath,algname)
   nodedir=File.join(algdir,nodeid)
-  query="#{nodedir}/*" 
-  r=Dir.glob query
-  puts "query=#{query}"
-  puts r
-  #makes an usable url
-  r.collect! {|e| e.gsub "./public", ""}
-  r.to_json
+  images_from_dir nodedir
 end
+
+
+#get thumbs for node
+get '/thumbs/:username/:algname/:nodeid' do
+  username=params["username"]
+  algname=params['algname']
+  nodeid=params['nodeid']
+  basepath=File.join(IMAGE_CONTAINER,username)
+  algdir=File.join(basepath,algname)
+  nodedir=File.join(algdir,nodeid)
+  thumbs_from_dir nodedir
+end
+
+#get all thumbs for alg
+get '/thumbs/:username/:algname' do
+  username=params["username"]
+  algname=params['algname']
+  nodeid=params['nodeid']
+  basepath=File.join(IMAGE_CONTAINER,username)
+  algdir=File.join(basepath,algname)
+  thumbs_from_dir algdir
+end
+
 
 
 #get all images for alg
@@ -189,13 +237,7 @@ get '/images/:username/:algname' do
   algname=params['algname']
   basepath=File.join(IMAGE_CONTAINER,username)
   algdir=File.join(basepath,algname)
-  query="#{algdir}/**/*"  
-  r=Dir.glob query
-  r.select! {|e| not File.directory?(e)}
-  r.collect! {|e| e.gsub "./public", ""}
-  puts query
-  puts r
-  r.to_json
+  images_from_dir algdir
 end
 
 
