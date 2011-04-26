@@ -116,44 +116,74 @@ $(document).ready ->
   dragOver=dragEnter
   
 
-
+  #Display nodes images
+  #---------------------
+  #images are created from html that is then dysplayed via facebox
+  #thumbs in facebox are then doubleclicked to images 
+  #via $(document).bind('reveal.facebox',()->$(".thumbs").dblclick((e)->show_image e)) hook
   class Gallery
     constructor:(algname,nodeid)->
       @algname=algname
       @nodeid=nodeid
-      
+    
+    #e is deferred form show
     display_images:(e)=>
-      $("#"+@nodeid).append("<div id='galleria'></div>")
-      filenames={filenames:JSON.parse(e)}
-      template='
-           {{#filenames}}
-           <img src={{.}} alt="My description" title="My title"></img>
-           {{/filenames}}'
-      menu=Mustache.to_html(template,filenames)   
-      console.log menu
-      Galleria.loadTheme('/galleria/themes/classic/galleria.classic.min.js') 
-      $("#galleria").append(menu)
-      console.log   $("#galleria")
-      console.log "menu appended"
-      $("#galleria").galleria({Height:500, Width:500, preload: 6})
+      
+      filenames=JSON.parse(e)
+      console.log "HELLP #{filenames.length}"
+      #alert (filenames.length)
+      if (filenames.length != 0 and filenames !="" and filenames != undefined)
+        console.log "templating without a template"
+        filenames={filenames:filenames}
+        template='
+             {{#filenames}}
+             <img src={{.}} alt="My description" class="thumbs" title="My title" class=facebox></img>
+             {{/filenames}}'
+        menu=Mustache.to_html(template,filenames)   
+        console.log "thumbs #{menu}"
+        $(menu).click((e)=>console.log(e))
+        console.log menu
+        console.log "DISPLAY CALLED"
+        console.log filenames["filenames"]
+        $.facebox(menu)
+        window.images=false
+        window.last_menu=menu
       
     show:()=>
       if @nodeid
-        @url="/images/#{localStorage.user}/#{@algname}/#{@nodeid}"
+        @url="/thumbs/#{localStorage.user}/#{@algname}/#{@nodeid}"
       else
-        @url="/images/#{localStorage.user}/#{@algname}"
+        @url="/thumbs/#{localStorage.user}/#{@algname}"
       console.log "In Gallery class and pulling nodes images from #{@url}"
       #display async
       $.get(@url,(e)=>@display_images(e))
          
 
 
-
+  #utility function
   new_gallery=(algname,nodeid)=>
     new Gallery algname, nodeid
   window.new_gallery=new_gallery
     
-
+  # e is the thumb; replaces .gif with jpg --for the matching image-- and then displays
+  show_image=(e)->
+    console.log e
+    console.log e.srcElement
+    url=$(e.srcElement).attr("src")
+    url=url.replace(".gif",".jpg")
+    console.log url
+    $.facebox({ image: url })
+    window.images=true
+  
+  # last menu is the last popup
+  #  only if displaying a single image the menu is recreated
+  close_facebox=()->
+    console.log window.last_menu
+    console.log window.images
+    if images
+      $.facebox(window.last_menu)
+      window.images=false
+  
 
 
   # activates the gallery
@@ -163,46 +193,49 @@ $(document).ready ->
     #Testing utility
     #-----------------
 
-  add_node=(nodeid)=>
-    a=[]
-    algname=_.last(window.location.pathname.split("/")) 
-    if algname=="" then algname="test"  
-    window.algname=algname
-    nodeid=Math.floor(Math.random()*100)
-    $("#drop_point").append("<div id=node#{nodeid} class=text_box node=#{nodeid}> <p id=node#{nodeid}>DRAG HERE #{nodeid}</p> </div><br>")
-    $("#node#{nodeid}").dblclick(()->window.location.href="/galleria/#{algname}/node#{nodeid}")
-  #    href: "http://localhost:4567/galleria/test/node1
-    dropbox = $("#node#{nodeid}")
-    dropbox.bind("dragenter", dragEnter)
-    dropbox.bind("dragexit", dragExit)
-    dropbox.bind("dragover", dragOver)
-    dropbox.get(0).addEventListener('drop', drop, false)
-
-    # '/upload/:username/:algname/:nodeid'
-    # uploader_url="/upload/#{localStorage.user}/#{algname}/#{nodeid}"
-    # uploader("node#{nodeid}", 'status', uploader_url, 'show')
-    # console.log uploader_url
+  # add_node=(nodeid)=>
+  #   a=[]
+  #   algname=_.last(window.location.pathname.split("/")) 
+  #   if algname=="" then algname="test"  
+  #   window.algname=algname
+  #   nodeid=Math.floor(Math.random()*100)
+  #   $("#drop_point").append("<div id=node#{nodeid} class=text_box node=#{nodeid}> <p id=node#{nodeid}>DRAG HERE #{nodeid}</p> </div><br>")
+  #   $("#node#{nodeid}").dblclick(()->window.location.href="/galleria/#{algname}/node#{nodeid}")
+  # #    href: "http://localhost:4567/galleria/test/node1
+  #   dropbox = $("#node#{nodeid}")
+  #   dropbox.bind("dragenter", dragEnter)
+  #   dropbox.bind("dragexit", dragExit)
+  #   dropbox.bind("dragover", dragOver)
+  #   dropbox.get(0).addEventListener('drop', drop, false)
 
 
-      # window.up=up
-
-
-    #add_node(i) for i in [1..10]
-
+  
+  #binding of drop and dblclick events on ALL .text_box elements 
+  #---------------------------------------------------------
   add_drop=()=>
     #algname=
     dropboxes = $(".text_box")
+    #needed otherwise multiple updates would bind multiple dbclicks...
+    dropboxes.unbind("dblclick")
     dropboxes.bind("dragenter", dragEnter)
     dropboxes.bind("dragexit", dragExit)
     dropboxes.bind("dragover", dragOver)
     i.addEventListener('drop', drop, false) for i in dropboxes
     console.log(i.id) for i in dropboxes 
+    #binds new_gallery(algname, nodeid).show() to doubleclick
     $(i).dblclick((evt)=>new_gallery(_.last(window.location.pathname.split("/")),evt.srcElement.id).show()) for i in dropboxes
+    console.log "ADD DROP CALLED"
      #$(i).dblclick((evt)=>window.location.href="/galleria/#{_.last(window.location.pathname.split("/"))}/#{evt.srcElement.id}") for i in dropboxes
+  
 
+    
+  
   window.add_drop=add_drop
-  add_drop()
-
+  
+  ##Show images on clicking of thumbs
+  $(document).bind('reveal.facebox',()->$(".thumbs").dblclick((e)->show_image e))
+  window.images=false
+  $(document).bind('afterClose.facebox',()->close_facebox())
 
 
   

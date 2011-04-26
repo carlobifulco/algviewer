@@ -125,10 +125,21 @@ def write_file filename, fileIO
   fh.close
 end
 
-
+#makes thumbs
 def make_thumb filename
   command="mogrify -format gif -thumbnail 150x150 #{filename}"
   spawn(command)
+end
+
+#converts image to a standartd size and to jpg
+def make_jpg filename
+  ext=File.extname filename
+  new_filename=filename.gsub(ext,".jpg")
+  command="convert -scale  1000x800  #{filename} #{new_filename}"
+  puts command
+  #needed to use system because spawn rm was faster then the convert...
+  system(command)
+  spawn("rm #{filename}") unless filename==new_filename
 end
 
 
@@ -156,8 +167,9 @@ post '/upload/:username/:algname/:nodeid' do
   filename=unique_file_name(username,algname,nodeid,old_filename) 
   #writes file 
   write_file filename, fileIO
-  #make a thumb
+  #make a thumb and convert to jpg
   make_thumb filename
+  make_jpg filename
   r= Redis::Namespace.new(username, :redis =>$REDIS) 
   #one node in an alg can have many images
   file_key=username+"_"+algname+"_"+nodeid
