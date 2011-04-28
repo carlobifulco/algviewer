@@ -151,7 +151,7 @@ module Mani
   def edge_couples lst
     a=[]
     lst.each do |i|
-     if i.class==String then next
+     if i.class != [].class then next
      end
      a<<(( [i[0]] * i[1].length).zip i[1])
     end
@@ -213,7 +213,12 @@ class NodesEdges
           @a<<@list[0]
           @list.delete_at 0
           next
-        # removes outer [] from array
+        # node followed by boolean operator; an error of YAML parsing
+        elsif  (@list[0].class ==String and (@list[1] ==false or @list[1] ==true))
+          @a<<@list[0]
+          @list.delete_at 0
+          next
+        #removes outer [] from array
         elsif @list[0].class==Array 
           @list=unnest @list
           next
@@ -223,7 +228,8 @@ class NodesEdges
         end
         if @list.length ==1 then @a<<@list[0]; break
         end
-      puts " I am in loading the array #{@a} \n"
+      puts " I am in loading the array #{@a} trying to handle (#{@list[0]},#{@list[0].class},#{@list[1]},#{@list[1].class}) \n"
+      puts "this is the list #{@list}"
     end
   end
   

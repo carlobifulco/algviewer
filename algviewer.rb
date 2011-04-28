@@ -333,7 +333,10 @@ end
 
 # cleanup of text before yaml load
 def text_cleanup(text)
-  text.gsub!(":","")
+  text.gsub!(/[^'](:)[^']/," ':'")
+  # YAML converts these to boolean operators
+  text.gsub!(/- No/i,"- 'No'")
+  text.gsub!(/- Yes/i,"- 'Yes'")
   # this should eliminate a final - in an alg that is getting built
   # by splitting lines and reuniting them except for the last if it is a lone"-"
   # this is repeated twice since the empty - could be followed by a \n
@@ -437,10 +440,13 @@ post '/text/:form_name' do
   form_name=params[:form_name]
   user_name=params[:user_name]
   content=params[:content]
+  puts content
   r= Redis::Namespace.new(user_name, :redis =>$Redis4) 
   if content and content != ""
     content=text_cleanup(content)
+    puts content
     yaml=yaml_load(content)
+    puts yaml
   else
     raise "ERRRROROOR"
   end
