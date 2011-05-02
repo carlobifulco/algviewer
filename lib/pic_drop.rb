@@ -243,6 +243,23 @@ end
 
 
 
+
+#returns List with names of nodes who have files
+get '/nodes_with_images/:username/:algname' do
+  username=params["username"]
+  algname=params['algname']
+  basepath=File.join(IMAGE_CONTAINER,username)
+  algdir=File.join(basepath,algname)
+  query="#{algdir}/*"  
+  r=Dir.glob query
+  # keep only directories"
+  r.select! {|e| File.directory?(e)}
+  r.collect! {|e| File.basename e}
+  r.to_json
+end
+
+
+
 #get all images for alg
 get '/images/:username/:algname' do
   username=params["username"]

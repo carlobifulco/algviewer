@@ -1,7 +1,10 @@
 # uses new_gallery form pic_drop.coffee
 
 parent_attr=(e)->
-  n=$(e.srcElement.parentNode)
+  if e.srcElement
+    n=$(e.srcElement.parentNode)
+  else
+    n=$(e.target.parentNode)
   algname= n.attr("algname")
   id= n.attr("id")
   console.log [algname,id]
@@ -15,13 +18,48 @@ show_node=(e)->
   new_gallery(algname, id).show() 
 
 # binding of the svg nodes
-bind_nodes=()->
+bind_click=()->
   nodes=$(".node")
   $(i).dblclick((e)=>show_node(e)) for i in nodes
-window.bind_nodes=bind_nodes
+window.bind_click=bind_click
+
+color=(e,color_old,color_new)->  
+  algname_id=parent_attr(e)
+  algname=algname_id[0]
+  id=algname_id[1]
+  console.log " #{id} pos #{_.indexOf(window.nodes_with_images,id)} in #{window.nodes_with_images}"
+  # if the node is in the list of nodes with images then
+  if (_.indexOf(window.nodes_with_images,id)) != -1
+    console.log "HURRAY"
+    nodes=e.currentTarget.childNodes
+    a=[]
+    # all childnodes of event that have old color
+    a.push(i) for i in nodes when ($(i).css("fill")==color_old)
+    console.log a
+    #swith their color
+    $(i).css("fill",color_new) for i in a
+    console.log a
+  
+
+bind_hover=()->
+  $(".node").mouseenter((e)-> color(e,"#ffeecc","#ffff00")).mouseleave((e)-> color(e,"#ffff00","#ffeecc"))
+  #$(".node").mouseenter((e)-> alert e; no_text(e.currentTarget.childNodes))
+  #$(".node polygon").mouseenter((e)->$(e.srcElement).css("fill","yellow")).mouseleave((e)->$(e.srcElement).css("fill","#ffeecc"))
+  #$(".node text").mouseenter((e)->$(e.srcElement).css("fill","yellow")).mouseleave((e)->$(e.srcElement).css("fill","black"))
+  #$(".node polyline").mouseenter((e)->$(e.srcElement).css("fill","yellow")).mouseleave((e)->$(e.srcElement).css("fill","black"))
+window.bind_hover=bind_hover  
 
 
 
 $(document).ready ->
-  bind_nodes()
+  
+  algname=$($(".node")[0]).attr("algname")
+  url="/nodes_with_images/#{localStorage.user}/#{algname}"
+  # window.nodes_with_images contaisn list of nodes with pics
+  $.get(url,(r)->window.nodes_with_images=JSON.parse(r))
+  bind_click()
+  bind_hover()
+  #prevent text selection
+  document.body.onselectstart=()->return false
+  
 
