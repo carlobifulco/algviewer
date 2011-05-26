@@ -122,9 +122,10 @@ $(document).ready ->
   #thumbs in facebox are then doubleclicked to images 
   #via $(document).bind('reveal.facebox',()->$(".thumbs").dblclick((e)->show_image e)) hook
   class Gallery
-    constructor:(algname,nodeid)->
+    constructor:(algname,nodeid, username=false)->
       @algname=algname
       @nodeid=nodeid
+      @username=username if username
     
     #e is deferred form show
     display_images:(e)=>

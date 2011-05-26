@@ -335,8 +335,10 @@ end
 def text_cleanup(text)
   text.gsub!(/[^'](:)[^']/," ':'")
   # YAML converts these to boolean operators
-  text.gsub!(/- No/i,"- 'No'")
-  text.gsub!(/- Yes/i,"- 'Yes'")
+  text.gsub!(/- No\s*$/i,"- 'No'") #only if it has no following text
+  text.gsub!(/- Yes\s*$/i,"- 'Yes'")
+  text.gsub!(/- True\s*$/i,"- 'True'")
+  text.gsub!(/- False\s*$/i,"- 'False'")
   # this should eliminate a final - in an alg that is getting built
   # by splitting lines and reuniting them except for the last if it is a lone"-"
   # this is repeated twice since the empty - could be followed by a \n
@@ -525,9 +527,10 @@ end
 #--------------
 
 #Interface to the Graph obj in dot_generator module
-def get_urls yaml,colors,options=false,algname=false
+def get_urls yaml,colors,options=false,algname=false,username=false
   graph=Graph.new unless algname
-  graph=Graph.new algname if algname
+  graph=Graph.new algname if (algname and not username)
+  graph=Graph.new(algname,username) if (algname and username)
   #interface to the nodesedges obj in tree_struct
   nodes_edges=NodesEdges.new yaml
   graph.add_nodes(nodes_edges.get_nodes(),colors,options)
@@ -550,7 +553,7 @@ end
 # get all URLS of rendered graphs; needs colors_hash and yaml_text as params
 #post probably because ngnix issues with large get request...
 post '/graph' do
-  #	$.get("/graph",{"colors_hash":window.colors_hash,"yaml_text":window.yaml_text, type:"ajax"},(graph_urls)->alert(graph_urls))
+  #	$.post("/graph",{"colors_hash":window.colors_hash,"yaml_text":window.yaml_text, type:"ajax"},(graph_urls)->alert(graph_urls))
   colors_hash=JSON.parse(params["colors_hash"]) if params["colors_hash"]
   colors_hash=false if not params["colors_hash"]
   yaml_text=JSON.parse(params["yaml_text"]) if params["yaml_text"]
@@ -558,7 +561,9 @@ post '/graph' do
   options=false if not params["options"]
   algname=params["algname"] if params["algname"]
   algname=false if not params["algname"]
-  return get_urls(yaml_text,colors_hash,options,algname) 
+  username=params["username"] if params["username"]
+  username=false if not params["username"]
+  return get_urls(yaml_text,colors_hash,options,algname,username) 
 end
 
 
