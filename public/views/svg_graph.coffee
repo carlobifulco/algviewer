@@ -11,11 +11,17 @@ parent_attr=(e)->
   return [algname,id]
   
 show_node=(e)->
+  # console.log "I AM #{e.currentTarget.textContent}"
+  # console.log e
+  text=e.currentTarget.textContent
   algname_id=parent_attr(e)
   algname=algname_id[0]
   id=algname_id[1]
   # implementation of the facebox
-  new_gallery(algname, id).show() 
+  console.log text
+  n=new_gallery(algname, id, text)
+  console.log n
+  n.show() 
 
 # binding of the svg nodes
 bind_click=()->
@@ -54,7 +60,8 @@ window.bind_hover=bind_hover
 $(document).ready ->
   
   algname=$($(".node")[0]).attr("algname")
-  url="/nodes_with_images/#{localStorage.user}/#{algname}"
+  
+  url="/nodes_with_images/#{window.location.pathname.split("/")[2]}/#{algname}"
   # window.nodes_with_images contaisn list of nodes with pics
   $.get(url,(r)->window.nodes_with_images=JSON.parse(r))
   bind_click()

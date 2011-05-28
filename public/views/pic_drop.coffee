@@ -122,10 +122,17 @@ $(document).ready ->
   #thumbs in facebox are then doubleclicked to images 
   #via $(document).bind('reveal.facebox',()->$(".thumbs").dblclick((e)->show_image e)) hook
   class Gallery
-    constructor:(algname,nodeid, username=false)->
+    constructor:(algname,nodeid, text)->
       @algname=algname
       @nodeid=nodeid
-      @username=username if username
+      @text=text.split("\n")[0]
+      #username is available as localStorage if in graphic edit mode
+      if  window.location.pathname.split("/")[1]=="graphic_edit"
+        @username=localStorage.user
+      #username available in URL when looking at a dinamic SVG
+      else
+        @username=window.location.pathname.split("/")[2] 
+       
     
     #e is deferred form show
     display_images:(e)=>
@@ -134,12 +141,14 @@ $(document).ready ->
       console.log "HELLP #{filenames.length}"
       #alert (filenames.length)
       if (filenames.length != 0 and filenames !="" and filenames != undefined)
-        console.log "templating without a template"
-        filenames={filenames:filenames}
+        console.log "templating without a template; #{@text}"
+        filenames={filenames:filenames,text:@text}
+        console.log filenames
         template='
              {{#filenames}}
-             <img src={{.}} alt="My description" class="thumbs" title="My title" class=facebox></img>
-             {{/filenames}}'
+             <img src={{.}} alt="My description" class="thumbs" title="My title" class=facebox><div id=image></img>
+             {{/filenames}}
+             <h4 id="popup">{{text}}</h4>'
         menu=Mustache.to_html(template,filenames)   
         console.log "thumbs #{menu}"
         $(menu).click((e)=>console.log(e))
@@ -152,9 +161,9 @@ $(document).ready ->
       
     show:()=>
       if @nodeid
-        @url="/thumbs/#{localStorage.user}/#{@algname}/#{@nodeid}"
+        @url="/thumbs/#{@username}/#{@algname}/#{@nodeid}"
       else
-        @url="/thumbs/#{localStorage.user}/#{@algname}"
+        @url="/thumbs/#{@username}/#{@algname}"
       console.log "In Gallery class and pulling nodes images from #{@url}"
       #display async
       $.get(@url,(e)=>@display_images(e))
@@ -162,8 +171,8 @@ $(document).ready ->
 
 
   #utility function
-  new_gallery=(algname,nodeid)=>
-    new Gallery algname, nodeid
+  new_gallery=(algname,nodeid,text)=>
+    new Gallery algname, nodeid,text
   window.new_gallery=new_gallery
     
   # e is the thumb; replaces .gif with jpg --for the matching image-- and then displays
