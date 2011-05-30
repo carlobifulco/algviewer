@@ -125,13 +125,14 @@ $(document).ready ->
     constructor:(algname,nodeid, text)->
       @algname=algname
       @nodeid=nodeid
-      @text=text.split("\n")[0]
       #username is available as localStorage if in graphic edit mode
       if  window.location.pathname.split("/")[1]=="graphic_edit"
         @username=localStorage.user
+        @text=""
       #username available in URL when looking at a dinamic SVG
       else
         @username=window.location.pathname.split("/")[2] 
+        @text=text.split("\n")[0]
        
     
     #e is deferred form show

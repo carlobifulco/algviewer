@@ -58,7 +58,7 @@ $(document).ready =>
 			$.post("/graph",{"yaml_text":@yaml_text, type:"ajax","algname":@graph_name, username:@user_name},(e)=>@mono_urls=JSON.parse(e);@update_mono(@mono_urls))
 			$.post("/graph",{"colors_hash":@color_hash, "options":JSON.stringify({"circle":"1"}),"yaml_text":@yaml_text, type:"ajax","algname":@graph_name, username:@user_name},(e)=>@mono_urls=JSON.parse(e);@update_circle(@mono_urls))
 			#the last laso updates size of accordion
-			$.post("/graph",{"colors_hash":@color_hash, "options":JSON.stringify({"ellipse":"1"}),"yaml_text":@yaml_text, type:"ajax","algname":@graph_name, username:@usern_name},(e)=>@mono_urls=JSON.parse(e);@update_ellipse(@mono_urls); $("#accordion").accordion("resize"))
+			$.post("/graph",{"colors_hash":@color_hash, "options":JSON.stringify({"ellipse":"1"}),"yaml_text":@yaml_text, type:"ajax","algname":@graph_name, username:@user_name},(e)=>@mono_urls=JSON.parse(e);@update_ellipse(@mono_urls); $("#accordion").accordion("resize"))
 		get_graph:()=>
 			#when yaml and colors are taken care it will execute graph
 			$.when(@yaml(),@colors()).done(@graph)	

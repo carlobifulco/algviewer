@@ -1,1 +1,6 @@
-/Users/carlobifulco/Dropbox/etc/.gitignore
+*.html
+/public/views/*.js
+/doc/*.html
+/public/views/docs/*.html
+public/views/arbor (bimbiroom_imac's conflicted copy 2011-02-25).coffee
+public/views/arbor (bimbiroom_imac's conflicted copy 2011-02-25).coffee
