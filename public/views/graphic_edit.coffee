@@ -407,12 +407,36 @@ $(document).ready =>
 
   #Color wheeel 
   #------------
-  #applies color to selectio and stores values in local storage upon each change.
-  #these are the reimplemented on each reload of the alg
-  #the use of local storage makes this for now local browser specific 
-  colorme=(color)->
-    console.log(color.color.valueElement.value)
+  
+  #hide the colorpicker
   window.colorme=colorme
+  $("#colorwheel").hide()
+  
+  
+  #show the colorpicker --called by ctrl-c 
+  show_color=()->
+    $.facebox($("#colorwheel").show())
+
+  
+  # get the picked color upon change in the color picker
+  # Apply and store
+  colorme=(color)->
+    r= Math.round(color.color.rgb[0]*255)
+    g= Math.round(color.color.rgb[1]*255)
+    b= Math.round(color.color.rgb[2]*255)
+    console.log JSON.stringify([r,g,b])
+    result="rgb(#{r}, #{g}, #{b})"
+    console.log result
+    #apply
+    $(get_selected()).css("background",result)
+    #store
+    store_boxes_colors()
+    #? update graph
+    render_alg()
+  #binding to window onchange
+  window.colorme=colorme
+
+
   
   
   
@@ -431,7 +455,9 @@ $(document).ready =>
   
   
   #callback for AJAX redis colors
+  #color list contains ["rgb(252, 187, 0)", "rgb(192, 121, 241)",...
   paint_boxes=(colors_list)->
+    console.log colors_list
     #alert(colors_list)
     boxes=get_boxes()
     #zip index and col and then apply them to each box    
@@ -642,11 +668,7 @@ $(document).ready =>
   #   user_name=params[:user_name]
   user_name=localStorage.user
   z=$.get("/ajax_text_indent/#{alg_name}",{"user_name":user_name}).done((text_indent)->initial_layout(text_indent))
-  #$('#colorpicker').colorPicker({click:(color)->alert color})
-  #Activate selector  
-  #$.farbtastic("#colorpicker").setColor("#f896c2")
-  #$("#colorpicker").farbtastic(choose_color)
-  #$("#colorpicker").selectable()
+
   
 
     
@@ -668,7 +690,7 @@ $(document).ready =>
   $("#home").bind 'click', ()->window.location.pathname="/"
   $("#new_entry").bind 'click', initial_box
   $("#del_entry").bind 'click', del_entry
-  $("#text_edit").bind 'click', alg_text_edit
+  $("#edit_color").bind 'click', show_color
   $("#edit_entry").bind 'click', edit_text 
   $("#view").bind 'click', alg_view 
   $("button").button()
@@ -689,10 +711,12 @@ $(document).ready =>
   
   # text entry focus
   $("#text_entry").focus()
-  $("#text_entry").bind('keydown', 'ctrl+c', copy_boxes)
+  $("#text_entry").bind('keydown', 'ctrl+p', copy_boxes)
+  $("#text_entry").bind('keydown', 'ctrl+c', show_color)
   #Return
   $("#text_entry").bind('keydown', 'return', initial_box)
   $("#text_entry").bind('keydown', 'ctrl+x', del_entry)
+  $(document).bind('afterClose.facebox', ()=>$("#text_entry").focus())
   
   #.keydown((e)->initial_box(e) if e.keyCode==13 )
   

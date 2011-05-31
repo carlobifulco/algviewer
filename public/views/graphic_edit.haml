@@ -1,0 +1,78 @@
+
+
+%script{:type=>"application/x-javascript",:src=>"/md5.js"}
+/ %script{:type=>"application/x-javascript",:src=>"/farbtasic/farbtastic.js"}
+/ %link{:rel=>"stylesheet", :href=>"/farbtasic/farbtastic.css", :type=>"text/css"}
+%script{:type=>"application/x-javascript",:src=>"/views/pic_drop.js"}
+%script{:type=>"application/x-javascript",:src=>"/views/graphic_edit.js"}
+%link{:rel=>"stylesheet", :href=>"/facebox.css", :type=>"text/css"}
+%script{:type=>"application/x-javascript",:src=>"/facebox.js"}
+
+
+
+#colorwheel
+  %input{class:"color",onchange:"colorme(this)"}
+
+
+
+  / %img{:src=>"/images/filler.png"}
+
+%div.top_banner.span-15
+  %button#home
+    Home
+  %button#new_entry
+    New Box
+  %button#del_entry
+    Delete Box
+  %button#edit_entry
+    Edit Text
+  %button#edit_color
+    Edit color
+  %button#view
+    View Graph
+  #progressbar
+ 
+
+
+  
+
+
+
+
+
+
+  %form{:name=>"text_form"}
+    %input#text_entry{:type=>"textarea",:name=>"text_content", :size=>"70", :placeholder=>"Enter content of new box"} 
+  
+  #loadStatus
+
+%div.span-4.last
+
+/ This is were all the boxes will show up
+%div
+  %div.selectable#containment-wrapper.new_box
+
+/ the preview of the graph
+#inline_graph.inline_graph_edit.right
+#colorpicker
+
+
+ 
+
+ 
+
+
+
+
+
+
+
+
+
+
+
+-# {:id=>"containment-wrapper", :class=>["hide_edit","selectable"]}
+
+
+
+

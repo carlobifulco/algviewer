@@ -1,0 +1,50 @@
+%script{:type=>"application/x-javascript",:src=>"/views/login.js"}
+
+
+%h2
+  #bad_login
+
+%br
+%br
+
+#login.notice
+ 
+  %h5
+    Login
+  %form
+    %label{:for=>'username'}  
+      username:
+    %input#login_username{:type=>"text",:placeholder=>"username", :name=>"username",:size=>"20"}
+    %br
+    %label{:for=>'password'}  
+      password:
+    %input#login_password{:type=>"password",:placeholder=>"password", :name=>"password",:size=>"20"}
+    %br
+    %br
+    #login_button.button
+      SUBMIT
+    
+  
+  %br
+  %br
+
+#create_account.notice
+ 
+  %h5
+    Create Account
+  %form{:default=>"false"}
+    %label{:for=>'username'}  
+      username:
+    %input#account_username{:type=>"text",:placeholder=>"username", :name=>"username",:size=>"20"}
+    %br
+    %label{:for=>'password'}  
+      password:
+    %input#account_password{:type=>"password",:placeholder=>"password", :name=>"password",:size=>"20"}
+    %br
+    %br
+    #create_account_button.button
+      SUBMIT
+ 
+ 
+ 
+
