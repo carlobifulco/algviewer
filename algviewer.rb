@@ -264,6 +264,15 @@ get '/proc' do
   haml :proc
 end
 
+get '/test' do 
+  haml :test
+end
+
+get '/graphic_edit/images/:image' do
+  image=params[:image]
+  redirect "/images/#{image}"
+end
+
 # Graphic rendering of the boxes
 #-------------------------------
 # only initial layout

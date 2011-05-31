@@ -22,6 +22,19 @@ window.image_is_large=false
 #on load jquery
 $(document).ready =>
 
+
+#UTILITY FUNCTIONS
+#-----------------
+  get_alg_name=()->
+    alg_name=_.last(window.location.pathname.split("/"))  
+  window.get_alg_name=get_alg_name
+  
+  alg_text_edit=()->  
+    window.location.href="/edit_text/#{get_alg_name()}"
+
+  alg_view=()->
+    window.location.href="/view/#{get_alg_name()}"
+
 #GLOBALS
 #-------
   
@@ -81,6 +94,7 @@ $(document).ready =>
     # makes integers
     x=(($(window).width()/2)/grid).toFixed()*grid
     console.log x
+    pos=$("#colorpicker").offset()
     y=(y_start+((pos.top+150)/grid).toFixed()*grid)
     # sass initial_box
     new_box(x,y,text,window.counter,"initial_box")
@@ -89,7 +103,7 @@ $(document).ready =>
     $('.initial_box').effect('highlight', {}, 5000)
     #back to orange; also unbind
     $(".initial_box").bind( "dragstart",(e,ui) ->console.log(e); $(e.currentTarget).removeClass("initial_box").unbind("dragstart"))
-    window.counter+=1
+    
     
   copy_boxes=()->
   #xxx
@@ -105,6 +119,11 @@ $(document).ready =>
         new_box(x,y,i,window.counter,"initial_box")
         a+=grid
         console.log a
+    #blinking
+    $('.initial_box').effect('highlight', {}, 5000)
+    #back to orange; also unbind
+    $(".initial_box").bind( "dragstart",(e,ui) ->console.log(e); $(e.currentTarget).removeClass("initial_box").unbind("dragstart"))
+    
         
   window.copy_boxes=copy_boxes
  
@@ -384,56 +403,16 @@ $(document).ready =>
       im.css("top",window.image_top)
       window.image_is_large=false
       $("#text_entry").focus()
-      
-  
-
-
-
-    
-
-  #Bindings
-  #--------
-  
-  # funtions for key bindings
-  get_alg_name=()->
-    alg_name=_.last(window.location.pathname.split("/"))  
-
-  alg_text_edit=()->  
-    window.location.href="/edit_text/#{get_alg_name()}"
-
-  alg_view=()->
-    window.location.href="/view/#{get_alg_name()}"
-  
-
-  
-  
-  # Buttons
-  $("#home").bind 'click', ()->window.location.pathname="/"
-  $("#new_entry").bind 'click', initial_box
-  $("#del_entry").bind 'click', del_entry
-  $("#text_edit").bind 'click', alg_text_edit
-  $("#edit_entry").bind 'click', edit_text 
-  $("#view").bind 'click', alg_view 
-  $("button").button()
-  
-  #draggables selectables
-  $(".selectable").selectable({"selected":chosen})
-  $(".draggable").draggable()
-  
-  #all selectable stop linked to function
-  $(".selectable").selectable({stop:get_selected})  
-  
-  #error log
-  $('#error_log').ajaxError(()=>alert("ERROR IN YOUR GRAPH STRUCTURE. PLEASE FIX YOUR BOXES POSITION!!!"))
-  
-  
-  
+        
 
   #Color wheeel 
   #------------
   #applies color to selectio and stores values in local storage upon each change.
   #these are the reimplemented on each reload of the alg
   #the use of local storage makes this for now local browser specific 
+  colorme=(color)->
+    console.log(color.color.valueElement.value)
+  window.colorme=colorme
   
   
   
@@ -460,7 +439,7 @@ $(document).ready =>
     window.position_colors=position_colors
     ($(boxes[pos_col[0]]).css("background-color",pos_col[1]) for pos_col in position_colors)
     # this needs to be called AFTER the colors are painted otherwise fires to early before rendering
-    $.farbtastic("#colorpicker").setColor("#f896c2")
+    #$.farbtastic("#colorpicker").setColor("#f896c2")
     render_alg()
 
   # Get colors from boxes
@@ -522,7 +501,7 @@ $(document).ready =>
     #alert(color)
     $(get_selected()).css("background",color)
     store_boxes_colors()
-
+  window.choose_color=choose_color
 
   
   #Rendering of colored graphs
@@ -663,12 +642,46 @@ $(document).ready =>
   #   user_name=params[:user_name]
   user_name=localStorage.user
   z=$.get("/ajax_text_indent/#{alg_name}",{"user_name":user_name}).done((text_indent)->initial_layout(text_indent))
-  
+  #$('#colorpicker').colorPicker({click:(color)->alert color})
   #Activate selector  
   #$.farbtastic("#colorpicker").setColor("#f896c2")
-  $("#colorpicker").farbtastic(choose_color)
-  $("#colorpicker").draggable()
+  #$("#colorpicker").farbtastic(choose_color)
+  #$("#colorpicker").selectable()
   
+
+    
+  
+  
+  
+  #  Bindings
+  #--------
+  
+  # funtions for key bindings
+
+
+
+  
+
+  
+  
+  # Buttons
+  $("#home").bind 'click', ()->window.location.pathname="/"
+  $("#new_entry").bind 'click', initial_box
+  $("#del_entry").bind 'click', del_entry
+  $("#text_edit").bind 'click', alg_text_edit
+  $("#edit_entry").bind 'click', edit_text 
+  $("#view").bind 'click', alg_view 
+  $("button").button()
+  
+  #draggables selectables
+  $(".selectable").selectable({"selected":chosen})
+  $(".draggable").draggable()
+  
+  #all selectable stop linked to function
+  $(".selectable").selectable({stop:get_selected})  
+  
+  #error log
+  $(document).ajaxError(()=>alert("There is an error in your graph structure. Please fix your boxes position."))  
 
   
   #KEYS bindings
@@ -678,7 +691,10 @@ $(document).ready =>
   $("#text_entry").focus()
   $("#text_entry").bind('keydown', 'ctrl+c', copy_boxes)
   #Return
-  $("#text_entry").keydown((e)->initial_box(e) if e.keyCode==13 )
+  $("#text_entry").bind('keydown', 'return', initial_box)
+  $("#text_entry").bind('keydown', 'ctrl+x', del_entry)
+  
+  #.keydown((e)->initial_box(e) if e.keyCode==13 )
   
   
 
