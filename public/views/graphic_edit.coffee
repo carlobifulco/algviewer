@@ -591,6 +591,8 @@ $(document).ready =>
     #in pic_drop coffee file
     # add drop capability anytime there is a change in the graph
     add_drop()
+    #remove error message
+    $('#colorpicker').html('')
 
   save=(yaml_structure)->
     # post '/text/:form_name' do
@@ -703,7 +705,7 @@ $(document).ready =>
   $(".selectable").selectable({stop:get_selected})  
   
   #error log
-  $(document).ajaxError(()=>alert("There is an error in your graph structure. Please fix your boxes position."))  
+  $(document).ajaxError(()=>$("#colorpicker").html("<div class='error'><h6><p>There is an error in your graph structure.</p><p> Please fix your boxes positions.</p></h6></div>"))  
 
   
   #KEYS bindings
