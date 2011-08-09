@@ -59,198 +59,202 @@ $(document).ready =>
 #     r=$.post('/check_user',params,update,"json")
 #     window.r=r
 #     
-#  #Logout user
-#   logout=()->
-#     localStorage.user=false
-#     localStorage.password=false
-#     window.location.reload()
-#     
+
 
 #GUI
-#---		
+#---    
 
 
 ## MENU STAFF HERE show and hide
-	$("#view_view").click(()->$("#hide_view").toggle())
-	$("#hide_edit").hide()
-	$("#view_edit").click(()->$("#hide_edit").toggle())
-	$("#hide_delete").hide()
-	$("#view_delete").click(()->$("#hide_delete").toggle())
-	$("#hide_graphic_edit").hide()
-	$("#view_graphic_edit").click(()->$("#hide_graphic_edit").toggle())
-	
+  $("#view_view").click(()->$("#hide_view").toggle())
+  $("#hide_edit").hide()
+  $("#view_edit").click(()->$("#hide_edit").toggle())
+  $("#hide_delete").hide()
+  $("#view_delete").click(()->$("#hide_delete").toggle())
+  $("#hide_graphic_edit").hide()
+  $("#view_graphic_edit").click(()->$("#hide_graphic_edit").toggle())
+  
 
-		
-		
+    
+    
 
 
-	
+  
 ## Accordion
-	$( "#accordion" ).accordion({"autoHeight":true,})
-	# size small accordions entries
-	#_.each($(".small_acc"),(e)-> e.style.height="40px")
-	#_.each($(".int_acc"),(e)-> e.style.height="80px")
+  $( "#accordion" ).accordion({"autoHeight":true,})
+  # size small accordions entries
+  #_.each($(".small_acc"),(e)-> e.style.height="40px")
+  #_.each($(".int_acc"),(e)-> e.style.height="80px")
+  
+  
 
 ## Button
-	check_entry=(r)->
-		s="#entry#{r}"
-		v=$(s)[0].value
-		if v == ""
-			alert("no entry")
-			return false
-		else
-			return true
-	window.check_entry=check_entry
-	
-	check_autocomplete=(r)->
-		s="#autocomplete"
-		v=$(s)[0].value
-		if v == ""
-			alert("No entry; please enter a new name or select or select an existing graph")
-			return false
-		else
-			return v
-	window.check_entry=check_entry
-	
-	# checks text in the autocompletion field. if not opens mathcing accordion
-	# else is sends to mathing alg web page
-	no_entry_open_accordion=(n)->
-		entry=$("#autocomplete")[0].value 
-		if not entry
-			$("#accordion").accordion("activate",n) 
-			return false
-		else
-			entry
-		
-			
-	delete_dialog=(url,filename)->
-		$("#delete").dialog({buttons :[{text:"Confirm Delete #{filename}","click":()->window.location.href=url},{text:"Cancel","click":()->$("#delete").dialog("close")}]})
-		$("#delete").dialog("open")
-		
-		
-	# 	/ DIALOGS
-	# 
-	# login_dialog=()->
-	# 	$('#login').dialog()
-	# 	%div{:id=>"dialog-form", :title=>"Please enter username and password"}
-	# 	  %form{:action=>"/"}
-	# 	    %fieldset
-	# 	      %label{:for=>'user'}
-	# 	        User Id
-	# 	      %input{:type=>"text", :name=>"user", :id=>"user", :class=>"text ui-widget-content ui-corner-all"}
-	# 	      %label{:for=>'password'}
-	# 	        Password
-	# 	        %input{:type=>"text", :name=>"password", :id=>"password", :class=>"text ui-widget-content ui-corner-all"}
-	# 	    %button#create-user
-	# 	      Check Authorization
-		
-		
-	## sets dialog buttons and action
-	confirm_link=(e)=>
-		window.e=e
-		e.preventDefault()
-		target_url=e.srcElement.href
-		$("#delete").dialog({buttons :[{text:"Confirm","click":()->window.location.href=target_url},{text:"Cancel","click":()->$("#delete").dialog("close")}]})
-		$("#delete").dialog("open")
+  check_entry=(r)->
+    s="#entry#{r}"
+    v=$(s)[0].value
+    if v == ""
+      alert("no entry")
+      return false
+    else
+      return true
+  window.check_entry=check_entry
+  
+  #Logout user
+  logout=()->
+    localStorage.user=false
+    localStorage.password=false
+    window.location.reload()
+  
+  
+  check_autocomplete=(r)->
+    s="#autocomplete"
+    v=$(s)[0].value
+    if v == ""
+      alert("No entry; please enter a new name or select or select an existing graph")
+      return false
+    else
+      return v
+  window.check_entry=check_entry
+  
+  # checks text in the autocompletion field. if not opens mathcing accordion
+  # else is sends to mathing alg web page
+  no_entry_open_accordion=(n)->
+    entry=$("#autocomplete")[0].value 
+    if not entry
+      $("#accordion").accordion("activate",n) 
+      return false
+    else
+      entry
+    
+      
+  delete_dialog=(url,filename)->
+    $("#delete").dialog({buttons :[{text:"Confirm Delete #{filename}","click":()->window.location.href=url},{text:"Cancel","click":()->$("#delete").dialog("close")}]})
+    $("#delete").dialog("open")
+    
+    
+  #   / DIALOGS
+  # 
+  # login_dialog=()->
+  #   $('#login').dialog()
+  #   %div{:id=>"dialog-form", :title=>"Please enter username and password"}
+  #     %form{:action=>"/"}
+  #       %fieldset
+  #         %label{:for=>'user'}
+  #           User Id
+  #         %input{:type=>"text", :name=>"user", :id=>"user", :class=>"text ui-widget-content ui-corner-all"}
+  #         %label{:for=>'password'}
+  #           Password
+  #           %input{:type=>"text", :name=>"password", :id=>"password", :class=>"text ui-widget-content ui-corner-all"}
+  #       %button#create-user
+  #         Check Authorization
+    
+    
+  ## sets dialog buttons and action
+  confirm_link=(e)=>
+    window.e=e
+    e.preventDefault()
+    target_url=e.srcElement.href
+    $("#delete").dialog({buttons :[{text:"Confirm","click":()->window.location.href=target_url},{text:"Cancel","click":()->$("#delete").dialog("close")}]})
+    $("#delete").dialog("open")
 
-	
-	#GUI bindings
-	#-------------		text_edit_button
-	$("#text_edit_button").click((e)->window.location.href="/edit_text/#{$("#entry1")[0].value}" if check_entry(1))
-	$("#graph_edit_button").click((e)->window.location.href="/graphic_edit/#{$("#entry2")[0].value}" if check_entry(2))
-	$("#text_edit_button2").click((e)->entry=no_entry_open_accordion(2); window.location.href="/edit_text/#{entry}" if entry)
-	$("#graph_edit_button2").click((e)->entry=no_entry_open_accordion(3); window.location.href="/graphic_edit/#{entry}" if entry)
-	$("#delete_button2").click((e)->entry=no_entry_open_accordion(4); delete_dialog("/delete/#{entry}",entry)  if entry)
-	$("#view_button_2").click((e)->entry=no_entry_open_accordion(1); window.location.href="/view/#{entry}" if entry)
-	$("#logout").click(logout)
-		
+  
+  #GUI bindings
+  #-------------    text_edit_button
+  $("#text_edit_button").click((e)->window.location.href="/edit_text/#{$("#entry1")[0].value}" if check_entry(1))
+  $("#graph_edit_button").click((e)->window.location.href="/graphic_edit/#{$("#entry2")[0].value}" if check_entry(2))
+  $("#text_edit_button2").click((e)->entry=no_entry_open_accordion(2); window.location.href="/edit_text/#{entry}" if entry)
+  $("#graph_edit_button2").click((e)->entry=no_entry_open_accordion(3); window.location.href="/graphic_edit/#{entry}" if entry)
+  $("#delete_button2").click((e)->entry=no_entry_open_accordion(4); delete_dialog("/delete/#{entry}",entry)  if entry)
+  $("#view_button_2").click((e)->entry=no_entry_open_accordion(1); window.location.href="/view/#{entry}" if entry)
+  $("#logout").click(logout)
+    
 
-	$("#button").button()
-	$("#button2").button()
-	$(".button").button()
+  $("#button").button()
+  $("#button2").button()
+  $(".button").button()
 
-	$("#all_algs_names").hide()
-	window.alg_names=eval($("#all_algs_names").text())
-	$( "#autocomplete" ).autocomplete({"source": window.alg_names})
-	
-	
-	
-	
-	
-	# RUN the Auth stuff
-	#--------------------
-	# who_are_you()
-	
-	#Template main page
-	#-------------------
-	
-	#fix delete to specific user; works on the generated templates
-	fix_link=(link)->
-		console.log(link)
-		old_link=$(link).attr("href")
-		new_link=old_link+"?user=#{localStorage.user}"
-		new_link=encodeURI(new_link)
-		$(link).attr("href",new_link)
-	
-	#fix delete likns to include user
-	del_update=()->	
-		#console.log("GETTING CALLED")
-		#console.log($(".delete_links"))
-		_.each($(".delete_links"),(link)->fix_link(link))
-	
+  $("#all_algs_names").hide()
+  window.alg_names=eval($("#all_algs_names").text())
+  $( "#autocomplete" ).autocomplete({"source": window.alg_names})
+  
+  
+  
+  
+  
+  # RUN the Auth stuff
+  #--------------------
+  # who_are_you()
+  
+  #Template main page
+  #-------------------
+  
+  #fix delete to specific user; works on the generated templates
+  fix_link=(link)->
+    console.log(link)
+    old_link=$(link).attr("href")
+    new_link=old_link+"?user=#{localStorage.user}"
+    new_link=encodeURI(new_link)
+    $(link).attr("href",new_link)
+  
+  #fix delete likns to include user
+  del_update=()-> 
+    #console.log("GETTING CALLED")
+    #console.log($(".delete_links"))
+    _.each($(".delete_links"),(link)->fix_link(link))
+  
 
-		
-	# generate templates
-	
-	
-	template_alg_names=(graph_names_list)->
-		markdown_list=[]
-		_.each(graph_names_list,(graph_name)->markdown_list.push({"graph_name":graph_name,"user_name":localStorage.user}))
-		#global graph list
-		window.graph_list=graph_names_list
-		return markdown_list
-	  
-	insert_template=(template)->
-	  $("#text_edit").append($("#edit_text_template").tmpl(template))
-	  $("#view").append($("#view_template").tmpl(template))
-	  $("#graphic_edit").append($("#graphic_edit_template").tmpl(template))
-	  $("#delete").append($("#delete_template").tmpl(template))
-	  $("#arbor").append($("#arbor_template").tmpl(template))
-	
-	
-	#get graph names
-	$.get("/alg_names/#{localStorage.user}",(r)->window.alg_names=r; insert_template(template_alg_names(JSON.parse(r))); del_update(); 	$( "#accordion" ).accordion("resize"))
-	
-	#fix export to specific user
-	$("#button2").attr("href","/export_all/#{localStorage.getItem("user")}")
-	
+    
+  # generate templates
+  
+  
+  template_alg_names=(graph_names_list)->
+    markdown_list=[]
+    _.each(graph_names_list,(graph_name)->markdown_list.push({"graph_name":graph_name,"user_name":localStorage.user}))
+    #global graph list
+    window.graph_list=graph_names_list
+    return markdown_list
+    
+  insert_template=(template)->
+    $("#text_edit").append($("#edit_text_template").tmpl(template))
+    $("#view").append($("#view_template").tmpl(template))
+    $("#graphic_edit").append($("#graphic_edit_template").tmpl(template))
+    $("#delete").append($("#delete_template").tmpl(template))
+    $("#arbor").append($("#arbor_template").tmpl(template))
+  
+  
+  #get graph names
+  $.get("/alg_names/#{localStorage.user}",(r)->window.alg_names=r; insert_template(template_alg_names(JSON.parse(r))); del_update();  $( "#accordion" ).accordion("resize"))
+  
+  #fix export to specific user
+  $("#button2").attr("href","/export_all/#{localStorage.getItem("user")}")
+  
 
-	
-	
-	#BINDINGS
-	window.template_alg_names=template_alg_names
-	window.insert_template=insert_template
-	window.fix_link=fix_link
-	window.del_update=del_update
-	
-	
-	
-	
-	## Delete confirm alert
-	$(".confirmLink").bind("click",(e)=>confirm_link(e))
-	
-	# %a{:href=>"/view/#{x}"}=x
-	# %a{:href=>"/edit_text/#{x}"}=x
-	# %a{:href=>"/graphic_edit/#{x}"}=x
-	
-	
-	
-	
-		
+  
+  
+  #BINDINGS
+  window.template_alg_names=template_alg_names
+  window.insert_template=insert_template
+  window.fix_link=fix_link
+  window.del_update=del_update
+  
+  
+  
+  
+  ## Delete confirm alert
+  $(".confirmLink").bind("click",(e)=>confirm_link(e))
+  
+  # %a{:href=>"/view/#{x}"}=x
+  # %a{:href=>"/edit_text/#{x}"}=x
+  # %a{:href=>"/graphic_edit/#{x}"}=x
+  
+  
+  
+  
+    
 
 
-	
-	
+  
+  
 
 
 

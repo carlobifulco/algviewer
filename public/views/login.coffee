@@ -53,3 +53,4 @@ $(document).ready =>
 	$("#login_button").click(check_login)
 	$("#create_account_button").click(new_account)
 	
+

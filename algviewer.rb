@@ -150,20 +150,22 @@ get '/sass' do
 end
 
 
-# exports all docs as a big Yaml text file
+# exports all docs as JSON 
 get '/export_all/:user' do
-  content_type 'text/yaml', :charset => 'utf-8'
+  content_type :json
+  #content_type 'text/yaml', :charset => 'utf-8'
   user=params["user"]
-  yaml_doc=[]
+  #yaml_doc=[]
+  algs={}
   r= Redis::Namespace.new(user, :redis =>$Redis4) 
   all_alg_names=clean_reserved_keys r
   all_alg_names.each do |x|
-    puts x
-    yaml_doc<< (r.get x)
-    yaml_doc<<"---"
+    algs[x]=r.get x
   end
-  yaml_doc.join "\n"
+  return algs.to_json
 end
+
+
 
 
 
