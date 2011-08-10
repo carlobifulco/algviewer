@@ -14,13 +14,15 @@ require "yaml"
 require "rack"
 require "haml"
 require "redis-namespace"
+
+
 # in lib
 require "tree_struct"
 require "dot_generator"
 require 'pic_drop'
 require 'digest/md5'
 
-# in home dir
+
 
 
 
@@ -32,7 +34,9 @@ class Fixnum
   end
 end
 
-
+#start coffee watch of public views
+pid=spawn "coffee -wc ./public/views"
+puts "coffee watch on #{pid}"
 
 
 #SERVER and REDIS SETUP
