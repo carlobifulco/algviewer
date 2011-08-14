@@ -279,6 +279,23 @@ get '/graphic_edit/images/:image' do
   redirect "/images/#{image}"
 end
 
+# load testing 
+#requires an alg called test with user tester to work
+#verifies time to generate pdf under siege
+#example siege -c100 localhost:7010/load_test  -t10s
+get '/load_test' do
+  puts "load_test"
+  graph_name="/yaml/load_test"
+  yaml=get_yaml "tester", "test"
+  puts yaml
+  nodes_edges=NodesEdges.new yaml
+  puts nodes_edges
+  graph=Graph.new
+  graph.add_nodes(nodes_edges.get_nodes(),false,false)
+  graph.add_edges(nodes_edges.get_edges())
+  graph.get_pdf()
+end
+
 # Graphic rendering of the boxes
 #-------------------------------
 # only initial layout
