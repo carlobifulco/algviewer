@@ -135,11 +135,15 @@ end
 def make_jpg filename
   ext=File.extname filename
   new_filename=filename.gsub(ext,".jpg")
-  command="convert -scale  1000x800  #{filename} #{new_filename}"
+  if filename==new_filename
+    command="convert -scale  1000x800  #{filename} #{new_filename} && rm #{filename}"
+  else 
+    command="convert -scale  1000x800  #{filename} #{new_filename}"
+  end
   puts command
   #needed to use system because spawn rm was faster then the convert...
-  system(command)
-  spawn("rm #{filename}") unless filename==new_filename
+  spawn(command)
+  #spawn("rm #{filename}") unless filename==new_filename
 end
 
 

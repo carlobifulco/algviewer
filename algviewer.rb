@@ -23,6 +23,17 @@ require 'pic_drop'
 require 'digest/md5'
 
 
+# Profiling tools
+#-----------------
+
+#require 'perftools'
+#require 'rack/perftools_profiler'
+
+# configure do
+#   use ::Rack::PerftoolsProfiler, :default_printer => 'gif'
+# end
+
+
 
 
 
@@ -35,8 +46,8 @@ class Fixnum
 end
 
 #start coffee watch of public views
-pid=spawn "coffee -wc ./public/views"
-puts "coffee watch on #{pid}"
+#pid=spawn "coffee -wc ./public/views"
+#puts "coffee watch on #{pid}"
 
 
 #SERVER and REDIS SETUP
@@ -83,7 +94,7 @@ enable :sessions
 #the graphs are generated as temporary items and served from redis default 0; see also dot_generator
 
 # AWS Redis and Svg generator server home
-$Redis4=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379,:host=>$HOST)
+$Redis4=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379,:host=>"localhost")
 #where the text forms reside
 TextDb=4 
 $Redis4.select TextDb
@@ -431,7 +442,7 @@ def get_yaml  user_name,form_name
    end
 end
 
-
+# http://algviewer.dev/yaml/test?user_name=tester
 get '/yaml/:form_name' do
   content_type :json
   form_name=params[:form_name]
@@ -583,7 +594,7 @@ get '/graph' do
 end
 
 # get all URLS of rendered graphs; needs colors_hash and yaml_text as params
-#post probably because ngnix issues with large get request...
+#needed to duplicate this with a post probably because ngnix has issues with large get request...
 post '/graph' do
   #	$.post("/graph",{"colors_hash":window.colors_hash,"yaml_text":window.yaml_text, type:"ajax"},(graph_urls)->alert(graph_urls))
   colors_hash=JSON.parse(params["colors_hash"]) if params["colors_hash"]

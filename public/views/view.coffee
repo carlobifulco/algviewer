@@ -37,8 +37,8 @@ $(document).ready =>
 	# Deffered(), resolve, promise
 	#get_graph_urls starts list of RESTful calls  --colors, yaml and graph
 	class GraphUrls
-		constructor:(graph_name)->
-			@user_name=localStorage.user
+		constructor:(user_name,graph_name)->
+			@user_name=user_name
 			@graph_name=graph_name
 		colors:()=>
 			dfd = $.Deferred()
@@ -89,7 +89,7 @@ $(document).ready =>
 
 	
 	window.GraphUrls=GraphUrls
-	g=new GraphUrls(alg_name)
+	g=new GraphUrls(localStorage.user,alg_name)
 	g.get_graph()
 
 

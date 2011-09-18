@@ -21,7 +21,7 @@ if $0 == __FILE__
   #HAML if running solo
   set :haml, {:format => :html5 }
 else
-  $redis_svg=Redis.new(:host =>$HOST, :password=>"redisreallysucks",:thread_safe=>true,:port=>6379) 
+  $redis_svg=Redis.new(:host =>"localhost", :password=>"redisreallysucks",:thread_safe=>true,:port=>6379) 
 end
 
 
@@ -64,6 +64,7 @@ module JavaScript
     return '
     <script src="/jquery_min_1.5.js" type="application/x-javascript"></script>
     <script src="/underscore-min.js" type="application/x-javascript"></script>
+    <script src="/d3_min.js" type="application/x-javascript"></script>
     <script src="/mustache.js" type="application/x-javascript"></script>
     <link href="/facebox.css" media="screen" rel="stylesheet" type="text/css"/>
     <script src="/facebox.js" type="text/javascript"></script>
@@ -121,11 +122,7 @@ class Graph
     
     # one redis per instance
     #local host if running on ec2; otherwise connect to ec2
-    if $0 == __FILE__
-      @redis=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379) 
-    else
-      @redis=Redis.new(:host =>$HOST, :password=>"redisreallysucks",:thread_safe=>true,:port=>6379) 
-    end
+   @redis=Redis.new(:host =>"localhost", :password=>"redisreallysucks",:thread_safe=>true,:port=>6379) 
   end
 
   # options setting; called below by add_nodes

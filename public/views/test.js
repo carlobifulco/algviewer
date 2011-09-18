@@ -1,18 +1,22 @@
 (function() {
   var __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
   $(document).ready(__bind(function() {
-    var colorme;
-    colorme = function(color) {
-      var b, g, r, result;
-      console.log(color.color);
-      r = Math.round(color.color.rgb[0] * 255);
-      g = Math.round(color.color.rgb[1] * 255);
-      b = Math.round(color.color.rgb[2] * 255);
-      console.log(JSON.stringify([r, g, b]));
-      result = "rgb(" + r + ", " + g + ", " + b + ")";
-      console.log(result);
-      return color;
-    };
-    return window.colorme = colorme;
+    return $.get("/yaml/test?user_name=tester", __bind(function(e) {
+      var o;
+      console.log(e);
+      o = {
+        yaml_text: JSON.stringify(e),
+        type: "json",
+        algname: "test",
+        user_name: "tester"
+      };
+      return $.post("/graph", o, __bind(function(r) {
+        r = JSON.parse(r);
+        console.log(r);
+        console.log(r.svg);
+        console.log(typeof r);
+        return $("#svg").append("<a href=" + r.svg + "> SVG</a>");
+      }, this));
+    }, this));
   }, this));
 }).call(this);
