@@ -17,11 +17,11 @@ require "pathname"
 #-----------------------
 #local host if running solo; otherwise connect to ec2
 if $0 == __FILE__
-  $redis_svg=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379) 
+  $redis_svg=Redis.new(:thread_safe=>true,:port=>6379)
   #HAML if running solo
   set :haml, {:format => :html5 }
 else
-  $redis_svg=Redis.new(:host =>"localhost", :password=>"redisreallysucks",:thread_safe=>true,:port=>6379) 
+  $redis_svg=Redis.new(:host =>"localhost", :thread_safe=>true,:port=>6379)
 end
 
 
@@ -39,8 +39,8 @@ def para text
   a.each do |x|
       f << x
       if (f.join(" ").split "\n")[-1].length/7 > 1
-      
-      
+
+
         f<< "\n"
       elsif x.index "*"
         f<< "\n"
@@ -53,32 +53,33 @@ end
 # Manipulation of SVG output
 #---------------------------
 #now able to properly manipulate SVG dom from chrome
-
-
 module JavaScript
+
+  def script_source
+    "
+    <script  type='application/x-javascript'>#{File.read './public/jquery_min_1.5.js'}</script>
+    <script type='application/x-javascript'>#{File.read './public/underscore-min.js'}</script>
+    <script  type='application/x-javascript'>#{File.read './public/d3_min.js'}</script>
+    <script  type='application/x-javascript'>#{File.read './public/mustache.js'}</script>
+    <script  type='application/x-javascript'>#{File.read './public/facebox.js'}</script>
+    <script  type='application/x-javascript'>#{File.read './public/views/pic_drop.js'}</script>
+    <script  type='application/x-javascript'>#{File.read './public/views/svg_graph.js'}</script>
+    <style type='text/css'>#{File.read './public/facebox.css'}</style>
+    <style type='text/css'>#{File.read './public/css/svg.css'}</style>
+
+
+    "
+  end
   # this is bound to node.set_attribute "onclick", "test(this)" in the svg generation
   #is attached at the bottom of the SVG file
   def get_javascript
     #loads jquery and svg_graph.js
     #SVG graph is where the logic for the SVG visualization relies
-    return '
-    <script src="/jquery_min_1.5.js" type="application/x-javascript"></script>
-    <script src="/underscore-min.js" type="application/x-javascript"></script>
-    <script src="/d3_min.js" type="application/x-javascript"></script>
-    <script src="/mustache.js" type="application/x-javascript"></script>
-    <link href="/facebox.css" media="screen" rel="stylesheet" type="text/css"/>
-    <script src="/facebox.js" type="text/javascript"></script>
-    <link  href="/sass"  rel="stylesheet" type="text/css" media="screen"/>
-    <script type="text/javascript" charset="utf-8">
-    url="/views/pic_drop.js";
-    $.getScript(url, function () {console.log("pic_drop loaded")});
-    url="/views/svg_graph.js";
-    $.getScript(url, function () {console.log("svg_graph loaded")});
-
-    </script>
-    '
+    return "
+    #{script_source()}
+    "
   end
-  
+
   def clean_svg doc #hrpicot doc tree
     d= doc.at("svg")
     d.remove_attribute "xmlns"
@@ -95,7 +96,7 @@ end
 #---------------------------------
 
 class Graph
-  
+
   include JavaScript
   def initialize(algname=false,username=false)
     puts "I am getting #{username}" if username
@@ -111,7 +112,7 @@ class Graph
     @g.node[:fillcolor]= "#ffeecc"
     @g.node[:fontcolor]= "#775500"
     @g.node[:margin]   = "0.15"
-    
+
     # @g.edge[:color]    = "#999999"
     # @g.edge[:weight]   = "1"
     # @g.edge[:fontsize] = "6"
@@ -119,10 +120,10 @@ class Graph
     # @g.edge[:fontname] = "Verdana"
     # @g.edge[:dir]      = "forward"
     # @g.edge[:arrowsize]= "0.5"
-    
+
     # one redis per instance
     #local host if running on ec2; otherwise connect to ec2
-   @redis=Redis.new(:host =>"localhost", :password=>"redisreallysucks",:thread_safe=>true,:port=>6379) 
+   @redis=Redis.new(:host =>"localhost",:thread_safe=>true,:port=>6379)
   end
 
   # options setting; called below by add_nodes
@@ -132,16 +133,16 @@ class Graph
     @g.node[:style]= "filled, rounded"
     @g.node[:margin]   = "0"
   end
-  
+
   def ellipse
     @g.node[:shape]="ellipse"
     @g.node[:style]= "filled, rounded"
     @g.node[:margin]   = "0"
   end
 
-  # add node an if also provided with a color hash sets color[node]  
+  # add node an if also provided with a color hash sets color[node]
   def add_nodes(nodes,colors=false,options=false)
-    if 
+    if
       # options take care of here
       options and options.has_key? "circle" and options["circle"] then circle()
     elsif
@@ -158,24 +159,24 @@ class Graph
       end
     end
   end
-  
+
   def add_edges(edges_lists)
     edges_lists.each do |edge_list|
       edge_list.each do |edge|
-        add_edge(edge)  
+        add_edge(edge)
       end
-    end  
+    end
   end
-  
+
   def print_edges(edges_lists)
     puts edges_lists
       edges_lists.each do |edge_list|
         edge_list.each do |edge|
-          puts "1 #{edge[0]} 2#{edge[1]}"  
+          puts "1 #{edge[0]} 2#{edge[1]}"
         end
-      end  
+      end
     end
-  
+
   def add_node_color(node,color)
     begin
     new_node=@g.add_node(node)
@@ -188,7 +189,7 @@ class Graph
    "failed"
     end
   end
-  
+
   def add_node(node)
     begin
     new_node=@g.add_node(node)
@@ -200,44 +201,44 @@ class Graph
    "failed"
     end
   end
-  
+
   def add_edge(edge_tuple)
-   
+
     puts "trying to added edge #{edge_tuple[0]} to #{edge_tuple[1]}"
     @g.add_edge(edge_tuple[0],edge_tuple[1])
     puts "edge added #{edge_tuple[0]} to #{edge_tuple[1]}"
-    
+
   end
-  
+
   def test_image
    @g.output(:svg=>"test.svg")
   end
-  
-  
-  def get_dot 
+
+
+  def get_dot
     dot_doc=@g.output(:dot=>String)
 	  @dot_md5=Digest::MD5.hexdigest(dot_doc)
 	  @redis.set @dot_md5, dot_doc
     @redis.expire @dot_md5, 3000
     "/graph_dot/#{@dot_md5}"
   end
-  
-  def get_pdf 
+
+  def get_pdf
     pdf_doc=@g.output(:pdf=>String)
 	  @pdf_md5=Digest::MD5.hexdigest(pdf_doc)
 	  @redis.set @pdf_md5, pdf_doc
     @redis.expire @pdf_md5, 3000
     "/graph_pdf/#{@pdf_md5}"
   end
-  
-  def get_png 
+
+  def get_png
     doc=@g.output(:png=>String)
 	  @png_md5=Digest::MD5.hexdigest(doc)
 	  @redis.set @png_md5, doc
     @redis.expire @png_md5, 3000
     "/graph_png/#{@png_md5}"
   end
-  
+
   def get_svg
     svg_doc=@g.output(:svg=>String)
     # inserts jscript onclick calls
@@ -252,6 +253,7 @@ class Graph
         puts "text=#{text}; md5=#{m5}"
         node.set_attribute "id",m5
         node.set_attribute "algname",@algname
+        node.set_attribute "user",@username if @username
         #add binding for on click
         #node.set_attribute "onclick", "show_thumbs(this)"
       end

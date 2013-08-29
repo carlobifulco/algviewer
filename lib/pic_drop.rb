@@ -1,6 +1,6 @@
 #AMAZON URL
 # Change if needed
-$EC2="184.73.233.199" 
+$EC2="184.73.233.199"
 
 #REDIS DATABASE Number
 #change if needed
@@ -38,7 +38,7 @@ enable :sessions
 # redis server
 
 
-# location of svg REST service and REDIS. localhost if test 
+# location of svg REST service and REDIS. localhost if test
 # command line ruby main.rb test
 
 if $0 == __FILE__
@@ -58,16 +58,17 @@ $user_name_name_space="pic_drop_name_space"
 
 #storage directory
 IMAGE_CONTAINER="./public/image_container"
+Dir.mkdir "./public" unless Dir.exists? "./public"
 Dir.mkdir IMAGE_CONTAINER unless Dir.exists? IMAGE_CONTAINER
 
 
 #Redis connection
-$REDIS=Redis.new(:password=>$RED_PASSWORD,:thread_safe=>true,:port=>6379,:host=>$HOST)
+$REDIS=Redis.new(:thread_safe=>true,:port=>6379,:host=>$HOST)
 $REDIS.select 10
 
 # to create named instances
 def redis_name_spaced name_space
-  Redis::Namespace.new(name_space, :redis =>$REDIS) 
+  Redis::Namespace.new(name_space, :redis =>$REDIS)
 end
 
 
@@ -77,8 +78,8 @@ def check_redis
   begin
     r.set("test",232323)
     r.del("test")
-  rescue Exception => e  
-    puts e.message  
+  rescue Exception => e
+    puts e.message
     puts e.backtrace.inspect
     puts "REDIS NOT FOUND or UNABLE to CONNECT to IT"
     puts "stopping now"
@@ -113,7 +114,7 @@ def unique_file_name username,algname,nodeid,old_filename
   new_file_name=username+"_"+algname+"_"+nodeid+old_filename
   File.join(nodedir, new_file_name)
 end
-  
+
 
 
 
@@ -137,7 +138,7 @@ def make_jpg filename
   new_filename=filename.gsub(ext,".jpg")
   if filename==new_filename
     command="convert -scale  1000x800  #{filename} #{new_filename} && rm #{filename}"
-  else 
+  else
     command="convert -scale  1000x800  #{filename} #{new_filename}"
   end
   puts command
@@ -168,13 +169,13 @@ post '/upload/:username/:algname/:nodeid' do
   old_filename=request.env["HTTP_UP_FILENAME"].gsub(" ","_")
   pp request.env
   #get filename and creates appropriate directories
-  filename=unique_file_name(username,algname,nodeid,old_filename) 
-  #writes file 
+  filename=unique_file_name(username,algname,nodeid,old_filename)
+  #writes file
   write_file filename, fileIO
   #make a thumb and convert to jpg
   make_thumb filename
   make_jpg filename
-  r= Redis::Namespace.new(username, :redis =>$REDIS) 
+  r= Redis::Namespace.new(username, :redis =>$REDIS)
   #one node in an alg can have many images
   file_key=username+"_"+algname+"_"+nodeid
   # one node/set of files
@@ -187,7 +188,7 @@ end
 
 # returns images from a directoru
 def images_from_dir dirname
-  query="#{dirname}/**/*"  
+  query="#{dirname}/**/*"
   r=Dir.glob query
   # removes directories and thumbnails ".gif"
   r.select! {|e| not (File.directory?(e) or File.extname(e)==".gif")}
@@ -201,7 +202,7 @@ end
 
 # returns thumbs from directoru
 def thumbs_from_dir dirname
-  query="#{dirname}/**/*"  
+  query="#{dirname}/**/*"
   r=Dir.glob query
   # removes directories and thumbnails ".gif"
   r.select! {|e| File.extname(e)==".gif"}
@@ -254,7 +255,7 @@ get '/nodes_with_images/:username/:algname' do
   algname=params['algname']
   basepath=File.join(IMAGE_CONTAINER,username)
   algdir=File.join(basepath,algname)
-  query="#{algdir}/*"  
+  query="#{algdir}/*"
   r=Dir.glob query
   # keep only directories"
   r.select! {|e| File.directory?(e)}
@@ -294,11 +295,11 @@ get '/galleria/:algname' do
 end
 
 
-# 
+#
 # #get all images for a username
 # def get_images(username)
 #   images_names=[]
-#   r= Redis::Namespace.new(username, :redis =>$REDIS) 
+#   r= Redis::Namespace.new(username, :redis =>$REDIS)
 #   #>> r.keys
 #   #=> ["tester_algname_68", "tester_algname_19"]
 #   r.keys.each do |k|
@@ -308,8 +309,8 @@ end
 #   end
 #   images_names.flatten!
 # end
-# 
-# 
+#
+#
 # #userspace the ket setmembers for each key
 # get '/show_all_images/:username' do
 #   username=params["username"]
@@ -323,20 +324,20 @@ end
 #   username=params["username"]
 #   algname=params['algname']
 #   nodeid=params['nodeid']
-#   r= Redis::Namespace.new(username, :redis =>$REDIS) 
+#   r= Redis::Namespace.new(username, :redis =>$REDIS)
 #   file_key=make_node_name username, algname,nodeid
 #   @images_names=r.sget file_key
 #   haml :galleria
 # end
-# 
-# 
-# 
+#
+#
+#
 # #show galleria for a specific node
 # get "/galleria/:username/:algname/:nodeid" do
 #   username=params["username"]
 #   algname=params['algname']
 #   nodeid=params['nodeid']
-#   r= Redis::Namespace.new(username, :redis =>$REDIS) 
+#   r= Redis::Namespace.new(username, :redis =>$REDIS)
 #   file_key=make_node_name username, algname,nodeid
 #   @images_names=r.sget file_key
 #   haml :galleria
@@ -345,7 +346,7 @@ end
 
 # get '/all_images/:username' do
 #   username=params["username"]
-#   r= Redis::Namespace.new(username, :redis =>$REDIS) 
+#   r= Redis::Namespace.new(username, :redis =>$REDIS)
 #   r.keys.to_json
 # end
 
@@ -357,8 +358,8 @@ end
 #     #need to skip the username login info....
 #     begin
 #       all << ($REDIS.smembers k)
-#     rescue  Exception => e  
-#       puts e.message  
+#     rescue  Exception => e
+#       puts e.message
 #       puts e.backtrace.inspect
 #     end
 #   end

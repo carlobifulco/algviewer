@@ -10,3 +10,6 @@ gem "hpricot"
 gem "sass"
 gem "rinruby"
 gem "i18n"
+gem "haml"
+
+

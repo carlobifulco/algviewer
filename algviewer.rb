@@ -55,15 +55,15 @@ end
 # redis server
 puts "ALGVIEWER CBB INC."
 puts ARGV
-puts "SETTINGS port #{settings.port}" 
+puts "SETTINGS port #{settings.port}"
 
-# location of svg REST service and REDIS. localhost if test 
+# location of svg REST service and REDIS. localhost if test
 if ARGV.length !=0 and  ARGV[0]=="test"
   # choosing local server if test parameter, otherwise go to ec2
   $HOST="0.0.0.0"
   puts "sinatra  running locally at  at http://#{$HOST}:#{settings.port}; redis also on same #{$HOST}"
 else
-  $HOST="184.73.233.199" 
+  $HOST="184.73.233.199"
   puts "running at EC2 at http://#{$HOST}:#{settings.port}; redis also on same #{$HOST}"
 end
 
@@ -94,17 +94,19 @@ enable :sessions
 #the graphs are generated as temporary items and served from redis default 0; see also dot_generator
 
 # AWS Redis and Svg generator server home
-$Redis4=Redis.new(:password=>"redisreallysucks",:thread_safe=>true,:port=>6379,:host=>"localhost")
+$Redis4=Redis.new(:thread_safe=>true,:port=>6379,:host=>"localhost")
 #where the text forms reside
-TextDb=4 
+TextDb=4
 $Redis4.select TextDb
 $r=false
 
 
 # to create named instances
 def redis_name_spaced name_space
-  Redis::Namespace.new(name_space, :redis =>$Redis4) 
+  Redis::Namespace.new(name_space, :redis =>$Redis4)
 end
+
+
 
 
 #checking if redis is setup
@@ -113,8 +115,8 @@ def check_redis
   begin
     r.set("test",232323)
     r.del("test")
-  rescue Exception => e  
-    puts e.message  
+  rescue Exception => e
+    puts e.message
     puts e.backtrace.inspect
     puts "REDIS NOT FOUND or UNABLE to CONNECT to IT"
     puts "stopping now"
@@ -133,7 +135,7 @@ def set_default_users
     "tester"=>"tester",
     "master"=>"master"
   }
-  r= Redis::Namespace.new($user_name_name_space, :redis =>$Redis4) 
+  r= Redis::Namespace.new($user_name_name_space, :redis =>$Redis4)
   users_pass.keys.each do |id|
     r.set id,users_pass[id] if not r.get id
   end
@@ -151,7 +153,7 @@ set_default_users()
 get "/delete/:form_name" do
   @form_name=params[:form_name]
   user=params[:user]
-  r= Redis::Namespace.new(user, :redis =>$Redis4) 
+  r= Redis::Namespace.new(user, :redis =>$Redis4)
   r.del @form_name
   redirect "/"
 end
@@ -165,14 +167,14 @@ get '/sass' do
 end
 
 
-# exports all docs as JSON 
+# exports all docs as JSON
 get '/export_all/:user' do
   content_type :json
   #content_type 'text/yaml', :charset => 'utf-8'
   user=params["user"]
   #yaml_doc=[]
   algs={}
-  r= Redis::Namespace.new(user, :redis =>$Redis4) 
+  r= Redis::Namespace.new(user, :redis =>$Redis4)
   all_alg_names=clean_reserved_keys r
   all_alg_names.each do |x|
     algs[x]=r.get x
@@ -188,7 +190,7 @@ end
 #Password Login
 #---------------
 #user and pass are in localStorage
-#they get checked for each page by 
+#they get checked for each page by
 # a call to /user/:username run from
 #layout.coffee
 
@@ -197,7 +199,7 @@ end
 
 post '/user/:username' do
   content_type :json
-  r= Redis::Namespace.new($user_name_name_space, :redis =>$Redis4)   
+  r= Redis::Namespace.new($user_name_name_space, :redis =>$Redis4)
   user=params["username"]
   password=params["password"]
   stored_pass=r.get user
@@ -227,7 +229,7 @@ end
 
 
 post '/create_user/:user'  do
-  r= Redis::Namespace.new($user_name_name_space, :redis =>$Redis4)  
+  r= Redis::Namespace.new($user_name_name_space, :redis =>$Redis4)
   user=params[:user]
   password=params["password"]
   puts "USER #{user}"
@@ -281,7 +283,7 @@ get '/proc' do
   haml :proc
 end
 
-get '/test' do 
+get '/test' do
   haml :test
 end
 
@@ -290,7 +292,7 @@ get '/graphic_edit/images/:image' do
   redirect "/images/#{image}"
 end
 
-# load testing 
+# load testing
 #requires an alg called test with user tester to work
 #verifies time to generate pdf under siege
 #example siege -c100 localhost:7010/load_test  -t10s
@@ -314,7 +316,7 @@ end
 # Text2Box created tuple list with text at 0 and indent at 1
 # indent them
 def text_indent(form_name,user_name)
-  r= Redis::Namespace.new(params["user_name"], :redis =>$Redis4) 
+  r= Redis::Namespace.new(params["user_name"], :redis =>$Redis4)
   text=(r.get form_name).to_s
   if text==""
     return false
@@ -350,7 +352,7 @@ post '/store_graph_colors' do
   colors=JSON.parse(params[:colors])
   graph_name=params[:graph_name]
   user_name=params[:user_name]
-  r= Redis::Namespace.new(params["user_name"], :redis =>$Redis4) 
+  r= Redis::Namespace.new(params["user_name"], :redis =>$Redis4)
   colors_hash_name="#{user_name}#{$redis_reserved[:colors]}"
   r.hset colors_hash_name, graph_name, colors.to_json
   puts "COLORS: #{colors} GRAPH NAME: #{graph_name} "
@@ -362,7 +364,7 @@ end
 post '/get_graph_colors' do
   graph_name=params[:graph_name]
   user_name=params[:user_name]
-  r= Redis::Namespace.new(params["user_name"], :redis =>$Redis4) 
+  r= Redis::Namespace.new(params["user_name"], :redis =>$Redis4)
   colors_hash_name="#{user_name}#{$redis_reserved[:colors]}"
   colors=r.hget colors_hash_name, graph_name
   puts "REQUESTD FOR COLORS #{colors}"
@@ -391,7 +393,7 @@ def text_cleanup(text)
   text=text.strip()
   new_text=[]
   # eliminates ints and floats by wrapping them in quotes. The tree_struc alg wants only arrays or strings
-  text.split("\n").each do |x| 
+  text.split("\n").each do |x|
     x.rstrip!
     # if "- 222.333" m[1] is 222 and m[2] is .333
     m=x.match /-\s(\d+)(\.?\d+)?$/
@@ -425,9 +427,9 @@ end
 
 #YAML Rest
 #------------
- 
+
 def get_yaml  user_name,form_name
-  r= Redis::Namespace.new(user_name, :redis =>$Redis4) 
+  r= Redis::Namespace.new(user_name, :redis =>$Redis4)
    #yaml
    text=(r.get form_name).to_s
    puts "form text = #{text}"
@@ -457,21 +459,21 @@ post '/yaml/:form_name' do
   form_name=params[:form_name]
   user_name=params[:user_name]
   content=params[:content]
-  r= Redis::Namespace.new(user_name, :redis =>$Redis4) 
+  r= Redis::Namespace.new(user_name, :redis =>$Redis4)
   r.set form_name,content
   return true.to_json
 end
 
 #TEXT Rest
 #------------
-# posting returns URLS, since validation of text 
+# posting returns URLS, since validation of text
 # implies actual running of whole alg generation
 
 get '/text/:form_name' do
   content_type :json
   form_name=params[:form_name]
   user_name=params[:user_name]
-  r= Redis::Namespace.new(user_name, :redis =>$Redis4) 
+  r= Redis::Namespace.new(user_name, :redis =>$Redis4)
   text=(r.get form_name).to_s
   return text.to_json
 end
@@ -486,7 +488,7 @@ post '/text/:form_name' do
   user_name=params[:user_name]
   content=params[:content]
   puts content
-  r= Redis::Namespace.new(user_name, :redis =>$Redis4) 
+  r= Redis::Namespace.new(user_name, :redis =>$Redis4)
   if content and content != ""
     content=text_cleanup(content)
     puts content
@@ -511,7 +513,7 @@ def get_color user_name, graph_name
   node_color_hash="#{user_name}#{$redis_reserved[:node_color]}"
   puts node_color_hash
   puts graph_name
-  r= Redis::Namespace.new(user_name, :redis =>$Redis4) 
+  r= Redis::Namespace.new(user_name, :redis =>$Redis4)
   colors=r.hget node_color_hash,graph_name
   if colors
     return colors
@@ -531,7 +533,7 @@ post '/nodes_colors/:graph_name' do
   node_color_hash="#{user_name}#{$redis_reserved[:node_color]}"
   puts node_color_hash
   puts colors
-  r= Redis::Namespace.new(user_name, :redis =>$Redis4) 
+  r= Redis::Namespace.new(user_name, :redis =>$Redis4)
   r.hset node_color_hash,graph_name,colors
   return true.to_json
 end
@@ -590,7 +592,7 @@ get '/graph' do
   yaml_text=JSON.parse(params["yaml_text"]) if params["yaml_text"]
   options=JSON.parse(params["options"]) if params["options"]
   options=false if not params["options"]
-  return get_urls(yaml_text,colors_hash,options) 
+  return get_urls(yaml_text,colors_hash,options)
 end
 
 # get all URLS of rendered graphs; needs colors_hash and yaml_text as params
@@ -606,7 +608,7 @@ post '/graph' do
   algname=false if not params["algname"]
   username=params["username"] if params["username"]
   username=false if not params["username"]
-  return get_urls(yaml_text,colors_hash,options,algname,username) 
+  return get_urls(yaml_text,colors_hash,options,algname,username)
 end
 
 
@@ -630,7 +632,7 @@ end
 
 #get all algs for a user
 get '/alg_names/:user_name' do
-  r= Redis::Namespace.new(params["user_name"], :redis =>$Redis4) 
+  r= Redis::Namespace.new(params["user_name"], :redis =>$Redis4)
   final_forms=clean_reserved_keys r
   final_forms.to_json
 end
@@ -639,5 +641,5 @@ end
 
 
 
-  
+
 
