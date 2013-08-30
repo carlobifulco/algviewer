@@ -22,6 +22,153 @@ require 'json'
 require 'base64'
 require "pp"
 require "pathname"
+require 'openssl'
+require 'digest/sha1'
+require 'base64'
+require "uri"
+require 'fog'
+
+#AWS S3 configuration
+BUCKET_NAME="algviewerimages"
+KEY_FILE="./config/aws_key.json" if Dir.exists? "./config"
+KEY_FILE="../config/aws_key.json" if Dir.exists?  "../config"
+
+### Aws urls so that files can have restricted permissions of AWS
+module AwsSign
+
+  extend self
+
+  def signed_url path
+    expire_date=1417548882
+    digest = OpenSSL::Digest::Digest.new('sha1')
+    can_string = "GET\n\n\n#{expire_date}\n/notationalvelocity/#{path}"
+    hmac = OpenSSL::HMAC.digest(digest, "/Mhw95UKYckAiSAMYkEFmGJ+C+E+R+zPLnAtx34n", can_string)
+    signature = URI.escape(Base64.encode64(hmac).strip).encode_signs
+    "https://s3.amazonaws.com/notationalvelocity/#{path}?AWSAccessKeyId=1S7EGP373356GW3BHMG2&Expires=#{expire_date}&Signature=#{signature}"
+  end
+end
+
+
+
+class String
+  def encode_signs
+    signs = {'+' => "%2B", '=' => "%3D", '?' => '%3F', '@' => '%40',
+      '$' => '%24', '&' => '%26', ',' => '%2C', '/' => '%2F', ':' => '%3A',
+      ';' => '%3B', '?' => '%3F'}
+    signs.keys.each do |key|
+      self.gsub!(key, signs[key])
+    end
+    self
+  end
+end
+
+#### Creates new filenames for S3 like d-renamed-2012-12-29-23-31-34--0800.png
+#
+# takes file_path
+#
+# returns unique string with time incorporated
+def new_name file_path="./test/test.txt"
+  ext_name=File.extname(file_path)
+  base_name=File.basename(file_path).gsub ext_name,""
+  (base_name+"-"+Time.now.to_s).gsub(" ", "-").gsub(":","-")+ext_name
+end
+
+
+
+####Logs in aws after heaving read config file
+class Uploader
+  attr_reader :connection, :directories, :directories_keys,  :bucket
+
+  ####Setup connection and read names of buckets
+  #
+  # if testing is true do mock
+  #
+  # Returns self
+  def initialize(testing=false)
+    @testing=testing
+    if testing == true  then Fog.mock! else Fog.unmock! end
+    config=JSON.parse File.read KEY_FILE
+    con_parameters={
+      :provider => 'AWS',
+      :aws_access_key_id => config["key"],
+      :aws_secret_access_key => config["secret"]
+    }
+    @connection = Fog::Storage.new(con_parameters)
+    @directories=@connection.directories
+    @directories_keys=@directories.map{|d| d.key}
+    @directories.create( :key=> BUCKET_NAME,:public => true) unless directories_keys.include? BUCKET_NAME
+    @bucket=directories.get BUCKET_NAME
+  end
+
+  def to_s
+    "Uploader: #{self.connection}"
+  end
+
+  ####Uploads a file to S3
+  #
+  # takes filepath
+  #
+  # returns new URL
+  def upload file_path="../test/test.txt"
+    puts "uploading #{file_path}"
+
+    #spaced filenames
+    file_path_space_cleaned=file_path.gsub "\%20" , "\ "
+    if File.exists? file_path_space_cleaned
+      puts "finally uploading"
+      new_file_name=new_name(file_path_space_cleaned)
+      #public is false
+      s3_file = @bucket.files.create(
+        :key => new_file_name,
+        :body => File.open(file_path_space_cleaned),
+        :public => false)
+      puts "done uploading #{new_file_name}"
+      #returns URL for access
+      AwsSign.signed_url new_file_name
+      #s3_file.public_url
+    else
+      puts "Cannot find #{file_path}!!!"
+    end
+  end
+end
+
+##### GLobal uploader predifined for out connectionand bucket
+$u=Uploader.new
+
+
+#### Some kind of FileDataStructure for all this uploading business
+#loads data and creates new name
+class FileData
+  attr_accessor  :first_name, :last_name, :case_number, :user
+  def initialize file_path
+    @file_path=file_path
+  end
+  def new_name
+    "#{(File.basename @file_path).gsub((File.extname @file_path),"")}_#{@case_number}_#{@first_name}_#{@last_name}_#{@user}_#{File.extname @file_path}"
+  end
+  def new_path
+    STATIC_UPLOADS+"/"+self.new_name
+  end
+  def move
+    FileUtils.mv(@file_path, self.new_path)
+  end
+end
+
+def new_names file_data
+
+
+end
+
+
+def move_and_destroy file_path, destination_path
+   FileUtils.mv(file_path, destination_path)
+end
+
+
+
+
+
+
 
 
 #SINATRA SETUPS
@@ -280,6 +427,7 @@ end
 # redirected main page
 
 if $0 == __FILE__
+
   get "/" do
     #example for redis
     haml :pic_drop
