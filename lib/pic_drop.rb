@@ -39,12 +39,15 @@ module AwsSign
   extend self
 
   def signed_url path
-    expire_date=1417548882
+    config=JSON.parse File.read KEY_FILE
+    aws_access_key_id=config["key"]
+    #Time.at(1917548882) => 2030-10-06 13:28:02 -0700
+    expire_date=1917548882
     digest = OpenSSL::Digest::Digest.new('sha1')
-    can_string = "GET\n\n\n#{expire_date}\n/notationalvelocity/#{path}"
+    can_string = "GET\n\n\n#{expire_date}\n/#{BUCKET_NAME}/#{path}"
     hmac = OpenSSL::HMAC.digest(digest, "/Mhw95UKYckAiSAMYkEFmGJ+C+E+R+zPLnAtx34n", can_string)
     signature = URI.escape(Base64.encode64(hmac).strip).encode_signs
-    "https://s3.amazonaws.com/notationalvelocity/#{path}?AWSAccessKeyId=1S7EGP373356GW3BHMG2&Expires=#{expire_date}&Signature=#{signature}"
+    "https://s3.amazonaws.com/#{BUCKET_NAME}/#{path}?AWSAccessKeyId=#{aws_access_key_id}&Expires=#{expire_date}&Signature=#{signature}"
   end
 end
 
@@ -62,16 +65,6 @@ class String
   end
 end
 
-#### Creates new filenames for S3 like d-renamed-2012-12-29-23-31-34--0800.png
-#
-# takes file_path
-#
-# returns unique string with time incorporated
-def new_name file_path="./test/test.txt"
-  ext_name=File.extname(file_path)
-  base_name=File.basename(file_path).gsub ext_name,""
-  (base_name+"-"+Time.now.to_s).gsub(" ", "-").gsub(":","-")+ext_name
-end
 
 
 
@@ -116,7 +109,7 @@ class Uploader
     file_path_space_cleaned=file_path.gsub "\%20" , "\ "
     if File.exists? file_path_space_cleaned
       puts "finally uploading"
-      new_file_name=new_name(file_path_space_cleaned)
+      new_file_name=unique_name(file_path_space_cleaned)
       #public is false
       s3_file = @bucket.files.create(
         :key => new_file_name,
@@ -214,9 +207,12 @@ $REDIS=Redis.new(:thread_safe=>true,:port=>6379,:host=>$HOST)
 $REDIS.select 10
 
 # to create named instances
-def redis_name_spaced name_space
+def redis_name_spaced name_space=$user_name_name_space
   Redis::Namespace.new(name_space, :redis =>$REDIS)
 end
+
+$pic_drop_redis=redis_name_spaced
+puts "Here is our namespaced redis #{$r}"
 
 
 #checking if redis is setup
@@ -262,8 +258,20 @@ def unique_file_name username,algname,nodeid,old_filename
   File.join(nodedir, new_file_name)
 end
 
+#### Creates new filenames for S3 like d-renamed-2012-12-29-23-31-34--0800.png
+#
+# takes file_path
+#
+# returns unique string with time incorporated
+def unique_name file_path="./test/test.txt"
+  ext_name=File.extname(file_path)
+  base_name=File.basename(file_path).gsub ext_name,""
+  (base_name+"-"+Time.now.to_s).gsub(" ", "-").gsub(":","-")+ext_name
+end
 
-
+def unique_key algname,nodeid, username
+    return username+"_"+algname+"_"+nodeid
+end
 
 #takes fileIO and writes file
 def write_file filename, fileIO
@@ -273,10 +281,10 @@ def write_file filename, fileIO
   fh.close
 end
 
-#makes thumbs
+#makes thumbs; these are all gif files
 def make_thumb filename
   command="mogrify -format gif -thumbnail 150x150 #{filename}"
-  spawn(command)
+  system(command)
 end
 
 #converts image to a standartd size and to jpg
@@ -290,7 +298,7 @@ def make_jpg filename
   end
   puts command
   #needed to use system because spawn rm was faster then the convert...
-  spawn(command)
+  system(command)
   #spawn("rm #{filename}") unless filename==new_filename
 end
 
@@ -302,13 +310,12 @@ end
 
 #AJAX
 #------
-
-
-
-#upload is a post with a param file and sub filename and tempfile
+#
+# upload is a post with a param file and sub filename and tempfile
 #the url contains info on the link
 #the redis key is composed of username+_algname+_+nodeid
 post '/upload/:username/:algname/:nodeid' do
+  puts "#{$pic_drop_redis} is still working"
   username=params["username"]
   algname=params['algname']
   nodeid=params['nodeid']
@@ -322,15 +329,14 @@ post '/upload/:username/:algname/:nodeid' do
   #make a thumb and convert to jpg
   make_thumb filename
   make_jpg filename
-  r= Redis::Namespace.new(username, :redis =>$REDIS)
   #one node in an alg can have many images
-  file_key=username+"_"+algname+"_"+nodeid
+  file_key=unique_key algname, nodeid, username
   # one node/set of files
-  r.sadd file_key, filename
+  $pic_drop_redis.sadd file_key, filename
   #./public/image_container/guest2/test/94/guest2_test_94a_test.png has key of guest2_test_94
   puts "#{filename} has key of #{file_key}"
-  puts r.smembers file_key
-  puts (r.smembers file_key).class
+  puts $pic_drop_redis.smembers file_key
+  puts ($pic_drop_redis.smembers file_key).class
 end
 
 # returns images from a directoru
