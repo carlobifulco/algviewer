@@ -11,5 +11,7 @@ gem "sass"
 gem "rinruby"
 gem "i18n"
 gem "haml"
+gem "fog"
+gem "thin"
 
 

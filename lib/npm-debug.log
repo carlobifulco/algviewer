@@ -1,0 +1,214 @@
+info it worked if it ends with ok
+verbose cli [ 'node',
+verbose cli   '/usr/bin/npm',
+verbose cli   'install',
+verbose cli   '-g',
+verbose cli   'coffee-script' ]
+info using npm@1.0.28-pre-DEV-UNSTABLE
+info using node@v0.4.11
+verbose /usr/bin/node node symlink
+verbose config file /Users/carlobifulco/.npmrc
+verbose config file /usr/etc/npmrc
+silly exec /usr/bin/node "/usr/lib/node_modules/npm/bin/npm-get-uid-gid.js" "nobody" 20
+silly output from getuid/gid {"uid":-2,"gid":20}
+silly output from getuid/gid 
+verbose into /usr/lib [ 'coffee-script' ]
+verbose cache add coffee-script
+verbose cache add [ 'coffee-script', null ]
+silly cache add: name, spec, args [ undefined,
+silly cache add: name, spec, args   'coffee-script',
+silly cache add: name, spec, args   [ 'coffee-script', null ] ]
+verbose parsed url { pathname: 'coffee-script', href: 'coffee-script' }
+info addNamed [ 'coffee-script', '' ]
+verbose addNamed [ null, '' ]
+verbose GET coffee-script
+verbose raw, before any munging coffee-script
+verbose url resolving [ 'https://registry.npmjs.org/', './coffee-script' ]
+verbose url resolved https://registry.npmjs.org/coffee-script
+verbose etag "6NI075FH07EPRL4VDB75E8R6P"
+silly get cb [ 304,
+silly get cb   { server: 'CouchDB/1.1.0 (Erlang OTP/R14B03)',
+silly get cb     etag: '"6NI075FH07EPRL4VDB75E8R6P"',
+silly get cb     date: 'Thu, 06 Oct 2011 06:09:37 GMT',
+silly get cb     'content-length': '0' } ]
+verbose etag coffee-script from cache
+verbose GET coffee-script/1.1.2
+verbose raw, before any munging coffee-script/1.1.2
+verbose url resolving [ 'https://registry.npmjs.org/',
+verbose url resolving   './coffee-script/1.1.2' ]
+verbose url resolved https://registry.npmjs.org/coffee-script/1.1.2
+verbose etag "6NI075FH07EPRL4VDB75E8R6P"
+silly get cb [ 304,
+silly get cb   { server: 'CouchDB/1.1.0 (Erlang OTP/R14B03)',
+silly get cb     etag: '"6NI075FH07EPRL4VDB75E8R6P"',
+silly get cb     date: 'Thu, 06 Oct 2011 06:09:38 GMT',
+silly get cb     'content-length': '0' } ]
+verbose etag coffee-script/1.1.2 from cache
+verbose bin dist [ '0.4-ares1.7.4-ev4.4-openssl0.9.8r-v83.1.8.26-darwin-11.1.0',
+verbose bin dist   { shasum: 'a530a19d050c37054d83ae6c8041fba0fcd61ed3',
+verbose bin dist     tarball: 'http://registry.npmjs.org/coffee-script/-/coffee-script-1.1.2.tgz' } ]
+silly testEngine { name: 'coffee-script',
+silly testEngine   description: 'Unfancy JavaScript',
+silly testEngine   keywords: [ 'javascript', 'language', 'coffeescript', 'compiler' ],
+silly testEngine   author: { name: 'Jeremy Ashkenas' },
+silly testEngine   version: '1.1.2',
+silly testEngine   licenses: 
+silly testEngine    [ { type: 'MIT',
+silly testEngine        url: 'http://github.com/jashkenas/coffee-script/raw/master/LICENSE' } ],
+silly testEngine   engines: { node: '>=0.2.5' },
+silly testEngine   directories: { lib: './lib' },
+silly testEngine   main: './lib/coffee-script',
+silly testEngine   bin: { coffee: './bin/coffee', cake: './bin/cake' },
+silly testEngine   homepage: 'http://coffeescript.org',
+silly testEngine   repository: 
+silly testEngine    { type: 'git',
+silly testEngine      url: 'git://github.com/jashkenas/coffee-script.git' },
+silly testEngine   _npmJsonOpts: 
+silly testEngine    { file: '/Users/carlobifulco/.npm/coffee-script/1.1.2/package/package.json',
+silly testEngine      wscript: false,
+silly testEngine      contributors: false,
+silly testEngine      serverjs: false },
+silly testEngine   _id: 'coffee-script@1.1.2',
+silly testEngine   dependencies: {},
+silly testEngine   devDependencies: {},
+silly testEngine   _engineSupported: true,
+silly testEngine   _npmVersion: '1.0.28-pre-DEV-UNSTABLE',
+silly testEngine   _nodeVersion: 'v0.4.11',
+silly testEngine   _defaultsLoaded: true }
+verbose caching /Users/carlobifulco/.npm/coffee-script/1.1.2/package/package.json
+verbose loadDefaults coffee-script@1.1.2
+silly resolved [ { name: 'coffee-script',
+silly resolved     description: 'Unfancy JavaScript',
+silly resolved     keywords: [ 'javascript', 'language', 'coffeescript', 'compiler' ],
+silly resolved     author: { name: 'Jeremy Ashkenas' },
+silly resolved     version: '1.1.2',
+silly resolved     licenses: 
+silly resolved      [ { type: 'MIT',
+silly resolved          url: 'http://github.com/jashkenas/coffee-script/raw/master/LICENSE' } ],
+silly resolved     engines: { node: '>=0.2.5' },
+silly resolved     directories: { lib: './lib' },
+silly resolved     main: './lib/coffee-script',
+silly resolved     bin: { coffee: './bin/coffee', cake: './bin/cake' },
+silly resolved     homepage: 'http://coffeescript.org',
+silly resolved     repository: 
+silly resolved      { type: 'git',
+silly resolved        url: 'git://github.com/jashkenas/coffee-script.git' },
+silly resolved     _npmJsonOpts: 
+silly resolved      { file: '/Users/carlobifulco/.npm/coffee-script/1.1.2/package/package.json',
+silly resolved        wscript: false,
+silly resolved        contributors: false,
+silly resolved        serverjs: false },
+silly resolved     _id: 'coffee-script@1.1.2',
+silly resolved     dependencies: {},
+silly resolved     devDependencies: {},
+silly resolved     _engineSupported: true,
+silly resolved     _npmVersion: '1.0.28-pre-DEV-UNSTABLE',
+silly resolved     _nodeVersion: 'v0.4.11',
+silly resolved     _defaultsLoaded: true } ]
+info into /usr/lib coffee-script@1.1.2
+info installOne coffee-script@1.1.2
+info unbuild /usr/lib/node_modules/coffee-script
+silly testEngine { name: 'coffee-script',
+silly testEngine   description: 'Unfancy JavaScript',
+silly testEngine   keywords: [ 'javascript', 'language', 'coffeescript', 'compiler' ],
+silly testEngine   author: { name: 'Jeremy Ashkenas' },
+silly testEngine   version: '1.1.2',
+silly testEngine   licenses: 
+silly testEngine    [ { type: 'MIT',
+silly testEngine        url: 'http://github.com/jashkenas/coffee-script/raw/master/LICENSE' } ],
+silly testEngine   engines: { node: '>=0.2.5' },
+silly testEngine   directories: { lib: './lib' },
+silly testEngine   main: './lib/coffee-script',
+silly testEngine   bin: { coffee: './bin/coffee', cake: './bin/cake' },
+silly testEngine   homepage: 'http://coffeescript.org',
+silly testEngine   repository: 
+silly testEngine    { type: 'git',
+silly testEngine      url: 'git://github.com/jashkenas/coffee-script.git' },
+silly testEngine   _npmJsonOpts: 
+silly testEngine    { file: '/usr/lib/node_modules/coffee-script/package.json',
+silly testEngine      wscript: false,
+silly testEngine      contributors: false,
+silly testEngine      serverjs: false },
+silly testEngine   _id: 'coffee-script@1.1.2',
+silly testEngine   dependencies: {},
+silly testEngine   devDependencies: {},
+silly testEngine   _engineSupported: true,
+silly testEngine   _npmVersion: '1.0.28-pre-DEV-UNSTABLE',
+silly testEngine   _nodeVersion: 'v0.4.11',
+silly testEngine   _defaultsLoaded: true,
+silly testEngine   scripts: {} }
+verbose caching /usr/lib/node_modules/coffee-script/package.json
+verbose loadDefaults coffee-script@1.1.2
+info preuninstall coffee-script@1.1.2
+info uninstall coffee-script@1.1.2
+verbose unbuild coffee-script@1.1.2 [ true,
+verbose unbuild coffee-script@1.1.2   '/usr/lib/node_modules',
+verbose unbuild coffee-script@1.1.2   '/usr/lib/node_modules' ]
+verbose binRoot [ '/usr/bin',
+verbose binRoot   { coffee: './bin/coffee', cake: './bin/cake' } ]
+ERR! error installing coffee-script@1.1.2 Error: Refusing to delete: /usr/bin/coffee not in /usr/lib/node_modules/coffee-script
+ERR! error installing coffee-script@1.1.2     at clobberFail (/usr/lib/node_modules/npm/node_modules/rimraf/rimraf.js:105:12)
+ERR! error installing coffee-script@1.1.2     at next (/usr/lib/node_modules/npm/node_modules/rimraf/rimraf.js:92:42)
+ERR! error installing coffee-script@1.1.2     at /usr/lib/node_modules/npm/node_modules/rimraf/rimraf.js:100:12
+ERR! error installing coffee-script@1.1.2     at cb (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:37:9)
+info unbuild /usr/lib/node_modules/coffee-script
+silly testEngine { name: 'coffee-script',
+silly testEngine   description: 'Unfancy JavaScript',
+silly testEngine   keywords: [ 'javascript', 'language', 'coffeescript', 'compiler' ],
+silly testEngine   author: { name: 'Jeremy Ashkenas' },
+silly testEngine   version: '1.1.2',
+silly testEngine   licenses: 
+silly testEngine    [ { type: 'MIT',
+silly testEngine        url: 'http://github.com/jashkenas/coffee-script/raw/master/LICENSE' } ],
+silly testEngine   engines: { node: '>=0.2.5' },
+silly testEngine   directories: { lib: './lib' },
+silly testEngine   main: './lib/coffee-script',
+silly testEngine   bin: { coffee: './bin/coffee', cake: './bin/cake' },
+silly testEngine   homepage: 'http://coffeescript.org',
+silly testEngine   repository: 
+silly testEngine    { type: 'git',
+silly testEngine      url: 'git://github.com/jashkenas/coffee-script.git' },
+silly testEngine   _npmJsonOpts: 
+silly testEngine    { file: '/usr/lib/node_modules/coffee-script/package.json',
+silly testEngine      wscript: false,
+silly testEngine      contributors: false,
+silly testEngine      serverjs: false },
+silly testEngine   _id: 'coffee-script@1.1.2',
+silly testEngine   dependencies: {},
+silly testEngine   devDependencies: {},
+silly testEngine   _engineSupported: true,
+silly testEngine   _npmVersion: '1.0.28-pre-DEV-UNSTABLE',
+silly testEngine   _nodeVersion: 'v0.4.11',
+silly testEngine   _defaultsLoaded: true,
+silly testEngine   scripts: {} }
+verbose caching /usr/lib/node_modules/coffee-script/package.json
+verbose loadDefaults coffee-script@1.1.2
+info preuninstall coffee-script@1.1.2
+info uninstall coffee-script@1.1.2
+verbose unbuild coffee-script@1.1.2 [ true,
+verbose unbuild coffee-script@1.1.2   '/usr/lib/node_modules',
+verbose unbuild coffee-script@1.1.2   '/usr/lib/node_modules' ]
+verbose binRoot [ '/usr/bin',
+verbose binRoot   { coffee: './bin/coffee', cake: './bin/cake' } ]
+ERR! error rolling back coffee-script@1.1.2 Error: Refusing to delete: /usr/bin/coffee not in /usr/lib/node_modules/coffee-script
+ERR! error rolling back coffee-script@1.1.2     at clobberFail (/usr/lib/node_modules/npm/node_modules/rimraf/rimraf.js:105:12)
+ERR! error rolling back coffee-script@1.1.2     at next (/usr/lib/node_modules/npm/node_modules/rimraf/rimraf.js:92:42)
+ERR! error rolling back coffee-script@1.1.2     at /usr/lib/node_modules/npm/node_modules/rimraf/rimraf.js:100:12
+ERR! error rolling back coffee-script@1.1.2     at cb (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:37:9)
+verbose installOne cb coffee-script@1.1.2
+ERR! Error: Refusing to delete: /usr/bin/coffee not in /usr/lib/node_modules/coffee-script
+ERR!     at clobberFail (/usr/lib/node_modules/npm/node_modules/rimraf/rimraf.js:105:12)
+ERR!     at next (/usr/lib/node_modules/npm/node_modules/rimraf/rimraf.js:92:42)
+ERR!     at /usr/lib/node_modules/npm/node_modules/rimraf/rimraf.js:100:12
+ERR!     at cb (/usr/lib/node_modules/npm/node_modules/graceful-fs/graceful-fs.js:37:9)
+ERR! Report this *entire* log at:
+ERR!     <http://github.com/isaacs/npm/issues>
+ERR! or email it to:
+ERR!     <npm-@googlegroups.com>
+ERR! 
+ERR! System Darwin 11.1.0
+ERR! command "node" "/usr/bin/npm" "install" "-g" "coffee-script"
+ERR! cwd /Users/carlobifulco/Dropbox/code/algviewer/lib
+ERR! node -v v0.4.11
+ERR! npm -v 1.0.28-pre-DEV-UNSTABLE
+verbose exit [ 1, true ]

@@ -1,0 +1,14 @@
+---
+environment: production
+chdir: /home/ubuntu/Dropbox/code/algviewer
+address: 127.0.0.1
+user: ubuntu
+group: ubuntu
+port: 4567
+pid:  ~/Dropbox/code/algviewer/thin.pid
+rackup: ~/Dropbox/code/algviewer/config.ru
+log:  ~/Dropbox/code/algviewer/thin.log
+max_conns: 1024
+timeout: 30
+max_persistent_conns: 512
+daemonize: true

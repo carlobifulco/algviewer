@@ -1,0 +1,5 @@
+#### Documentation self production and taking care of coffeescript JS conversion
+
+Process.spawn '~/Dropbox/code/utilities/doc_maker.rb .'
+Process.spawn '~/Dropbox/code/utilities/doc_maker.rb ./public/views'
+Process.spawn '~/Dropbox/code/utilities/doc_maker.rb ./lib'

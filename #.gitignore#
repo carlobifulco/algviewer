@@ -1,0 +1,4 @@
+*.html
+/public/views/*.js
+/doc/*.html
+/public/views/docs/*.html

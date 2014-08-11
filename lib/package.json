@@ -1,0 +1,7 @@
+
+{
+   "name":"my-project",
+   "mappings": {
+      "foo": "http://somesite.com/foo.zip"
+   }
+}

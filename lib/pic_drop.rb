@@ -164,13 +164,7 @@ end
 
 
 
-#SINATRA SETUPS
-#----------------
-set :root, my_directory
-set :haml, {:format => :html5 }
-# Keeping coffee, compiled JS and haml files in the same directory
-set :views, Proc.new { File.join(root, "public/views") }
-enable :sessions
+
 
 
 #SERVER and REDIS SETUP
@@ -192,6 +186,13 @@ if $0 == __FILE__
     $HOST=$EC2
     puts "running at EC2 at http://#{$HOST}:#{settings.port}; redis also on same #{$HOST}"
   end
+    #SINATRA SETUPS
+  #----------------
+  set :root, my_directory
+  set :haml, {:format => :html5 }
+  # Keeping coffee, compiled JS and haml files in the same directory
+  set :views, Proc.new { File.join(root, "../public/views") }
+  enable :sessions
 end
 #username name_space
 $user_name_name_space="pic_drop_name_space"
@@ -243,21 +244,6 @@ end
 #File Writing in Storage
 #------------------------
 
-#make a unique filename nand proper directory structure
-#also make sure that the basepath to the file exists
-#uses the username/algname/nodeid to form a user specific directory
-def unique_file_name username,algname,nodeid,old_filename
-  basepath=File.join(IMAGE_CONTAINER,username)
-  Dir.mkdir basepath unless Dir.exists? basepath
-  algdir=File.join(basepath,algname)
-  Dir.mkdir algdir unless Dir.exists? algdir
-  nodedir=File.join(algdir,nodeid)
-  Dir.mkdir nodedir unless Dir.exists? nodedir
-  #ext=File.extname old_filename
-  new_file_name=username+"_"+algname+"_"+nodeid+old_filename
-  File.join(nodedir, new_file_name)
-end
-
 #### Creates new filenames for S3 like d-renamed-2012-12-29-23-31-34--0800.png
 #
 # takes file_path
@@ -292,9 +278,9 @@ def make_jpg filename
   ext=File.extname filename
   new_filename=filename.gsub(ext,".jpg")
   if filename==new_filename
-    command="convert -scale  1000x800  #{filename} #{new_filename} && rm #{filename}"
+    command="convert -scale  1000x800  #{filename} #{new_filename} "
   else
-    command="convert -scale  1000x800  #{filename} #{new_filename}"
+    command="convert -scale  1000x800  #{filename} #{new_filename} && rm #{filename}"
   end
   puts command
   #needed to use system because spawn rm was faster then the convert...
@@ -302,6 +288,9 @@ def make_jpg filename
   #spawn("rm #{filename}") unless filename==new_filename
 end
 
+def add_file_to_redis username,algname,nodeid,old_filename
+
+end
 
 
 # ROUTES
@@ -319,24 +308,22 @@ post '/upload/:username/:algname/:nodeid' do
   username=params["username"]
   algname=params['algname']
   nodeid=params['nodeid']
-  fileIO=request.env["rack.input"]
   old_filename=request.env["HTTP_UP_FILENAME"].gsub(" ","_")
-  pp request.env
-  #get filename and creates appropriate directories
-  filename=unique_file_name(username,algname,nodeid,old_filename)
+
+  #aws_name
+  new_filename=unique_name(unique_key(algname,nodeid,username)+"_"+old_filename)
   #writes file
-  write_file filename, fileIO
+  write_file (IMAGE_CONTAINER+"/"+new_filename), request.env["rack.input"]
   #make a thumb and convert to jpg
-  make_thumb filename
-  make_jpg filename
+  make_thumb (IMAGE_CONTAINER+"/"+new_filename)
+  make_jpg (IMAGE_CONTAINER+"/"+new_filename)
   #one node in an alg can have many images
   file_key=unique_key algname, nodeid, username
   # one node/set of files
-  $pic_drop_redis.sadd file_key, filename
+  $pic_drop_redis.sadd file_key, new_filename
   #./public/image_container/guest2/test/94/guest2_test_94a_test.png has key of guest2_test_94
-  puts "#{filename} has key of #{file_key}"
-  puts $pic_drop_redis.smembers file_key
-  puts ($pic_drop_redis.smembers file_key).class
+  puts "array contains #{$pic_drop_redis.smembers file_key}"
+
 end
 
 # returns images from a directoru

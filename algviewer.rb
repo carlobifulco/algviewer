@@ -4,6 +4,9 @@ my_directory=File.dirname(File.expand_path(__FILE__))
 $LOAD_PATH << File.join(my_directory,'/lib')
 $LOAD_PATH << my_directory
 
+require 'bundler/setup'
+
+
 require "nestful"
 require "sinatra"
 require "tempfile"
@@ -84,7 +87,7 @@ set :haml, {:format => :html5 }
 # Keeping coffee, compiled JS and haml files in the same directory
 set :views, Proc.new { File.join(root, "public/views") }
 enable :sessions
-
+set :bind, '0.0.0.0'
 
 
 
@@ -476,6 +479,21 @@ get '/text/:form_name' do
   r= Redis::Namespace.new(user_name, :redis =>$Redis4)
   text=(r.get form_name).to_s
   return text.to_json
+end
+
+get "/all_algs_dump" do
+  text_arr=[]
+  content_type :text
+  r= Redis.new(:thread_safe=>true,:port=>6379,:host=>"localhost")
+  #where the text forms reside
+  r.select 4
+  r.keys.each do |k|
+    puts k
+    if k.include? "^___" then next end
+    text_arr << r.get(k).to_s
+    text_arr<<"\n\n\n\n\n"
+  end
+  return text_arr.join("\n")
 end
 
 #save test only if loadable, else error

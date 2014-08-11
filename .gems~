@@ -1,0 +1,11 @@
+json
+ruby-graphviz
+hpricot
+redis
+nestful
+i18n
+sinatra
+haml
+rack
+coffee-script
+haml-more --pre

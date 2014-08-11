@@ -1,0 +1,16 @@
+{
+  "name": "Algviewer",
+  "description": "Minimalistic tree graph diagramming",
+  "version": "0.0.0.1",
+  "icons": {
+    "128": "128-square.png"
+  },
+  "app": {
+    "urls": [
+      "http://carlobifulco.com/"
+    ],
+    "launch": {
+      "web_url": "http://carlobifulco.com/"
+    }
+  }
+}
